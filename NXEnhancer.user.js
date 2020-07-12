@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name     		NX Enhancer
 // @description 	Adds quality-of-life features to NextDNS website for a more practical experience
-// @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
+// @author		BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
 // @version  		0.1
-// @downloadURL 	https://github.com/hjk789/NXEnhancer/blob/master/NXEnhancer.user.js
+// @downloadURL 	https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @grant    		none
-// @match	  		https://my.nextdns.io/*
+// @match	  	https://my.nextdns.io/*
 // ==/UserScript==
 
 page = ""
@@ -89,7 +89,7 @@ setInterval(function()
               queries[i].parentElement.parentElement.appendChild(allow)
               queries[i].parentElement.parentElement.appendChild(deny)
             }
-        	}
+          }
         }
         else clearInterval(waitForItems)
         
@@ -112,7 +112,7 @@ setInterval(function()
       }
 
 
-	  waitForInputboxAllow = setInterval(function() { setupInputBox(iframeAllow, waitForInputboxAllow ) }, 500);
+      waitForInputboxAllow = setInterval(function() { setupInputBox(iframeAllow, waitForInputboxAllow ) }, 500);
       waitForInputboxDeny  = setInterval(function() { setupInputBox(iframeDeny,  waitForInputboxDeny  ) }, 500);
       
       
@@ -173,7 +173,7 @@ setInterval(function()
         else if (inputbox.nextElementSibling.innerHTML != "") // if there's a submit error 
         {
           textSpan.innerHTML = "Press Enter to submit..."
-		  clearInterval(waitSubmit) 
+	  clearInterval(waitSubmit) 
         }          
       }           
     }
@@ -185,7 +185,7 @@ setInterval(function()
     else if (/privacy$/.test(location.href))
     {
       waitForLists = setInterval(function() 
-	  {        
+      {        
         if (document.querySelector(".list-group-item") != null)
         {
           clearInterval(waitForLists)
