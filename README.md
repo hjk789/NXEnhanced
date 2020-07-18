@@ -14,6 +14,10 @@ When clicked, it pops a small view of the Allowlist/Denylist pages and auto fill
 - Option to show only queries from unnamed devices.   
 ![Other Devices button](https://i.imgur.com/jwdiBgB.png)
 
+- Added the ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, show the list of domains currently set to be hidden.  
+![New domain filtering for the logs](https://i.imgur.com/AnhJRde.png)   
+You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with one click. If you wish want to edit the domain, just click on the "Filters" button and edit the domain. By default, it hides **\*.nextdns.io** and **.arpa** queries, but can be changed as you like. 
+
 Privacy page:
 - 
 
