@@ -6,17 +6,18 @@ A userscript that adds "quality-of-life" features to NextDNS website to make the
 Logs page:
 -
 
-- An Allow/Deny button in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.  ![Allow and Deny butttons](https://i.imgur.com/eRxvkP3.png)
+- An Allow/Deny button in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
+![Allow and Deny butttons](https://i.imgur.com/eRxvkP3.png)
 When clicked, it pops a small view of the Allowlist/Denylist pages and auto fills the input field with the domain respective to the button clicked, allowing you to edit the domain name if you want, and when finished, just confirm.
 
-- Hide `*.nextdns.io` queries and also those Chrome based browsers' randomly generated domains queries (like `vkpwqcakgflqeq`, `lfujniwzrouh`, etc.)
+- Hide those Chrome based browsers' randomly generated domains queries (like `vkpwqcakgflqeq`, `lfujniwzrouh`, etc.)
 
 - Option to show only queries from unnamed devices.   
 ![Other Devices button](https://i.imgur.com/jwdiBgB.png)
 
-- Added the ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, show the list of domains currently set to be hidden.  
+- Ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, show the list of domains currently set to be hidden.  
 ![New domain filtering for the logs](https://i.imgur.com/AnhJRde.png)   
-You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with one click. If you wish want to edit the domain, just click on the "Filters" button and edit the domain. By default, it hides **\*.nextdns.io** and **.arpa** queries, but can be changed as you like. 
+You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with one click. If you want to edit the domain, just click on the "Filters" button, edit the domain and click "OK". By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. 
 
 Privacy page:
 - 
@@ -28,16 +29,20 @@ Privacy page:
 **Upcoming features:**
 -
 
-- Option to specify a list of domains to be hidden from the logs.
-
 - A button in the "Add TLD" screen to add all TLDs at once.
+
+- A button to sort the allow/deny lists alphabetically.
 
 - Show the query's absolute date-time when hovering over the relative time ("a minute ago", "few seconds ago").
 
-- Ability to add a description to each domain in the deny/allow lists.
-
 **Future features:**
 -
+
+- Ability to add a description to each domain in the deny/allow lists.
+
+- Assign a domain to a group of domains in the allow/deny lists that can be collapsed/expanded and named.
+
+- An option to temporarily allow a domain. The downside is that it would require the user to keep the NextDNS site open, or at least require to reopen it after the timer ends to auto remove the domain. I'm searching for some way to make it not require any of these.
 
 - Add a Preferences screen to tweak some features to your like and save it permanently (which persists saved even after page refreshes and browser restarts).
 
@@ -51,8 +56,6 @@ Privacy page:
 To use this userscript, just install in your browser GreaseMonkey (Firefox), TamperMonkey (Chrome) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 
 A window will pop asking if you want to install the script, just confirm it, and it's done! 
-
-If you don't want to install an extension, you can freely run the code like any other JavaScript code, the only downside is that you would have to run it manually every time you want to use it.
 
 If you use uMatrix, you have to allow frames to `my.nextdns.io` to use the allow/deny buttons feature.
 
