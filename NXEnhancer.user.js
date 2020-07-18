@@ -2,16 +2,25 @@
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			0.4
+// @version			0.7
 // @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
-// @grant			none
+// @grant			GM.setValue
+// @grant			GM.getValue
 // @match			https://my.nextdns.io/*
 // ==/UserScript==
 
 page = ""
 domain = ""
 hideDevices = false
+GM.getValue("changed").then(function(value)
+{
+	if (value != true)
+	{
+		GM.setValue("domainsToHide", "nextdns.io\n.in-addr.arpa") // Hide theses queries by default, but only at the first time
+		GM.setValue("changed", true)
+	}
+})
 
 setInterval(function()
 {
@@ -26,18 +35,22 @@ setInterval(function()
 		if (/logs$/.test(location.href))
 		{
 
-			// Allow/Deny buttons on hover. Don't show the Allow button to already whitelisted domains, and don't show the Deny button to already blacklisted/whitelisted domains
+			// Allow/Deny buttons on hover. Don't show the Allow button to already whitelisted domains, don't show the Deny button to already blacklisted/whitelisted domains, and show the Hide button to any domain
 
-			style = document.createElement("style")
+			let style = document.createElement("style")
 			style.innerHTML = `.list-group-item:not([style*='rgb(46']):hover .btn-success { visibility: visible !important; }
-												.list-group-item:not([style*='rgb']):hover .btn-danger { visibility: visible !important; }`
+							   .list-group-item:not([style*='rgb']):hover .btn-danger { visibility: visible !important; }
+							   .list-group-item:hover .btn-secondary { visibility: visible !important; }`
 			document.body.appendChild(style)
+
+			let selector = "div > img + span:not(.processed)"
 
 			waitForItems = setInterval(function()
 			{
 				if (/logs$/.test(location.href))
 				{
-					queries = document.querySelectorAll("div:only-child > img + span[class='notranslate']") // domain name element in a row without buttons yet
+					var queries = document.querySelectorAll(selector)
+
 					if (queries.length > 0)
 					{
 						if (typeof iframeAllow == "undefined" && typeof iframeDeny == "undefined")
@@ -46,16 +59,15 @@ setInterval(function()
 
 							iframeAllow = document.createElement("iframe")
 							iframeAllow.src = "./allowlist"
-							iframeAllow.className = "iallow"
 							iframeAllow.style = "position: absolute; right: 130px; height: 110px; width: 300px; visibility: hidden;"
 
 							iframeDeny = document.createElement("iframe")
 							iframeDeny.src = "./denylist"
-							iframeDeny.className = "ideny"
 							iframeDeny.style = iframeAllow.style.cssText
 
-							document.querySelector(".list-group").parentElement.appendChild(iframeAllow)
-							document.querySelector(".list-group").parentElement.appendChild(iframeDeny)
+							let logsContainer = document.getElementsByClassName("list-group")[0].parentElement
+							logsContainer.appendChild(iframeAllow)
+							logsContainer.appendChild(iframeDeny)
 
 							document.body.onclick = function()
 							{
@@ -64,28 +76,28 @@ setInterval(function()
 							}
 						}
 
-						// Create the "Other Devices" button
+
+						// Create the "Other devices" button
 
 						if (typeof otherDevices == "undefined")
 						{
-							otherDevices = document.createElement("button")
+							var otherDevices = document.createElement("button")
 							otherDevices.className = "dropdown-item"
 							otherDevices.style = "border-top: 1px solid lightgray;"
-							otherDevices.innerHTML = "Other Devices"
+							otherDevices.innerHTML = "Other devices"
 						}
 
-						devicesDropdown = document.getElementsByClassName("Content")[0].getElementsByClassName("dropdown")[0]
+						var devicesDropdown = document.getElementsByClassName("Content")[0].getElementsByClassName("dropdown")[0]
 						otherDevices.onmousedown = function()
 						{
 							devicesDropdown.lastChild.firstChild.click()
-							devicesDropdown.firstChild.innerHTML = "Other Devices"
+							devicesDropdown.firstChild.innerHTML = "Other devices"
 							hideDevices = true
 							return false // Don't let the site receive the click, because if you click on it a second time, the site throws an error saying that this device doesn't exist
 						}
 
 						// The original device picker dropdown replaces it's items everytime it's clicked,
 						// so it's necessary to wait for this to happen first, then append the new button everytime
-
 
 						devicesDropdown.firstChild.onclick = function()
 						{
@@ -103,58 +115,151 @@ setInterval(function()
 									}
 									else devicesDropdown.lastChild.lastChild.className = "dropdown-item"
 
-
-									setTimeout(function() { clearInterval(waitForDevicePicker) }, 3000)
+									setTimeout(function() { clearInterval(waitForDevicePicker) }, 2000)
 								}
-							}, 200)
+							}, 100)
 						}
 
-						if (devicesDropdown.firstChild.innerHTML != "Other Devices")
-						hideDevices = false
+						if (devicesDropdown.firstChild.innerHTML != "Other devices")
+							hideDevices = false
+
+
+						if (typeof filtersButton == "undefined" && typeof domainsToHideInput == "undefined")
+						{
+							// Create "Filters" button
+
+							filtersButton = document.createElement("button")
+							filtersButton.className = "btn btn-secondary"
+							filtersButton.style = "position: absolute; right: 10px; bottom: 7px;"
+							filtersButton.innerHTML = "Filters"
+							filtersButton.onclick = function()
+							{
+								if (this.className.includes("secondary"))
+								{
+									domainsToHideInput.style.cssText += "visibility: visible;"
+									this.innerHTML = "OK"
+									this.className = this.className.replace("secondary", "primary")
+								}
+								else  // If it's clicked the second time
+								{
+									updateFilters()
+
+									domainsToHideInput.style.cssText += "visibility: hidden;"
+									this.innerHTML = "Filters"
+									this.className = this.className.replace("primary", "secondary")
+								}
+							}
+
+							// Create the filter's inputbox
+
+							domainsToHideInput = document.createElement("textarea")
+							domainsToHideInput.spellcheck = false
+							domainsToHideInput.style = "position: absolute; left: 1140px; top: 15px; width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; border: 1px groove lightgray; \
+														outline: 0px; padding-left: 10px; padding-right: 5px; padding-top: 5px; visibility: hidden; resize: both; overflow-wrap: normal;"
+
+							GM.getValue("domainsToHide").then(function(value) { domainsToHideInput.value = value; domainsToHide = value.split("\n") })
+
+							let container = document.getElementsByClassName("Content")[0].getElementsByClassName("container")[0].firstChild
+							container.style.cssText += "position: relative;"
+							container.appendChild(filtersButton)
+							container.appendChild(domainsToHideInput)
+						}
+
+
+						function updateFilters()
+						{
+							GM.setValue("domainsToHide", domainsToHideInput.value)
+							domainsToHide = domainsToHideInput.value.split("\n")
+
+							if (selector.includes(":not(.processed)"))
+								selector = selector.replace(":not(.processed)", "") // Reinclude already processed queries so that it can filter in realtime
+						}
+
 
 						// Process the queries
 
 						for (i=0; i < queries.length; i++)
 						{
-							// Hide nextdns.io queries, Chrome's random queries, and if enabled, also
+							var currentDomain = queries[i].textContent + queries[i].nextSibling.textContent
 
-							domainToHide = "nextdns.io"
-							if (queries[i].parentElement.textContent.includes(domainToHide)
-								|| !queries[i].parentElement.textContent.includes(".")
-								|| (hideDevices && queries[i].parentElement.parentElement.nextSibling.getElementsByClassName("device-name")[0])) // Queries from unnamed devices don't have this element
+							if (!queries[i].parentElement.textContent.includes(".")	 // Chrome's random queries
+								|| (hideDevices && queries[i].parentElement.parentElement.nextSibling.getElementsByClassName("device-name")[0]) // If enabled, named devices. Queries from unnamed devices don't have this element
+								|| domainsToHide.some(d => currentDomain.includes(d)) ) // Domains included in the list of domains to hide
 							{
 								queries[i].parentElement.parentElement.parentElement.style = "display:none"
 								queries[i].parentElement.parentElement.parentElement.className = ""
-								queries[i].className = ""
+								queries[i].className = "processed"
 								continue
 							}
 
+
 							// Create the Allow/Deny buttons
 
-							allow = document.createElement("button")
-							allow.className = "btn btn-success"
-							allow.innerHTML = "Allow"
-							allow.style = "position:absolute; right: 200px; visibility: hidden;"
-							setOnClickButton(allow, iframeAllow, iframeDeny, 330)
+							if (!queries[i].className.includes("processed"))
+							{
+								let hide = document.createElement("button")
+								hide.className = "btn btn-secondary"
+								hide.innerHTML = "Hide"
+								hide.style = "position:absolute; right: 400px; visibility: hidden;"
+								hide.onclick = function()
+								{
+									domainsToHideInput.value += "\n" + this.previousSibling.children[1].textContent + this.previousSibling.children[2].textContent
+									updateFilters()
+								}
 
-							deny = document.createElement("button")
-							deny.className = "btn btn-danger"
-							deny.innerHTML = "Deny"
-							deny.style = "position:absolute; right: 300px; visibility: hidden;"
-							setOnClickButton(deny, iframeDeny, iframeAllow, 258)
+								let allow = document.createElement("button")
+								allow.className = "btn btn-success"
+								allow.innerHTML = "Allow"
+								allow.style = "position:absolute; right: 200px; visibility: hidden;"
+								setOnClickButton(allow, iframeAllow, iframeDeny, 330)
 
-							queries[i].parentElement.parentElement.parentElement.style.cssText += "position: relative;"
-							queries[i].parentElement.parentElement.appendChild(allow)
-							queries[i].parentElement.parentElement.appendChild(deny)
+								let deny = document.createElement("button")
+								deny.className = "btn btn-danger"
+								deny.innerHTML = "Deny"
+								deny.style = "position:absolute; right: 300px; visibility: hidden;"
+								setOnClickButton(deny, iframeDeny, iframeAllow, 258)
+
+								queries[i].parentElement.parentElement.parentElement.style.cssText += "position: relative;"
+								queries[i].parentElement.parentElement.appendChild(hide)
+								queries[i].parentElement.parentElement.appendChild(allow)
+								queries[i].parentElement.parentElement.appendChild(deny)
+								queries[i].className += " processed"
+							}
 						}
+
+						if (!selector.includes(":not(.processed)"))
+							selector += ":not(.processed)"	// After reprocessed, exclude already processed queries again
+
+
+						// Prevent infinite scroll from being interrupted due to too many queries being hidden
+
+						if (!document.querySelector(".Content .container .spinner-border"))
+						{
+							dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
+							dummyTallEll.className = "dummy"
+							dummyTallEll.style = "height: 400px"
+							document.querySelector(".Content .container ul").appendChild(dummyTallEll)
+						}
+
+						waitForSpinner = setInterval(function()
+						{
+							if ((dummyTallEll = document.getElementsByClassName("dummy")[0]) && document.querySelector(".Content .container .spinner-border"))
+							{
+								dummyTallEll.remove()
+								clearInterval(waitForSpinner)
+							}
+
+						}, 100)
 					}
 				}
 				else
 				{
 					clearInterval(waitForItems)
-					iframeAllow  = undefined  // force destroy when the page is changed
-					iframeDeny   = undefined
-					otherDevices = undefined
+					iframeAllow	  = undefined  // Force destroy when the page is changed
+					iframeDeny	  = undefined
+					otherDevices  = undefined
+					filtersButton = undefined
+					domainsToHideInput = undefined
 				}
 
 			}, 500)
@@ -187,12 +292,12 @@ setInterval(function()
 					clearInterval(waitForInputbox)
 
 					frame.contentDocument.body.style = "overflow: hidden;"
-					input = frame.contentDocument.forms[0].children[0]
+					let input = frame.contentDocument.forms[0].children[0]
 					input.parentElement.parentElement.style.cssText += "padding-bottom: 30px;"
 					input.parentElement.parentElement.parentElement.parentElement.style = "padding: 0px;"
 					input.onkeyup = function(event)
 					{
-						input = frame.contentDocument.forms[0].children[0]
+						let input = frame.contentDocument.forms[0].children[0]
 						textSpan = input.parentElement.previousElementSibling // status message
 
 						if (event.key == ' ' || event.key == "Enter")
@@ -218,7 +323,7 @@ setInterval(function()
 
 					}
 
-					span = frame.contentDocument.createElement("span")
+					let span = frame.contentDocument.createElement("span")
 					span.style = "line-height: 3;"
 					span.innerHTML = "Press Space to confirm allow..."
 					input.parentElement.parentElement.insertBefore(span, input.parentElement)
@@ -256,14 +361,14 @@ setInterval(function()
 
 					// Hide list of blocklists
 
-					lists = document.querySelector(".list-group").children
+					let lists = document.querySelector(".list-group").children
 
 					for (i=1; i < lists.length; i++)
 						lists[i].style.cssText += "display: none;"
 
 					// Create "Show lists" button
 
-					showLists = document.createElement("button")
+					let showLists = document.createElement("button")
 					showLists.className = "btn btn-primary"
 					showLists.style = "position:absolute;right: 200px;top: 30px;"
 					showLists.innerHTML = "Show added lists"
@@ -286,14 +391,14 @@ setInterval(function()
 							{
 								clearInterval(waitForListsModal)
 
-								tempLists = Array.from(document.querySelectorAll(".modal-body .list-group-item"))
+								let tempLists = Array.from(document.querySelectorAll(".modal-body .list-group-item"))
 								tempLists.sort(function(a, b) {
 									if (a.textContent.toLowerCase() < b.textContent.toLowerCase()) return -1
 									else if (a.textContent.toLowerCase() > b.textContent.toLowerCase()) return 1
 									else if (a.textContent.toLowerCase() == b.textContent.toLowerCase()) return 0
 								})
 
-								modal = document.getElementsByClassName("modal-body")[0].querySelector(".list-group")
+								let modal = document.getElementsByClassName("modal-body")[0].querySelector(".list-group")
 
 								for (i=0; i < tempLists.length; i++)
 									modal.appendChild(tempLists[i])
@@ -312,4 +417,4 @@ setInterval(function()
 
 
 	}
-}, 2000)
+}, 1000)
