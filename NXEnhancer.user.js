@@ -2,7 +2,7 @@
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			0.7
+// @version			0.8
 // @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @grant			GM.setValue
@@ -99,26 +99,37 @@ setInterval(function()
 						// The original device picker dropdown replaces it's items everytime it's clicked,
 						// so it's necessary to wait for this to happen first, then append the new button everytime
 
-						devicesDropdown.firstChild.onclick = function()
-						{
-							waitForDevicePicker = setInterval(function()
+						waitDevicesDropdown = setInterval(function()	// Slight fix for the problem of not appearing the "Other Devices" button. This lowers the chances of not appearing
+						{												// This bug happens because, for some yet unknown reason, this event isn't assigned to the dropdown
+							devicesDropdown.firstChild.onmousedown = function()
 							{
-								if (devicesDropdown.lastChild.className.includes("show"))
+								if (typeof waitForDevicePicker == "undefined")
 								{
-									devicesDropdown.lastChild.appendChild(otherDevices)
-									devicesDropdown.lastChild.firstChild.onclick = function() { devicesDropdown.firstChild.innerHTML = "All devices" }
-
-									if (hideDevices)
+									waitForDevicePicker = setInterval(function()
 									{
-										devicesDropdown.lastChild.firstChild.className = "dropdown-item"
-										devicesDropdown.lastChild.lastChild.className  = "dropdown-item active"
-									}
-									else devicesDropdown.lastChild.lastChild.className = "dropdown-item"
+										if (devicesDropdown.lastChild.className.includes("show"))
+										{
+											devicesDropdown.lastChild.appendChild(otherDevices)
+											devicesDropdown.lastChild.firstChild.onclick = function() { devicesDropdown.firstChild.innerHTML = "All devices" }
 
-									setTimeout(function() { clearInterval(waitForDevicePicker) }, 2000)
+											if (hideDevices)
+											{
+												devicesDropdown.lastChild.firstChild.className = "dropdown-item"
+												devicesDropdown.lastChild.lastChild.className  = "dropdown-item active"
+											}
+											else devicesDropdown.lastChild.lastChild.className = "dropdown-item"
+
+											setTimeout(function()
+											{
+												clearInterval(waitForDevicePicker)
+												clearInterval(waitDevicesDropdown)
+												waitForDevicePicker = undefined
+											}, 250)
+										}
+									}, 100)
 								}
-							}, 100)
-						}
+							}
+						}, 100)
 
 						if (devicesDropdown.firstChild.innerHTML != "Other devices")
 							hideDevices = false
@@ -157,7 +168,7 @@ setInterval(function()
 							domainsToHideInput.style = "position: absolute; left: 1140px; top: 15px; width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; border: 1px groove lightgray; \
 														outline: 0px; padding-left: 10px; padding-right: 5px; padding-top: 5px; visibility: hidden; resize: both; overflow-wrap: normal;"
 
-							GM.getValue("domainsToHide").then(function(value) { domainsToHideInput.value = value; domainsToHide = value.split("\n") })
+							GM.getValue("domainsToHide").then(function(value) { domainsToHideInput.value = value; domainsToHide = value.split("\n").filter(d => d.trim() != "") })
 
 							let container = document.getElementsByClassName("Content")[0].getElementsByClassName("container")[0].firstChild
 							container.style.cssText += "position: relative;"
@@ -169,7 +180,7 @@ setInterval(function()
 						function updateFilters()
 						{
 							GM.setValue("domainsToHide", domainsToHideInput.value)
-							domainsToHide = domainsToHideInput.value.split("\n")
+							domainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "") // Don't include empty lines
 
 							if (selector.includes(":not(.processed)"))
 								selector = selector.replace(":not(.processed)", "") // Reinclude already processed queries so that it can filter in realtime
@@ -231,7 +242,7 @@ setInterval(function()
 							selector += ":not(.processed)"	// After reprocessed, exclude already processed queries again
 
 
-						// Prevent infinite scroll from being interrupted due to too many queries being hidden
+						// Prevent infinite scroll from being interrupted due to almost all queries being hidden
 
 						if (!document.querySelector(".Content .container .spinner-border"))
 						{
@@ -255,6 +266,7 @@ setInterval(function()
 				else
 				{
 					clearInterval(waitForItems)
+					clearInterval(waitForDevicePicker)
 					iframeAllow	  = undefined  // Force destroy when the page is changed
 					iframeDeny	  = undefined
 					otherDevices  = undefined
@@ -360,25 +372,7 @@ setInterval(function()
 					clearInterval(waitForLists)
 
 					// Hide list of blocklists
-
-					let lists = document.querySelector(".list-group").children
-
-					for (i=1; i < lists.length; i++)
-						lists[i].style.cssText += "display: none;"
-
-					// Create "Show lists" button
-
-					let showLists = document.createElement("button")
-					showLists.className = "btn btn-primary"
-					showLists.style = "position:absolute;right: 200px;top: 30px;"
-					showLists.innerHTML = "Show added lists"
-					showLists.onclick = function() {
-					for (i=1; i < lists.length; i++)
-						lists[i].style.cssText += "display: block;"
-					}
-
-					lists[0].style += "position: relative;"
-					lists[0].appendChild(showLists)
+					hideAllListItems("Show added lists")
 
 
 					// Sort blocklists alphabetically in the modal
@@ -406,15 +400,95 @@ setInterval(function()
 							}
 						}, 500)
 					}
-
-
 				}
 			}, 500)
+		}
 
+
+		// ---------------------- Security page -------------------------
+
+
+		else if (/security$/.test(location.href))
+		{
+			waitForLists = setInterval(function()
+			{
+				if (document.querySelector(".list-group-item") != null)
+				{
+					clearInterval(waitForLists)
+
+					// Hide list of TLDs
+					hideAllListItems("Show added TLDs")
+
+
+					// Create the "Add all TLDs" button in the modal
+
+					document.querySelector(".card-footer button").onclick = function()
+					{
+						waitForListsModal = setInterval(function()
+						{
+							if (document.querySelector(".modal-body .list-group-item") != null)
+							{
+								clearInterval(waitForListsModal)
+
+								let addAll = document.createElement("button")
+								addAll.className = "btn btn-primary"
+								addAll.style = "position: absolute; right: 100px; bottom: 10px;"
+								addAll.innerHTML = "Add all TLDs"
+								addAll.onclick = function()
+								{
+									if(confirm("This may take several minutes (1 minute in ideal conditions). Are you sure?"))
+									{                  
+										let buttons = document.querySelectorAll(".modal-body .btn-primary");
+										i=0
+										addAllInterval = setInterval(function()  // Here an interval is being used instead of a for, because a for was causing the browser to freeze
+										{ 
+											buttons[i].scrollIntoView() // To see the progress. Without this, it gets slightly faster
+											buttons[i].click() 
+
+											i++                    
+											if (i == buttons.length) 
+												clearInterval(addAllInterval)
+
+										}, 25) // 25ms delay to prevent the browser from hanging
+									}
+								}
+
+								let header = document.querySelector(".modal-header")
+								header.style = "position: relative;"
+								header.appendChild(addAll)
+							}
+						}, 500)
+					}
+				}
+			}, 500)
 
 		}
 
 
+
+		function hideAllListItems(text)
+		{
+			let items = document.querySelector(".list-group").children
+
+			// Hide items
+
+			for (i=1; i < items.length; i++)
+				items[i].style.cssText += "display: none;"
+
+			// Create "Show" button
+
+			let show = document.createElement("button")
+			show.className = "btn btn-primary"
+			show.style = "position:absolute;right: 200px;top: 30px;"
+			show.innerHTML = text
+			show.onclick = function() {
+				for (i=1; i < items.length; i++)
+					items[i].style.cssText += "display: block;"
+			}
+
+			items[0].style += "position: relative;"
+			items[0].appendChild(show)
+		}
 
 	}
 }, 1000)
