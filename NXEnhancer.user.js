@@ -2,7 +2,7 @@
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			0.8
+// @version			0.9
 // @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @grant			GM.setValue
@@ -221,13 +221,13 @@ setInterval(function()
 								let allow = document.createElement("button")
 								allow.className = "btn btn-success"
 								allow.innerHTML = "Allow"
-								allow.style = "position:absolute; right: 200px; visibility: hidden;"
+								allow.style = "position: absolute; right: 200px; visibility: hidden;"
 								setOnClickButton(allow, iframeAllow, iframeDeny, 330)
 
 								let deny = document.createElement("button")
 								deny.className = "btn btn-danger"
 								deny.innerHTML = "Deny"
-								deny.style = "position:absolute; right: 300px; visibility: hidden;"
+								deny.style = "position: absolute; right: 300px; visibility: hidden;"
 								setOnClickButton(deny, iframeDeny, iframeAllow, 258)
 
 								queries[i].parentElement.parentElement.parentElement.style.cssText += "position: relative;"
@@ -244,23 +244,17 @@ setInterval(function()
 
 						// Prevent infinite scroll from being interrupted due to almost all queries being hidden
 
-						if (!document.querySelector(".Content .container .spinner-border"))
+						if (window.innerWidth == document.body.clientWidth) // If there is no vertical scrollbar, then surely the body height is insufficient to trigger the infinite scroll
 						{
 							dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
 							dummyTallEll.className = "dummy"
-							dummyTallEll.style = "height: 400px"
+							dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"  // A static value was insufficient for big resolutions. This makes it relative to the window size
 							document.querySelector(".Content .container ul").appendChild(dummyTallEll)
+							scrollTo(0, window.innerHeight)
 						}
 
-						waitForSpinner = setInterval(function()
-						{
-							if ((dummyTallEll = document.getElementsByClassName("dummy")[0]) && document.querySelector(".Content .container .spinner-border"))
-							{
-								dummyTallEll.remove()
-								clearInterval(waitForSpinner)
-							}
-
-						}, 100)
+						if (window.innerWidth != document.body.clientWidth)	 // If the scrollbar is now appearing, remove the dummy element
+							document.getElementsByClassName("dummy")[0].remove()
 					}
 				}
 				else
@@ -437,16 +431,16 @@ setInterval(function()
 								addAll.onclick = function()
 								{
 									if(confirm("This may take several minutes (1 minute in ideal conditions). Are you sure?"))
-									{                  
+									{
 										let buttons = document.querySelectorAll(".modal-body .btn-primary");
 										i=0
-										addAllInterval = setInterval(function()  // Here an interval is being used instead of a for, because a for was causing the browser to freeze
-										{ 
+										addAllInterval = setInterval(function()	 // Here an interval is being used instead of a for, because a for was causing the browser to freeze
+										{
 											buttons[i].scrollIntoView() // To see the progress. Without this, it gets slightly faster
-											buttons[i].click() 
+											buttons[i].click()
 
-											i++                    
-											if (i == buttons.length) 
+											i++
+											if (i == buttons.length)
 												clearInterval(addAllInterval)
 
 										}, 25) // 25ms delay to prevent the browser from hanging
