@@ -2,17 +2,21 @@
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			0.9
+// @version			1.0
 // @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @grant			GM.setValue
 // @grant			GM.getValue
+// @noframes
 // @match			https://my.nextdns.io/*
 // ==/UserScript==
 
-page = ""
-domain = ""
-hideDevices = false
+let page = ""
+let hideDevices = false
+let intervals = []
+
+const isChrome = !(typeof GM_info != "undefined" && (GM_info.scriptHandler == "GreaseMonkey" || !navigator.userAgent.includes("KHTML")))
+
 GM.getValue("changed").then(function(value)
 {
 	if (value != true)
@@ -22,11 +26,14 @@ GM.getValue("changed").then(function(value)
 	}
 })
 
+
+
 setInterval(function()
 {
 	if (page != location.href)
 	{
 		page = location.href
+		destroyIntervalsAndObjects()
 
 
 		// ---------------------- Logs page -------------------------
@@ -34,13 +41,12 @@ setInterval(function()
 
 		if (/logs$/.test(location.href))
 		{
-
 			// Allow/Deny buttons on hover. Don't show the Allow button to already whitelisted domains, don't show the Deny button to already blacklisted/whitelisted domains, and show the Hide button to any domain
 
 			let style = document.createElement("style")
-			style.innerHTML = `.list-group-item:not([style*='rgb(46']):hover .btn-success { visibility: visible !important; }
-							   .list-group-item:not([style*='rgb']):hover .btn-danger { visibility: visible !important; }
-							   .list-group-item:hover .btn-secondary { visibility: visible !important; }`
+			style.innerHTML =  `.list-group-item:not([style*='rgb(46']):hover .btn-success { visibility: visible !important; }
+								.list-group-item:not([style*='rgb']):hover .btn-danger { visibility: visible !important; }
+								.list-group-item:hover .btn-secondary { visibility: visible !important; }`
 			document.body.appendChild(style)
 
 			let selector = "div > img + span:not(.processed)"
@@ -59,13 +65,13 @@ setInterval(function()
 
 							iframeAllow = document.createElement("iframe")
 							iframeAllow.src = "./allowlist"
-							iframeAllow.style = "position: absolute; right: 130px; height: 110px; width: 300px; visibility: hidden;"
+							iframeAllow.style = "position: absolute; right: 130px; height: 110px; width: 320px; visibility: hidden; border: 2px solid lightgray; border-radius: 15px;"
 
 							iframeDeny = document.createElement("iframe")
 							iframeDeny.src = "./denylist"
 							iframeDeny.style = iframeAllow.style.cssText
 
-							let logsContainer = document.getElementsByClassName("list-group")[0].parentElement
+							const logsContainer = document.getElementsByClassName("list-group")[0].parentElement
 							logsContainer.appendChild(iframeAllow)
 							logsContainer.appendChild(iframeDeny)
 
@@ -87,7 +93,7 @@ setInterval(function()
 							otherDevices.innerHTML = "Other devices"
 						}
 
-						var devicesDropdown = document.getElementsByClassName("Content")[0].getElementsByClassName("dropdown")[0]
+						const devicesDropdown = document.getElementsByClassName("Content")[0].getElementsByClassName("dropdown")[0]
 						otherDevices.onmousedown = function()
 						{
 							devicesDropdown.lastChild.firstChild.click()
@@ -96,40 +102,35 @@ setInterval(function()
 							return false // Don't let the site receive the click, because if you click on it a second time, the site throws an error saying that this device doesn't exist
 						}
 
-						// The original device picker dropdown replaces it's items everytime it's clicked,
-						// so it's necessary to wait for this to happen first, then append the new button everytime
+						// The original device picker dropdown replaces it's items every time it's clicked,
+						// so it's necessary to wait for this to happen first, then append the new button every time
 
-						waitDevicesDropdown = setInterval(function()	// Slight fix for the problem of not appearing the "Other Devices" button. This lowers the chances of not appearing
-						{												// This bug happens because, for some yet unknown reason, this event isn't assigned to the dropdown
-							devicesDropdown.firstChild.onmousedown = function()
+						devicesDropdown.firstChild.onclick = function()
+						{
+							if (typeof waitForDevicePicker == "number")
+								clearInterval(waitForDevicePicker)
+
+							waitForDevicePicker = setInterval(function()
 							{
-								if (typeof waitForDevicePicker == "undefined")
+								const devicesContainer = devicesDropdown.lastChild
+								if (devicesContainer.className.includes("show"))
 								{
-									waitForDevicePicker = setInterval(function()
+									devicesContainer.appendChild(otherDevices)
+									devicesContainer.firstChild.onclick = function() { devicesDropdown.firstChild.innerHTML = "All devices" }
+
+									if (hideDevices)
 									{
-										if (devicesDropdown.lastChild.className.includes("show"))
-										{
-											devicesDropdown.lastChild.appendChild(otherDevices)
-											devicesDropdown.lastChild.firstChild.onclick = function() { devicesDropdown.firstChild.innerHTML = "All devices" }
+										devicesContainer.firstChild.className = "dropdown-item"			// All devices
+										devicesContainer.lastChild.className  = "dropdown-item active"  // Other devices
+									}
+									else devicesContainer.lastChild.className = "dropdown-item"
 
-											if (hideDevices)
-											{
-												devicesDropdown.lastChild.firstChild.className = "dropdown-item"
-												devicesDropdown.lastChild.lastChild.className  = "dropdown-item active"
-											}
-											else devicesDropdown.lastChild.lastChild.className = "dropdown-item"
-
-											setTimeout(function()
-											{
-												clearInterval(waitForDevicePicker)
-												clearInterval(waitDevicesDropdown)
-												waitForDevicePicker = undefined
-											}, 250)
-										}
-									}, 100)
+									clearInterval(waitForDevicePicker)
 								}
-							}
-						}, 100)
+							}, 50)
+
+							intervals.push(waitForDevicePicker)
+						}
 
 						if (devicesDropdown.firstChild.innerHTML != "Other devices")
 							hideDevices = false
@@ -141,7 +142,7 @@ setInterval(function()
 
 							filtersButton = document.createElement("button")
 							filtersButton.className = "btn btn-secondary"
-							filtersButton.style = "position: absolute; right: 10px; bottom: 7px;"
+							filtersButton.style = "position: absolute; right: 15px; bottom: 7px;"
 							filtersButton.innerHTML = "Filters"
 							filtersButton.onclick = function()
 							{
@@ -168,9 +169,12 @@ setInterval(function()
 							domainsToHideInput.style = "position: absolute; left: 1140px; top: 15px; width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; border: 1px groove lightgray; \
 														outline: 0px; padding-left: 10px; padding-right: 5px; padding-top: 5px; visibility: hidden; resize: both; overflow-wrap: normal;"
 
-							GM.getValue("domainsToHide").then(function(value) { domainsToHideInput.value = value; domainsToHide = value.split("\n").filter(d => d.trim() != "") })
+							GM.getValue("domainsToHide").then(function(value) {
+								domainsToHideInput.value = value
+								domainsToHide = value.split("\n").filter(d => d.trim() != "")
+							})
 
-							let container = document.getElementsByClassName("Content")[0].getElementsByClassName("container")[0].firstChild
+							const container = document.getElementsByClassName("Content")[0].getElementsByClassName("container")[0].firstChild
 							container.style.cssText += "position: relative;"
 							container.appendChild(filtersButton)
 							container.appendChild(domainsToHideInput)
@@ -183,32 +187,37 @@ setInterval(function()
 							domainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "") // Don't include empty lines
 
 							if (selector.includes(":not(.processed)"))
-								selector = selector.replace(":not(.processed)", "") // Reinclude already processed queries so that it can filter in realtime
+								selector = selector.replace(":not(.processed)", "") // Reinclude already processed queries so that it can refilter in realtime
 						}
 
 
 						// Process the queries
 
-						for (i=0; i < queries.length; i++)
+						let visibleQueries = 0
+
+						for (let i = 0; i < queries.length; i++)
 						{
-							var currentDomain = queries[i].textContent + queries[i].nextSibling.textContent
+							const currentDomain = queries[i].textContent + queries[i].nextSibling.textContent
+							const listItemSpace = queries[i].parentElement.parentElement
+							const listItem = listItemSpace.parentElement
 
 							if (!queries[i].parentElement.textContent.includes(".")	 // Chrome's random queries
-								|| (hideDevices && queries[i].parentElement.parentElement.nextSibling.getElementsByClassName("device-name")[0]) // If enabled, named devices. Queries from unnamed devices don't have this element
+								|| (hideDevices && listItemSpace.nextSibling.getElementsByClassName("device-name")[0]) // If enabled, named devices. Queries from unnamed devices don't have this element
 								|| domainsToHide.some(d => currentDomain.includes(d)) ) // Domains included in the list of domains to hide
 							{
-								queries[i].parentElement.parentElement.parentElement.style = "display:none"
-								queries[i].parentElement.parentElement.parentElement.className = ""
+								listItem.style = "display:none"
+								listItem.className = ""
 								queries[i].className = "processed"
 								continue
 							}
 
+							visibleQueries++
 
-							// Create the Allow/Deny buttons
+							// Create the Hide/Allow/Deny buttons
 
-							if (!queries[i].className.includes("processed"))
+							if (!queries[i].className.includes("processed"))  // Prevent the buttons from being added again when reprocessed
 							{
-								let hide = document.createElement("button")
+								const hide = document.createElement("button")
 								hide.className = "btn btn-secondary"
 								hide.innerHTML = "Hide"
 								hide.style = "position:absolute; right: 400px; visibility: hidden;"
@@ -218,22 +227,22 @@ setInterval(function()
 									updateFilters()
 								}
 
-								let allow = document.createElement("button")
-								allow.className = "btn btn-success"
-								allow.innerHTML = "Allow"
-								allow.style = "position: absolute; right: 200px; visibility: hidden;"
-								setOnClickButton(allow, iframeAllow, iframeDeny, 330)
-
-								let deny = document.createElement("button")
+								const deny = document.createElement("button")
 								deny.className = "btn btn-danger"
 								deny.innerHTML = "Deny"
 								deny.style = "position: absolute; right: 300px; visibility: hidden;"
-								setOnClickButton(deny, iframeDeny, iframeAllow, 258)
+								setOnClickButton(deny, iframeDeny, iframeAllow)
 
-								queries[i].parentElement.parentElement.parentElement.style.cssText += "position: relative;"
-								queries[i].parentElement.parentElement.appendChild(hide)
-								queries[i].parentElement.parentElement.appendChild(allow)
-								queries[i].parentElement.parentElement.appendChild(deny)
+								const allow = document.createElement("button")
+								allow.className = "btn btn-success"
+								allow.innerHTML = "Allow"
+								allow.style = "position: absolute; right: 200px; visibility: hidden;"
+								setOnClickButton(allow, iframeAllow, iframeDeny)
+
+								listItem.style.cssText += "position: relative;"
+								listItemSpace.appendChild(hide)
+								listItemSpace.appendChild(deny)
+								listItemSpace.appendChild(allow)
 								queries[i].className += " processed"
 							}
 						}
@@ -246,50 +255,53 @@ setInterval(function()
 
 						if (window.innerWidth == document.body.clientWidth) // If there is no vertical scrollbar, then surely the body height is insufficient to trigger the infinite scroll
 						{
-							dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
+							const dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
 							dummyTallEll.className = "dummy"
 							dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"  // A static value was insufficient for big resolutions. This makes it relative to the window size
 							document.querySelector(".Content .container ul").appendChild(dummyTallEll)
-							scrollTo(0, window.innerHeight)
+							scrollTo(0, document.body.clientHeight)
+							dummyTallEll.remove()
+						}
+						else if (visibleQueries < 6 && document.body.getBoundingClientRect().bottom < window.innerHeight + 200)
+						{
+							// If all or almost all of the chunk's queries are hidden, automatically scroll up and down to trigger the loading of the next chunk
+							scrollTo(0, document.body.clientHeight - window.innerHeight)
+							scrollTo(0, document.body.clientHeight)
 						}
 
-						if (window.innerWidth != document.body.clientWidth)	 // If the scrollbar is now appearing, remove the dummy element
-							document.getElementsByClassName("dummy")[0].remove()
 					}
-				}
-				else
-				{
-					clearInterval(waitForItems)
-					clearInterval(waitForDevicePicker)
-					iframeAllow	  = undefined  // Force destroy when the page is changed
-					iframeDeny	  = undefined
-					otherDevices  = undefined
-					filtersButton = undefined
-					domainsToHideInput = undefined
 				}
 
 			}, 500)
 
+			intervals.push(waitForItems)
 
-			function setOnClickButton(button, frame, otherFrame, y)
+
+			function setOnClickButton(button, frame, otherFrame)
 			{
 				button.onclick = function(event)
 				{
-					domain = frame.contentDocument.forms[0].children[0].value = this.parentElement.children[0].children[1].textContent + this.parentElement.children[0].children[2].textContent;
-					frame.style.cssText += "top: " + (this.getBoundingClientRect().y - this.parentElement.parentElement.parentElement.getBoundingClientRect().y - 120) + "px;" // show the iframe just above the buttons
-					frame.contentDocument.forms[0].previousElementSibling.innerHTML = "Press Space to confirm " + button.innerHTML.toLowerCase() + "..."
+					const form = frame.contentDocument.forms[0]
+					const input = form.firstChild
+					const domainContainer = this.parentElement.firstChild
+					const listContainer = this.parentElement.parentElement.parentElement
+
+					input.value = domainContainer.children[1].textContent + domainContainer.children[2].textContent;
+					frame.style.cssText += "top: " + (this.getBoundingClientRect().y - listContainer.getBoundingClientRect().y - 120) + "px;" // show the iframe just above the buttons
+					form.previousElementSibling.innerHTML = (!isChrome ? "Press Space to confirm " : "Press Space then Enter to confirm ") + button.textContent.toLowerCase() + "..."
 					frame.style.cssText += "visibility: visible;"
 					otherFrame.style.cssText += "visibility: hidden;"
-					frame.contentDocument.forms[0].children[0].focus()
-					frame.contentWindow.scrollTo(0, y) // scroll in a way that it fits perfectly in the iframe
+					input.focus()
 					event.stopPropagation() // don't raise this event to the body, as the body hides the iframes when clicked
 				}
 			}
 
 
 			waitForInputboxAllow = setInterval(function() { setupInputBox(iframeAllow, waitForInputboxAllow ) }, 500);
-			waitForInputboxDeny	 = setInterval(function() { setupInputBox(iframeDeny,  waitForInputboxDeny	) }, 500);
+			waitForInputboxDeny  = setInterval(function() { setupInputBox(iframeDeny,  waitForInputboxDeny	) }, 500);
 
+			intervals.push(waitForInputboxAllow)
+			intervals.push(waitForInputboxDeny)
 
 			function setupInputBox(frame, waitForInputbox)
 			{
@@ -297,18 +309,21 @@ setInterval(function()
 				{
 					clearInterval(waitForInputbox)
 
+					const input = frame.contentDocument.forms[0].firstChild
+					const formContainer = input.parentElement.parentElement
+
 					frame.contentDocument.body.style = "overflow: hidden;"
-					let input = frame.contentDocument.forms[0].children[0]
-					input.parentElement.parentElement.style.cssText += "padding-bottom: 30px;"
-					input.parentElement.parentElement.parentElement.parentElement.style = "padding: 0px;"
+					formContainer.style.cssText += "padding-bottom: 30px;"
+					formContainer.parentElement.parentElement.style = "padding: 0px;"
 					input.onkeyup = function(event)
 					{
-						let input = frame.contentDocument.forms[0].children[0]
+						const input = frame.contentDocument.forms[0].firstChild
 						textSpan = input.parentElement.previousElementSibling // status message
 
-						if (event.key == ' ' || event.key == "Enter")
+						if ((!isChrome && event.key == ' ') || (event.key == "Enter" && textSpan.textContent.includes("Press Enter")))
 						{
 							textSpan.innerHTML = "Submitting..."
+
 							if (event.key == ' ')
 							{
 								// Simulate Enter key press to submit, because form.submit() just redirects to ./allowlist#submit instead of submitting,
@@ -316,47 +331,56 @@ setInterval(function()
 								// If the user edits the domain name, there's no need to press space, as the submitting was already enabled by the other pressed keys.
 
 								const pressEnter = new KeyboardEvent('keypress', {keyCode: 13})
-								this.dispatchEvent(pressEnter);
+								this.dispatchEvent(pressEnter); // Only works in Firefox, there's no way to make a simulated key press to work in Chrome without extension authority
 							}
 
-							waitFinishSubmit = setInterval(function() { checkIfSubmitted(input, frame, waitFinishSubmit) }, 500)
+							waitFinishSubmit = setInterval(function() { checkIfSubmitted(input, frame, waitFinishSubmit) }, 250)
+
+							intervals.push(waitFinishSubmit)
 
 						}
-						else if (event.key.length == 1 || "Backspace|Delete".includes(event.key)) // whether it's a character key or backspace/delete keys
-							textSpan.innerHTML = textSpan.innerHTML.replace("Space", "Enter")
+						else if (event.key.length == 1 || "Backspace|Delete".includes(event.key)) // Whether it's a character key or backspace/delete keys
+							textSpan.innerHTML = textSpan.innerHTML.replace(/Press Space( then Enter)?/, "Press Enter")
 						else if (event.key == "Escape")
 							frame.style.cssText += 'visibility: hidden;'
 
 					}
 
-					let span = frame.contentDocument.createElement("span")
-					span.style = "line-height: 3;"
-					span.innerHTML = "Press Space to confirm allow..."
-					input.parentElement.parentElement.insertBefore(span, input.parentElement)
+					const span = frame.contentDocument.createElement("span")
+					span.style = "line-height: 2.5;"
+					span.innerText = "Press Space to submit..."
+
+					formContainer.insertBefore(span, input.parentElement)
+
+					// Scroll just one time and relative to the current y position of the inputbox, this prevents a displaced view if there's additional elements above in the page
+					frame.contentWindow.scrollTo(0, input.getBoundingClientRect().y - frame.contentDocument.body.getBoundingClientRect().y - 38)
 				}
 			}
 
 
 			function checkIfSubmitted(inputbox, frame, waitSubmit)
 			{
-				if (inputbox.parentElement.parentElement.nextElementSibling.children[0].textContent.includes(domain))
+				let lastAddedDomain = inputbox.parentElement.parentElement.nextElementSibling.firstChild.textContent
+
+				if (lastAddedDomain.includes(inputbox.value))
 				{
 					inputbox.parentElement.previousElementSibling.innerHTML = "Done!"
-					clearInterval(waitSubmit)
 					setTimeout(function() { frame.style.cssText += "visibility: hidden;" }, 1000)
+					clearInterval(waitSubmit)
 				}
-				else if (inputbox.nextElementSibling.innerHTML != "") // if there's a submit error
+				else if (inputbox.nextElementSibling.innerHTML != "") // If there's a submit error
 				{
 					textSpan.innerHTML = "Press Enter to submit..."
 					clearInterval(waitSubmit)
 				}
 			}
-		}
+
 
 
 		// ---------------------- Privacy page -------------------------
 
 
+		}
 		else if (/privacy$/.test(location.href))
 		{
 			waitForLists = setInterval(function()
@@ -379,29 +403,34 @@ setInterval(function()
 							{
 								clearInterval(waitForListsModal)
 
-								let tempLists = Array.from(document.querySelectorAll(".modal-body .list-group-item"))
+								const tempLists = Array.from(document.querySelectorAll(".modal-body .list-group-item"))
 								tempLists.sort(function(a, b) {
 									if (a.textContent.toLowerCase() < b.textContent.toLowerCase()) return -1
 									else if (a.textContent.toLowerCase() > b.textContent.toLowerCase()) return 1
 									else if (a.textContent.toLowerCase() == b.textContent.toLowerCase()) return 0
 								})
 
-								let modal = document.getElementsByClassName("modal-body")[0].querySelector(".list-group")
+								const modal = document.getElementsByClassName("modal-body")[0].querySelector(".list-group")
 
-								for (i=0; i < tempLists.length; i++)
+								for (let i = 0; i < tempLists.length; i++)
 									modal.appendChild(tempLists[i])
 
 							}
 						}, 500)
+
+						intervals.push(waitForListsModal)
 					}
 				}
 			}, 500)
-		}
+
+			intervals.push(waitForLists)
+
 
 
 		// ---------------------- Security page -------------------------
 
 
+		}
 		else if (/security$/.test(location.href))
 		{
 			waitForLists = setInterval(function()
@@ -424,7 +453,7 @@ setInterval(function()
 							{
 								clearInterval(waitForListsModal)
 
-								let addAll = document.createElement("button")
+								const addAll = document.createElement("button")
 								addAll.className = "btn btn-primary"
 								addAll.style = "position: absolute; right: 100px; bottom: 10px;"
 								addAll.innerHTML = "Add all TLDs"
@@ -432,9 +461,10 @@ setInterval(function()
 								{
 									if(confirm("This may take several minutes (1 minute in ideal conditions). Are you sure?"))
 									{
-										let buttons = document.querySelectorAll(".modal-body .btn-primary");
+										const buttons = document.querySelectorAll(".modal-body .btn-primary")
+
 										i=0
-										addAllInterval = setInterval(function()	 // Here an interval is being used instead of a for, because a for was causing the browser to freeze
+										addAllInterval = setInterval(function()	 // Here an interval is being used instead of a for, because a for makes the browser freeze while doing this
 										{
 											buttons[i].scrollIntoView() // To see the progress. Without this, it gets slightly faster
 											buttons[i].click()
@@ -444,10 +474,12 @@ setInterval(function()
 												clearInterval(addAllInterval)
 
 										}, 25) // 25ms delay to prevent the browser from hanging
+
+										intervals.push(addAllInterval)
 									}
 								}
 
-								let header = document.querySelector(".modal-header")
+								const header = document.querySelector(".modal-header")
 								header.style = "position: relative;"
 								header.appendChild(addAll)
 							}
@@ -456,27 +488,40 @@ setInterval(function()
 				}
 			}, 500)
 
+			intervals.push(waitForLists)
+
 		}
 
 
+		function destroyIntervalsAndObjects()
+		{
+			for (i=0; i < intervals.length; i++)
+				clearInterval(intervals[i])
+
+			iframeAllow   = undefined  // Force destroy when the page is changed
+			iframeDeny	  = undefined
+			otherDevices  = undefined
+			filtersButton = undefined
+			domainsToHideInput = undefined
+		}
 
 		function hideAllListItems(text)
 		{
-			let items = document.querySelector(".list-group").children
+			const items = document.querySelector(".list-group").children
 
 			// Hide items
 
-			for (i=1; i < items.length; i++)
+			for (let i = 1; i < items.length; i++)
 				items[i].style.cssText += "display: none;"
 
 			// Create "Show" button
 
-			let show = document.createElement("button")
+			const show = document.createElement("button")
 			show.className = "btn btn-primary"
 			show.style = "position:absolute;right: 200px;top: 30px;"
 			show.innerHTML = text
 			show.onclick = function() {
-				for (i=1; i < items.length; i++)
+				for (let i = 1; i < items.length; i++)
 					items[i].style.cssText += "display: block;"
 			}
 
@@ -485,4 +530,6 @@ setInterval(function()
 		}
 
 	}
-}, 1000)
+
+
+}, 500)
