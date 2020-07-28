@@ -2,7 +2,7 @@
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			1.0
+// @version			1.3
 // @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @grant			GM.setValue
@@ -15,7 +15,7 @@ let page = ""
 let hideDevices = false
 let intervals = []
 
-const isChrome = !(typeof GM_info != "undefined" && (GM_info.scriptHandler == "GreaseMonkey" || !navigator.userAgent.includes("KHTML")))
+const isChrome = window.chrome != null
 
 GM.getValue("changed").then(function(value)
 {
@@ -26,7 +26,29 @@ GM.getValue("changed").then(function(value)
 	}
 })
 
+GM.getValue("domainDescriptions").then(function(value)
+{
+	if (value == undefined)
+	{
+		descriptions = new Object()
+		GM.setValue("domainDescriptions", JSON.stringify(descriptions))
+	}
+	else descriptions = JSON.parse(value)
 
+})
+
+
+
+// Allow/Deny buttons on hover. Don't show the Allow button to already whitelisted domains,
+// don't show the Deny button to already blacklisted/whitelisted domains, and show the Hide button to any domain
+
+const style = document.createElement("style")
+style.innerHTML = `.list-group-item:not([style*='rgb(46']):hover .btn-success { visibility: visible !important; }
+                   .list-group-item:not([style*='rgb']):hover .btn-danger { visibility: visible !important; }
+                   .list-group-item:hover .btn-secondary { visibility: visible !important; }
+                   .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }`
+
+document.head.appendChild(style)
 
 setInterval(function()
 {
@@ -41,14 +63,6 @@ setInterval(function()
 
 		if (/logs$/.test(location.href))
 		{
-			// Allow/Deny buttons on hover. Don't show the Allow button to already whitelisted domains, don't show the Deny button to already blacklisted/whitelisted domains, and show the Hide button to any domain
-
-			let style = document.createElement("style")
-			style.innerHTML =  `.list-group-item:not([style*='rgb(46']):hover .btn-success { visibility: visible !important; }
-								.list-group-item:not([style*='rgb']):hover .btn-danger { visibility: visible !important; }
-								.list-group-item:hover .btn-secondary { visibility: visible !important; }`
-			document.body.appendChild(style)
-
 			let selector = "div > img + span:not(.processed)"
 
 			waitForItems = setInterval(function()
@@ -212,6 +226,14 @@ setInterval(function()
 							}
 
 							visibleQueries++
+
+
+							// Add the absolute time beside the relative time
+
+							var time = listItem.querySelector("time")
+							if (/ago|in/.test(time.textContent))
+								time.innerHTML = time.innerText + "&nbsp; (" + new Date(+time.attributes["datetime"].value).toLocaleTimeString() + ")"
+
 
 							// Create the Hide/Allow/Deny buttons
 
@@ -399,24 +421,14 @@ setInterval(function()
 					{
 						waitForListsModal = setInterval(function()
 						{
-							if (document.getElementsByClassName("modal-body")[0].querySelector(".list-group-item") != null)
+							if (document.querySelector(".modal-body .list-group-item") != null)
 							{
 								clearInterval(waitForListsModal)
 
-								const tempLists = Array.from(document.querySelectorAll(".modal-body .list-group-item"))
-								tempLists.sort(function(a, b) {
-									if (a.textContent.toLowerCase() < b.textContent.toLowerCase()) return -1
-									else if (a.textContent.toLowerCase() > b.textContent.toLowerCase()) return 1
-									else if (a.textContent.toLowerCase() == b.textContent.toLowerCase()) return 0
-								})
-
-								const modal = document.getElementsByClassName("modal-body")[0].querySelector(".list-group")
-
-								for (let i = 0; i < tempLists.length; i++)
-									modal.appendChild(tempLists[i])
+								sortItemsAZ(".modal-body .list-group")
 
 							}
-						}, 500)
+						}, 100)
 
 						intervals.push(waitForListsModal)
 					}
@@ -490,6 +502,87 @@ setInterval(function()
 
 			intervals.push(waitForLists)
 
+
+
+		// ---------------------- Allowlist/Denylist page -------------------------
+
+
+		}
+		else if (/allowlist$|denylist$/.test(location.href))
+		{
+			waitForLists = setInterval(function()
+			{
+				if (document.querySelector(".list-group-item") != null)
+				{
+					clearInterval(waitForLists)
+
+					// Create "Sort A-Z" button
+
+					const sortAZButton = document.createElement("button")
+					sortAZButton.className = "btn btn-primary"
+					sortAZButton.style = "position: absolute; right: 20px; bottom: 6px"
+					sortAZButton.innerHTML = "Sort A-Z"
+					sortAZButton.onclick = function() { sortItemsAZ(".list-group:nth-child(2)"); this.blur() }
+
+					const container = document.querySelector(".list-group") // The bar above the input box
+					container.style = "position: relative;"
+					container.appendChild(sortAZButton)
+
+
+					// Create the input box for the domain descriptions
+
+					const domainsItems = document.querySelectorAll(".list-group-item")
+
+					for (i=1; i < domainsItems.length; i++)
+					{
+						const descriptionInput = document.createElement("input")
+						descriptionInput.className = "description"
+						descriptionInput.placeholder = "Add a description. Press Enter to submit"
+						descriptionInput.style = "width: 450px; margin-left: 40px; border: 0; background: transparent; color: gray;"
+						descriptionInput.onkeypress = function(event)
+						{
+							if (event.key == "Enter")
+							{
+								descriptions[this.previousSibling.textContent.substring(2)] = this.value
+								GM.setValue("domainDescriptions", JSON.stringify(descriptions))
+								if (this.value != "")
+									this.style.cssText += "visibility: visible;"
+								else
+									this.style.cssText += "visibility: hidden;"
+
+								this.blur()
+							}
+						}
+
+						if ((descriptionInput.value = descriptions[domainsItems[i].textContent.substring(2)] || "") == "")
+							descriptionInput.style.cssText += "visibility: hidden;"
+
+						domainsItems[i].firstChild.firstChild.appendChild(descriptionInput)
+					}
+
+				}
+
+			}, 500)
+
+			intervals.push(waitForLists)
+
+		}
+
+
+
+		function sortItemsAZ(selector)
+		{
+			const container = document.querySelector(selector)
+			const items = Array.from(container.children)
+
+			items.sort(function(a, b) {
+				if (a.textContent.toLowerCase() < b.textContent.toLowerCase()) return -1
+				else if (a.textContent.toLowerCase() > b.textContent.toLowerCase()) return 1
+				else if (a.textContent.toLowerCase() == b.textContent.toLowerCase()) return 0
+			})
+
+			for (let i = 0; i < items.length; i++)
+				container.appendChild(items[i])
 		}
 
 
@@ -504,6 +597,7 @@ setInterval(function()
 			filtersButton = undefined
 			domainsToHideInput = undefined
 		}
+
 
 		function hideAllListItems(text)
 		{
