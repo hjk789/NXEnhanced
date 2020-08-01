@@ -51,7 +51,7 @@ None for now. Soon I'll work on the other features. Stay tuned!
 
 ## Future features
 
-- Add a Preferences screen to tweak some features to your like and save it permanently (which persists saved even after page refreshes and browser restarts).
+- Add a Preferences screen to tweak some features to your like.
 
 - Assign a domain to a group of domains in the allow/deny lists that can be collapsed/expanded and named.
 
@@ -87,13 +87,13 @@ This project takes a lot of time and effort developing, analyzing, testing, fixi
 
 ## Disclaimers
 
-I have no affiliation with NextDNS Inc., I'm just a user of their service. NX Enhancer is a completely voluntary work. There are no warranties.
+I have no association with NextDNS Inc., I'm just a user of their service. NX Enhancer is a completely voluntary work. There are no warranties.
 
 ## License
 
-- You can download a copy and run this software as is.
+- You can view the code, download a copy and run this software as is.
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can link to this repository's homepage (https://github.com/hjk789/NXEnhancer). 
 - You can modify your copy for personal use, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can't do any other action not allowed in this license. For any questions, please contact me.   
+- You can't do any other action not allowed in this license.  
 It can happen that I forgot to add permission to some other action. If you are unsure whether you may or may not do something, please contact me.
