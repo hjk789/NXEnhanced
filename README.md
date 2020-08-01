@@ -45,10 +45,6 @@ Just click on the "Add a description" message, input the description/label you w
 - A button to sort the allow/deny lists alphabetically.   
 ![Sort A-Z](https://i.imgur.com/KKhgMdd.png)    
 
-## Upcoming features
-
-None for now. Soon I'll work on the other features. Stay tuned!
-
 ## Future features
 
 - Add a Preferences screen to tweak some features to your like.
