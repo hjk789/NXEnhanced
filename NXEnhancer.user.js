@@ -2,7 +2,7 @@
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			1.3
+// @version			1.5
 // @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
 // @grant			GM.setValue
@@ -215,7 +215,7 @@ setInterval(function()
 							const listItemSpace = queries[i].parentElement.parentElement
 							const listItem = listItemSpace.parentElement
 
-							if (!queries[i].parentElement.textContent.includes(".")	 // Chrome's random queries
+							if (!queries[i].parentElement.textContent.includes(".")  // Chrome's random queries
 								|| (hideDevices && listItemSpace.nextSibling.getElementsByClassName("device-name")[0]) // If enabled, named devices. Queries from unnamed devices don't have this element
 								|| domainsToHide.some(d => currentDomain.includes(d)) ) // Domains included in the list of domains to hide
 							{
@@ -226,13 +226,6 @@ setInterval(function()
 							}
 
 							visibleQueries++
-
-
-							// Add the absolute time beside the relative time
-
-							var time = listItem.querySelector("time")
-							if (/ago|in/.test(time.textContent))
-								time.innerHTML = time.innerText + "&nbsp; (" + new Date(+time.attributes["datetime"].value).toLocaleTimeString() + ")"
 
 
 							// Create the Hide/Allow/Deny buttons
@@ -262,6 +255,7 @@ setInterval(function()
 								setOnClickButton(allow, iframeAllow, iframeDeny)
 
 								listItem.style.cssText += "position: relative;"
+								listItem.className += " visible"
 								listItemSpace.appendChild(hide)
 								listItemSpace.appendChild(deny)
 								listItemSpace.appendChild(allow)
@@ -278,17 +272,43 @@ setInterval(function()
 						if (window.innerWidth == document.body.clientWidth) // If there is no vertical scrollbar, then surely the body height is insufficient to trigger the infinite scroll
 						{
 							const dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
-							dummyTallEll.className = "dummy"
-							dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"  // A static value was insufficient for big resolutions. This makes it relative to the window size
+							dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"  // A static value is insufficient for big resolutions. This makes it relative to the window size
 							document.querySelector(".Content .container ul").appendChild(dummyTallEll)
 							scrollTo(0, document.body.clientHeight)
 							dummyTallEll.remove()
 						}
-						else if (visibleQueries < 6 && document.body.getBoundingClientRect().bottom < window.innerHeight + 200)
+						else if (visibleQueries < 7 && document.body.getBoundingClientRect().bottom < window.innerHeight + 200)
 						{
 							// If all or almost all of the chunk's queries are hidden, automatically scroll up and down to trigger the loading of the next chunk
 							scrollTo(0, document.body.clientHeight - window.innerHeight)
 							scrollTo(0, document.body.clientHeight)
+						}
+
+
+						// Add the absolute time beside the relative time
+
+						if (typeof checkQueriesTime == "undefined")
+						{
+							function addAbsoluteTime()
+							{
+								const relativeQueries = document.getElementsByClassName("visible")
+
+								for (i=0; i < relativeQueries.length; i++)
+								{
+									const time = relativeQueries[i].querySelector("time")
+
+									if (/ago|in/.test(time.textContent) && !time.textContent.includes(":"))
+										time.innerHTML = time.innerText + "&nbsp; (" + new Date(+time.attributes["datetime"].value).toLocaleTimeString() + ")"
+									else
+										break  // Stop when there's no more queries with relative time
+								}
+							}
+
+							addAbsoluteTime()
+
+							checkQueriesTime = setInterval( function() { addAbsoluteTime() }, 5000)  // NextDNS site overwrites the time element every minute, so this needs to be repeated
+
+							intervals.push(checkQueriesTime)
 						}
 
 					}
@@ -306,15 +326,31 @@ setInterval(function()
 					const form = frame.contentDocument.forms[0]
 					const input = form.firstChild
 					const domainContainer = this.parentElement.firstChild
-					const listContainer = this.parentElement.parentElement.parentElement
+					const logContainer = this.parentElement.parentElement.parentElement
+					const allowDenyList = form.parentElement.nextSibling
 
-					input.value = domainContainer.children[1].textContent + domainContainer.children[2].textContent;
-					frame.style.cssText += "top: " + (this.getBoundingClientRect().y - listContainer.getBoundingClientRect().y - 120) + "px;" // show the iframe just above the buttons
+					input.value = domainContainer.children[1].textContent + domainContainer.children[2].textContent;  // Subdomains + root domain
+
+					let domain = input.value
+
+					while (domain.indexOf(".") >= 0)
+					{
+						domain = domain.substring(domain.indexOf(".") + 1)
+						if (allowDenyList.textContent.includes("*." + domain))
+						{
+							input.nextSibling.innerHTML = "This subdomain is already included!"
+							input.className += " is-invalid"
+							input.oninput = function() { this.className = this.className.replace(" is-invalid", ""); this.nextSibling.innerHTML = "" }
+							break
+						}
+					}
+
+					frame.style.cssText += "top: " + (this.getBoundingClientRect().y - logContainer.getBoundingClientRect().y - 120) + "px;" // Show the iframe just above the buttons
 					form.previousElementSibling.innerHTML = (!isChrome ? "Press Space to confirm " : "Press Space then Enter to confirm ") + button.textContent.toLowerCase() + "..."
 					frame.style.cssText += "visibility: visible;"
 					otherFrame.style.cssText += "visibility: hidden;"
 					input.focus()
-					event.stopPropagation() // don't raise this event to the body, as the body hides the iframes when clicked
+					event.stopPropagation() // Don't raise this event to the body, as the body hides the iframes when clicked
 				}
 			}
 
@@ -476,7 +512,7 @@ setInterval(function()
 										const buttons = document.querySelectorAll(".modal-body .btn-primary")
 
 										i=0
-										addAllInterval = setInterval(function()	 // Here an interval is being used instead of a for, because a for makes the browser freeze while doing this
+										addAllInterval = setInterval(function()   // Here an interval is being used instead of a for, because a for makes the browser freeze while doing this
 										{
 											buttons[i].scrollIntoView() // To see the progress. Without this, it gets slightly faster
 											buttons[i].click()
@@ -516,17 +552,30 @@ setInterval(function()
 				{
 					clearInterval(waitForLists)
 
-					// Create "Sort A-Z" button
+
+					// Create the "Sort by TLD" checkbox
+
+					const sortOptionsContainer = document.createElement("div")
+					sortOptionsContainer.style = "position: absolute; right: -130px; bottom: 10px;"
+
+					const rectangleAboveInput = document.querySelector(".list-group")
+					rectangleAboveInput.style = "position: relative;"
+
+					const sortTLDSwitch = createSwitchCheckbox("Sort by TLD")
+
+					sortOptionsContainer.appendChild(sortTLDSwitch)
+					rectangleAboveInput.appendChild(sortOptionsContainer)
+
+
+					// Create the "Sort A-Z" button
 
 					const sortAZButton = document.createElement("button")
 					sortAZButton.className = "btn btn-primary"
 					sortAZButton.style = "position: absolute; right: 20px; bottom: 6px"
 					sortAZButton.innerHTML = "Sort A-Z"
-					sortAZButton.onclick = function() { sortItemsAZ(".list-group:nth-child(2)"); this.blur() }
+					sortAZButton.onclick = function() { sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild); this.blur() }
 
-					const container = document.querySelector(".list-group") // The bar above the input box
-					container.style = "position: relative;"
-					container.appendChild(sortAZButton)
+					rectangleAboveInput.appendChild(sortAZButton)
 
 
 					// Create the input box for the domain descriptions
@@ -554,7 +603,9 @@ setInterval(function()
 							}
 						}
 
-						if ((descriptionInput.value = descriptions[domainsItems[i].textContent.substring(2)] || "") == "")
+						descriptionInput.value = descriptions[domainsItems[i].textContent.substring(2)] || ""
+
+						if (descriptionInput.value == "")
 							descriptionInput.style.cssText += "visibility: hidden;"
 
 						domainsItems[i].firstChild.firstChild.appendChild(descriptionInput)
@@ -569,17 +620,98 @@ setInterval(function()
 		}
 
 
+		function createSwitchCheckbox(inner)
+		{
+			const container = document.createElement("div")
+			container.className = "custom-switch"
 
-		function sortItemsAZ(selector)
+			const checkbox = document.createElement("input")
+			checkbox.type = "checkbox"
+			checkbox.id = "id" + Date.now()   // There's no need to specify a human-readable id, but it needs to be unique
+			checkbox.className = "custom-control-input"
+
+			const label = document.createElement("label")
+			label.innerHTML = inner
+			label.style = "margin-left: 10px; user-select: none;"
+			label.htmlFor = checkbox.id
+			label.className = "custom-control-label"
+
+			container.appendChild(checkbox)
+			container.appendChild(label)
+
+			return container
+		}
+
+
+		function sortItemsAZ(selector, type = "", element = null)
 		{
 			const container = document.querySelector(selector)
 			const items = Array.from(container.children)
 
-			items.sort(function(a, b) {
-				if (a.textContent.toLowerCase() < b.textContent.toLowerCase()) return -1
-				else if (a.textContent.toLowerCase() > b.textContent.toLowerCase()) return 1
-				else if (a.textContent.toLowerCase() == b.textContent.toLowerCase()) return 0
-			})
+			if (type == "domain")
+			{
+				const SLDs = ["co","com","org","edu","gov","mil","net"]
+
+				let startingLevel = 1  // From last to first
+
+				if (!element.checked)
+					startingLevel++
+
+				items.sort(function(a, b)
+				{
+					const tempA = a.textContent.toLowerCase().substring(2).split(".")
+					const tempB = b.textContent.toLowerCase().substring(2).split(".")
+
+					let levelA = tempA.length - startingLevel
+					let levelB = tempB.length - startingLevel
+
+					a = tempA[levelA]
+					b = tempB[levelB]
+
+					if (startingLevel == 2)
+					{
+						if (SLDs.includes(tempA[levelA]))  // If the domain before the TLD is a SLD, instead of a root domain ...
+							a = tempA[--levelA]  		   // ... skip it.
+
+						if (SLDs.includes(tempB[levelB]))
+							b = tempB[--levelB]
+					}
+
+					while(true)  // Repeat until reaching a return
+					{
+						if 		(a <  b) return -1
+						else if (a >  b) return 1
+						else if (a == b)  // If both items share the same domain ...
+						{
+							levelA-- 	  // ... then skip to a deeper level ...
+							levelB--
+
+							if (typeof tempA[levelA] != "undefined" && typeof tempB[levelB] != "undefined")  // ... but only if both have a deeper level.
+							{
+								a = tempA[levelA]
+								b = tempB[levelB]
+							}
+							else if (typeof tempA[levelA] == "undefined" && typeof tempB[levelB] != "undefined")  // This happens when an upper level domain is compared with a deeper level one.
+								return -1																		  // In this case, bring the upper level one to the top
+							else if (typeof tempA[levelA] != "undefined" && typeof tempB[levelB] == "undefined")
+								return 1
+							else return 0
+						}
+					}
+				})
+			}
+			else
+			{
+				items.sort(function(a, b)
+				{
+					a = a.textContent.toLowerCase()
+					b = b.textContent.toLowerCase()
+
+					if 		(a <  b) return -1
+					else if (a >  b) return 1
+					else if (a == b) return 0
+				})
+			}
 
 			for (let i = 0; i < items.length; i++)
 				container.appendChild(items[i])
