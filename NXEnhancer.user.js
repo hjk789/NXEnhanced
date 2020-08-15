@@ -81,7 +81,7 @@ if (window.top == window.self)
 								{
 									waitForDropdown = setInterval(function()
 									{
-										devicesDropdown = document.querySelector(".Content .dropdown button:not([disabled])")
+										devicesDropdown = document.querySelector(".Page .dropdown button:not([disabled])")
 										
 										if (devicesDropdown)
 										{
@@ -215,7 +215,7 @@ if (window.top == window.self)
 										domainsToHide = value.split("\n").filter(d => d.trim() != "")
 									})
 
-									const container = document.getElementsByClassName("Content")[0].getElementsByClassName("container")[0].firstChild
+									const container = document.getElementsByClassName("Page")[0].getElementsByClassName("container")[0].firstChild
 									container.style.cssText += "position: relative;"
 									container.appendChild(filtersButton)
 									container.appendChild(domainsToHideInput)
@@ -402,7 +402,7 @@ if (window.top == window.self)
 								{
 									const dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
 									dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"	// A static value is insufficient for big resolutions. This makes it relative to the window size
-									document.querySelector(".Content .container .list-group").appendChild(dummyTallEll)
+									document.querySelector(".Page .container .list-group").appendChild(dummyTallEll)
 									scrollTo(0, document.body.clientHeight)
 									dummyTallEll.remove()
 								}
