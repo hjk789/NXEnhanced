@@ -6,17 +6,18 @@ A userscript that adds "quality-of-life" features to NextDNS website to make the
 ### Logs page:
 
 - An Allow/Deny button in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
-![Allow and Deny butttons](https://i.imgur.com/y8EsZ1V.png)    
-When clicked, it pops a small view of the Allowlist/Denylist pages and auto fills the input field with the domain respective to the button clicked, allowing you to edit the domain name if you want, and when finished, just confirm. 
+![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)    
+When clicked, it pops a small dialog with the domain respective to the button clicked, allowing you to edit the domain name if you want, and when finished, just press Enter or click on the "Allow/Deny domain".   
+If you want to allow/deny a whole root domain, you just need to click on the "Allow/Deny root". E.g., for `www.google.com`, `google.com` is the root domain, if you allow/deny this root domain, it will include all domains under `google.com`, such as `mail.google.com`, `news.google.com`, `account.google.com`, and so on. In case you are unsure what is the root domain, just hover over the "Allow/Deny root" button and it will tell you in a tooltip what is the root domain.
 
 - Hide those Chrome based browsers' randomly generated domains queries (like `vkpwqcakgflqeq`, `lfujniwzrouh`, etc.)
 
 - Option to show only queries from unnamed devices.   
 ![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
 
-- Ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, show the list of domains currently set to be hidden.  
-![New domain filtering for the logs](https://i.imgur.com/7kLbdaN.png)        
-You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with one click. If you want to edit the domain, just click on the "Filters" button, edit the domain and click "OK". By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. (Note: the specified domains are hidden only from you, it doesn't remove from the server.)
+- Ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, shows the list of domains currently set to be hidden.  
+![New domain filtering for the logs](https://i.imgur.com/cdbwwaJ.png)        
+You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with one click. If you want to edit the domain, just click on the "Filters" button, edit the domain and click "OK". By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. You can also temporarily disable the filtering, by switching off the "Enable filtering" switch. (Note: the specified domains are hidden only from you, it doesn't remove from the server.)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago").   
 ![Absolute time](https://i.imgur.com/KMtc55K.png)    
@@ -45,6 +46,9 @@ Just click on the "Add a description" message, input the description/label you w
 - A button to sort the allow/deny lists alphabetically.   
 ![Sort A-Z](https://i.imgur.com/KKhgMdd.png)    
 
+- Styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align. ![Stylish domains](https://i.imgur.com/czNmQqB.png)
+![Styling options](https://i.imgur.com/Iiernta.png)
+
 ## Future features
 
 - Add a Preferences screen to tweak some features to your like.
@@ -67,9 +71,9 @@ To use this userscript, just install in your browser GreaseMonkey (Firefox), Tam
 
 A window will pop asking if you want to install the script, just confirm it, and it's done! 
 
-If you use uMatrix, you have to allow frames to `my.nextdns.io` to use the allow/deny buttons feature.
+If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons feature.
 
-On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install GreaseMonkey/TamperMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhancer isn't optimized for mobile.
+On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install GreaseMonkey/TamperMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhancer isn't optimized for mobile yet.
 
 ## Bug reports and suggestions
 
