@@ -46,7 +46,8 @@ Just click on the "Add a description" message, input the description/label you w
 - A button to sort the allow/deny lists alphabetically.   
 ![Sort A-Z](https://i.imgur.com/KKhgMdd.png)    
 
-- Styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align. ![Stylish domains](https://i.imgur.com/czNmQqB.png)
+- Styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
+![Stylish domains](https://i.imgur.com/czNmQqB.png)
 ![Styling options](https://i.imgur.com/Iiernta.png)
 
 ## Future features
