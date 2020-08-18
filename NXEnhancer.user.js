@@ -1,10 +1,14 @@
 // ==UserScript==
 // @name			NX Enhancer
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
-// @author			BLBC (github.com/hjk789, reddit.com/u/dfhg89s7d89)
-// @version			2.0
-// @downloadURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
-// @updateURL		https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
+// @author			BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
+// @copyright		2020+, BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
+// @version			2.2
+// @homepage        https://github.com/hjk789/NXEnhancer
+// @license         https://github.com/hjk789/NXEnhancer#license
+// @supportURL      https://github.com/hjk789/NXEnhancer/issues
+// @downloadURL		https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
+// @updateURL		https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
 // @grant			GM.setValue
 // @grant			GM.getValue
 // @match			https://my.nextdns.io/*
@@ -81,8 +85,8 @@ if (window.top == window.self)
 								{
 									waitForDropdown = setInterval(function()
 									{
-										devicesDropdown = document.querySelector(".Page .dropdown button:not([disabled])")
-										
+										devicesDropdown = document.getElementById("root").children[1].getElementsByClassName("dropdown")[0].querySelector("button:not([disabled])")
+
 										if (devicesDropdown)
 										{
 											clearInterval(waitForDropdown)
@@ -207,15 +211,11 @@ if (window.top == window.self)
 
 									domainsToHideInput = document.createElement("textarea")
 									domainsToHideInput.spellcheck = false
+									domainsToHideInput.value = domainsToHide.join("\n")
 									domainsToHideInput.style = "position: absolute; left: 1140px; top: 15px; width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; border: 1px groove lightgray; \
 																outline: 0px; padding-left: 10px; padding-right: 5px; padding-top: 5px; visibility: hidden; resize: both; overflow-wrap: normal;"
 
-									GM.getValue("domainsToHide").then(function(value) {
-										domainsToHideInput.value = value
-										domainsToHide = value.split("\n").filter(d => d.trim() != "")
-									})
-
-									const container = document.getElementsByClassName("Page")[0].getElementsByClassName("container")[0].firstChild
+									const container = document.getElementById("root").children[1].firstChild.firstChild
 									container.style.cssText += "position: relative;"
 									container.appendChild(filtersButton)
 									container.appendChild(domainsToHideInput)
@@ -264,36 +264,54 @@ if (window.top == window.self)
 									fullDomainButton.onclick = function()
 									{
 										allowDenyPopup.errorMsg.classList.remove("invalid-feedback")
-										allowDenyPopup.errorMsg.innerHTML = "Submitting..."
 
-										makeAPIrequest(allowDenyPopup.listName + "/hex:" + convertToHex(allowDenyPopup.input.value), "PUT", `(function()
+										if (allowDenyPopup.listName != "Hide")
 										{
-											if (e.data.response.includes(allowDenyPopup.input.value))
+											allowDenyPopup.errorMsg.innerHTML = "Submitting..."
+
+											makeAPIrequest(allowDenyPopup.listName + "/hex:" + convertToHex(allowDenyPopup.input.value), "PUT", `(function()
 											{
-												allowDenyPopup.errorMsg.innerHTML = 'Done!'
-												
-												setTimeout(function() {
-													allowDenyPopup.container.style.cssText += 'visibility: hidden;'
-													allowDenyPopup.errorMsg.innerHTML = ''
-												}, 1000)
-												
-												makeAPIrequest(allowDenyPopup.listName, "GET", "allowDenyPopup.domainsList[allowDenyPopup.listName] = e.data.response")
-											}
-											else if (e.data.response.includes("error"))
-											{
-												allowDenyPopup.errorMsg.innerHTML = JSON.parse(e.data.response).error
-												allowDenyPopup.errorMsg.classList.add("invalid-feedback")
-												allowDenyPopup.input.classList.add("is-invalid")
-											}
-										})()`)
+												if (e.data.response.includes(allowDenyPopup.input.value))
+												{
+													allowDenyPopup.errorMsg.innerHTML = 'Done!'
+
+													setTimeout(function() {
+														allowDenyPopup.container.style.cssText += 'visibility: hidden;'
+														allowDenyPopup.errorMsg.innerHTML = ''
+													}, 1000)
+
+													makeAPIrequest(allowDenyPopup.listName, "GET", "allowDenyPopup.domainsList[allowDenyPopup.listName] = e.data.response")
+												}
+												else if (e.data.response.includes("error"))
+												{
+													allowDenyPopup.errorMsg.innerHTML = JSON.parse(e.data.response).error
+													allowDenyPopup.errorMsg.classList.add("invalid-feedback")
+													allowDenyPopup.input.classList.add("is-invalid")
+												}
+											})()`)
+										}
+										else
+										{
+											domainsToHideInput.value += "\n" + allowDenyPopup.input.value
+											updateFilters()
+											allowDenyPopup.errorMsg.innerHTML = 'Done!'
+
+											setTimeout(function() {
+												allowDenyPopup.container.style.cssText += 'visibility: hidden;'
+											}, 1000)
+										}
 									}
 
 									const rootDomainButton = document.createElement("button")
 									rootDomainButton.style = "width: 127px; float: right;"
 									rootDomainButton.onclick = function()
 									{
-										let rootDomain = allowDenyPopup.input.value
-										allowDenyPopup.input.value = this.title.substring(this.title.indexOf("*") + 2)  // Instead of parsing the root domain again, get it from the title set by the Allow/Deny buttons
+										let input = allowDenyPopup.input
+										input.value = this.title.substring(this.title.indexOf("*") + 2)  // Instead of parsing the root domain again, get it from the title set by the Allow/Deny/Hide buttons
+
+										if (allowDenyPopup.listName == "Hide")
+											input.value = "." + input.value  // Add a dot before the root domain to prevent false positives
+
 										allowDenyPopup.fullDomainButton.click()
 									}
 
@@ -365,11 +383,7 @@ if (window.top == window.self)
 										hide.className = "btn btn-secondary"
 										hide.innerHTML = "Hide"
 										hide.style = "position: absolute; right: 450px; visibility: hidden;"
-										hide.onclick = function()
-										{
-											domainsToHideInput.value += "\n" + this.previousSibling.children[1].textContent + this.previousSibling.children[2].textContent
-											updateFilters()
-										}
+										setOnClickButton(hide)
 
 										const deny = document.createElement("button")
 										deny.className = "btn btn-danger"
@@ -398,11 +412,11 @@ if (window.top == window.self)
 
 								// Prevent infinite scroll from being interrupted due to almost all queries being hidden
 
-								if (window.innerWidth == document.body.clientWidth) // If there is no vertical scrollbar, then surely the body height is insufficient to trigger the infinite scroll
-								{
+								if (window.innerWidth == document.body.clientWidth && (document.body.clientHeight / window.innerHeight * 100) < 90)  // If there is no vertical scrollbar and the page's height takes less than 90% of the window height,
+								{																													 // then surely the body height is insufficient to trigger the infinite scroll
 									const dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
 									dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"	// A static value is insufficient for big resolutions. This makes it relative to the window size
-									document.querySelector(".Page .container .list-group").appendChild(dummyTallEll)
+									document.getElementById("root").children[1].firstChild.getElementsByClassName("list-group")[0].appendChild(dummyTallEll)
 									scrollTo(0, document.body.clientHeight)
 									dummyTallEll.remove()
 								}
@@ -456,25 +470,30 @@ if (window.top == window.self)
 							const fullDomain = domainContainer.children[1].textContent + domainContainer.children[2].textContent	// Subdomains + root domain
 							let upperDomain =
 							allowDenyPopup.input.value = fullDomain
-							allowDenyPopup.listName = this.innerHTML.toLowerCase() + "list"
 
 							allowDenyPopup.errorMsg.classList.remove("invalid-feedback")
 							allowDenyPopup.input.classList.remove("is-invalid")
 							allowDenyPopup.errorMsg.innerHTML = ""
 
-							while (upperDomain.indexOf(".") >= 0)
+							if (this.innerText != "Hide")
 							{
-								upperDomain = upperDomain.substring(upperDomain.indexOf(".") + 1)
+								allowDenyPopup.listName = this.innerText.toLowerCase() + "list"
 
-								if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))
+								while (upperDomain.indexOf(".") >= 0)
 								{
-									allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry!"
-									allowDenyPopup.input.classList.add("is-invalid")
-									allowDenyPopup.errorMsg.classList.add("invalid-feedback")
+									upperDomain = upperDomain.substring(upperDomain.indexOf(".") + 1)
 
-									break
+									if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))
+									{
+										allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry!"
+										allowDenyPopup.input.classList.add("is-invalid")
+										allowDenyPopup.errorMsg.classList.add("invalid-feedback")
+
+										break
+									}
 								}
 							}
+							else allowDenyPopup.listName = "Hide"
 
 							const subdomains = allowDenyPopup.input.value.split(".")
 							let rootDomain = subdomains[subdomains.length-2]
@@ -484,14 +503,14 @@ if (window.top == window.self)
 
 							rootDomain += "." + subdomains[subdomains.length-1]
 
-							allowDenyPopup.rootDomainButton.title = this.innerHTML + " any subdomain under *." + rootDomain
+							allowDenyPopup.rootDomainButton.title = this.innerText + " any subdomain under *." + rootDomain
 
 
 							allowDenyPopup.fullDomainButton.className =
-							allowDenyPopup.rootDomainButton.className = this.innerHTML == "Allow" ? "btn btn-success mt-1" : "btn btn-danger mt-1"
+							allowDenyPopup.rootDomainButton.className = this.innerText == "Allow" ? "btn btn-success mt-1" : this.innerText == "Deny" ? "btn btn-danger mt-1" : "btn btn-secondary mt-1"
 
-							allowDenyPopup.fullDomainButton.innerHTML = this.innerHTML + " domain"
-							allowDenyPopup.rootDomainButton.innerHTML = this.innerHTML + " root"
+							allowDenyPopup.fullDomainButton.innerHTML = this.innerText + " domain"
+							allowDenyPopup.rootDomainButton.innerHTML = this.innerText + " root"
 
 							allowDenyPopup.container.style.cssText += "visibility: visible; top: " + (this.getBoundingClientRect().y - allowDenyPopup.parent.getBoundingClientRect().y - 170) + "px;"	 // Show the popup right above the buttons
 							allowDenyPopup.input.focus()
@@ -745,6 +764,10 @@ if (window.top == window.self)
 
 	function getGMsettings()
 	{
+		GMsettings = new Object()
+		ind = 0
+		settings = ["domainDescriptions", "AllowDenyOptions"]
+
 		GM.getValue("changed").then(function(value)
 		{
 			if (value != true)
@@ -752,13 +775,14 @@ if (window.top == window.self)
 				GM.setValue("domainsToHide", "nextdns.io\n.in-addr.arpa")   // Hide theses queries by default, but only at the first time
 				GM.setValue("changed", true)
 			}
+
+			GM.getValue("domainsToHide").then(function(value)
+			{
+				domainsToHide = value.split("\n").filter(d => d.trim() != "")  // Create an array with the domains to be hidden, excluding empty lines
+
+				getOrCreateGMsetting(settings[0])
+			})
 		})
-
-		GMsettings = new Object()
-		ind = 0
-		settings = ["domainDescriptions", "AllowDenyOptions"]
-
-		getOrCreateGMsetting(settings[0])
 
 	}
 
@@ -780,8 +804,6 @@ if (window.top == window.self)
 				getOrCreateGMsetting(settings[ind])	 // This is to make sure that all settings are loaded before the interval starts
 			else
 				main()
-
-
 
 		})
 	}
