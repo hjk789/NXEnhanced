@@ -68,7 +68,7 @@ Just click on the "Add a description" message, input the description/label you w
 
 ## How to use it
 
-To use this userscript, just install in your browser GreaseMonkey (Firefox), TamperMonkey (Chrome and Firefox) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://raw.githubusercontent.com/hjk789/NXEnhancer/master/NXEnhancer.user.js
+To use this userscript, just install in your browser GreaseMonkey (Firefox), TamperMonkey (Chrome and Firefox) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
 
 A window will pop asking if you want to install the script, just confirm it, and it's done! 
 
