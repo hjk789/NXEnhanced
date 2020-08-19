@@ -8,7 +8,7 @@ A userscript that adds "quality-of-life" features to NextDNS website to make the
 - An Allow/Deny button in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
 ![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)    
 When clicked, it pops a small dialog with the domain respective to the button clicked, allowing you to edit the domain name if you want, and when finished, just press Enter or click on the "Allow/Deny domain".   
-If you want to allow/deny a whole root domain, you just need to click on the "Allow/Deny root". E.g., for `www.google.com`, `google.com` is the root domain, if you allow/deny this root domain, it will include all domains under `google.com`, such as `mail.google.com`, `news.google.com`, `account.google.com`, and so on. In case you are unsure what is the root domain, just hover over the "Allow/Deny root" button and it will tell you in a tooltip what is the root domain.
+If you want to allow/deny a whole root domain, you just need to click on the "Allow/Deny root". In case you are unsure what is the root domain, just hover over the "Allow/Deny root" button and it will tell you in a tooltip what is the root domain.
 
 - Hide those Chrome based browsers' randomly generated domains queries (like `vkpwqcakgflqeq`, `lfujniwzrouh`, etc.)
 
@@ -17,7 +17,7 @@ If you want to allow/deny a whole root domain, you just need to click on the "Al
 
 - Ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, shows the list of domains currently set to be hidden.  
 ![New domain filtering for the logs](https://i.imgur.com/cdbwwaJ.png)        
-You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with one click. If you want to edit the domain, just click on the "Filters" button, edit the domain and click "OK". By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. You can also temporarily disable the filtering, by switching off the "Enable filtering" switch. (Note: the specified domains are hidden only from you, it doesn't remove from the server.)
+You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks. Clicking on it opens the same popup used by the "Allow/Deny" buttons, enabling you to edit the domain first if you want, or hiding the whole root domain. If you click on the "Filters" button, you can view and edit the current list of domains set to be hidden. All domains that include any one of these domains are hidden. By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. You can also temporarily disable the filtering, by switching off the "Enable filtering" switch. (Note: the specified domains are hidden only from you, it doesn't remove from the server.)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago").   
 ![Absolute time](https://i.imgur.com/KMtc55K.png)    
@@ -50,22 +50,6 @@ Just click on the "Add a description" message, input the description/label you w
 ![Stylish domains](https://i.imgur.com/czNmQqB.png)
 ![Styling options](https://i.imgur.com/Iiernta.png)
 
-## Future features
-
-- Add a Preferences screen to tweak some features to your like.
-
-- Assign a domain to a group of domains in the allow/deny lists that can be collapsed/expanded and named.
-
-- Only show queries that happened before a specified date/time.
-
-- Ability to export in CSV format part of the logs.
-
-- Real-time log.
-
-- An option to temporarily allow a domain. The downside is that it would require the user to keep the NextDNS site open, or at least require to reopen it after the timer ends to auto remove the domain. I'm searching for some way to make it not require any of these.
-
-- Add more items and more statistics in the Analytics page. The counting will be made locally (in the browser) based on the total queries count and the logs, which will allow many possibilities of statistical info.
-
 ## How to use it
 
 To use this userscript, just install in your browser GreaseMonkey (Firefox), TamperMonkey (Chrome and Firefox) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
@@ -75,6 +59,8 @@ A window will pop asking if you want to install the script, just confirm it, and
 If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons feature.
 
 On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install GreaseMonkey/TamperMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhancer isn't optimized for mobile yet.
+
+**Note:** Although I'm supporting the compatibility with GreaseMonkey, I recommend that you avoid using it if you don't have a reason that forces you to use only GreaseMonkey. GreaseMonkey 4 is pretty buggy, specially with frames, and lacks many features that TamperMonkey has. You can use NX Enhancer in GreaseMonkey, but keep in mind that I don't know how long I'll keep support for it.
 
 ## Bug reports and suggestions
 
@@ -92,9 +78,9 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 
 ## License
 
-- You can view the code, download a copy and run this software as is.
+- You can view the code, download copies and run this software as is.
 - You can suggest changes, either by opening issues or by doing pull requests. 
-- You can link to this repository's homepage (https://github.com/hjk789/NXEnhancer). 
+- You can link to this project's repository homepage (https://github.com/hjk789/NXEnhancer). 
 - You can modify your copy for personal use, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
 - You can't do any other action not allowed in this license.  
 It can happen that I forgot to add permission to some other action. If you are unsure whether you may or may not do something, please contact me.
