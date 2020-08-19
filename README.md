@@ -80,6 +80,7 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 
 - You can view the code, download copies and run this software as is.
 - You can suggest changes, either by opening issues or by doing pull requests. 
+- You can participate in discussions or comment/opinate about new features.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhancer). 
 - You can modify your copy for personal use, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
 - You can't do any other action not allowed in this license.  
