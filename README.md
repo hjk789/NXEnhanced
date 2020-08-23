@@ -15,7 +15,7 @@ If you want to allow/deny a whole root domain, you just need to click on the "Al
 - Option to show only queries from unnamed devices.   
 ![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
 
-- Ability to specify domains that should be hidden from the logs. It comes with a "Filters" button that, when clicked, shows the list of domains currently set to be hidden.  
+- Ability to specify domains that should be hidden from the logs. 
 ![New domain filtering for the logs](https://i.imgur.com/cdbwwaJ.png)        
 You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks. Clicking on it opens the same popup used by the "Allow/Deny" buttons, enabling you to edit the domain first if you want, or hiding the whole root domain. If you click on the "Filters" button, you can view and edit the current list of domains set to be hidden. All domains that include any one of these domains are hidden. By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. You can also temporarily disable the filtering, by switching off the "Enable filtering" switch. (Note: the specified domains are hidden only from you, it doesn't remove from the server.)
 
@@ -33,9 +33,9 @@ You can either manually type (or paste) domains, or click on the new "Hide" butt
 
 - Hide the list of added TLDs. It behaves the exact same way as the one in the Privacy page.
 
-- A button that allows you to add every TLD in the "Add a TLD" screen with one click.   
+- A button that allows you to add every TLD in the "Add a TLD" screen in one click.   
 ![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)     
-Clicking on it will iterate trough all "Add" buttons and automatically click on each one of them. This may take several minutes. Depending on your connection's latency and your device's processing power, it can take less time. The fastest it can go, at perfectly ideal conditions, is 40 TLDs per second (around 40 seconds). At normal conditions it can take at least 2 minutes.
+This will take around 30 seconds to finish, but it can take much less, depending on your connection's latency.
 
 ### Allowlist/Denylist pages:
 
@@ -68,7 +68,7 @@ Although it's a work in progress, this userscript is completely usable at the cu
 
 ## Support
 
-This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because of the fact that it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, you can make a donation via PayPal. I'll gladly appreciate any help with any value:
+This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, you can make a donation via PayPal:
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CK5BFYUP9TWBJ&source=url)
 
@@ -82,6 +82,7 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can participate in discussions or comment/opinate about new features.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhancer). 
-- You can modify your copy for personal use, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can't do any other action not allowed in this license.  
-It can happen that I forgot to add permission to some other action. If you are unsure whether you may or may not do something, please contact me.
+- You can modify your copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
+- You cannot do any other action not allowed in this license.  
+
+Copyright (c) 2020 BLBC ([hjk789](https://github.com/hjk789))
