@@ -35,7 +35,8 @@ You can either manually type (or paste) domains, or click on the new "Hide" butt
 
 - A button that allows you to add every TLD in the "Add a TLD" screen in one click.   
 ![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)     
-This will take around 30 seconds to finish, but it can take much less, depending on your connection's latency.
+This will take around 30 seconds to finish, but it can take much less, depending on your connection's latency. During the process, a modal dialog will popup with instructions:    
+![Please wait modal](https://i.imgur.com/ugkRMZs.png)
 
 ### Allowlist/Denylist pages:
 
