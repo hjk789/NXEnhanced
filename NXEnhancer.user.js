@@ -3,7 +3,7 @@
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
 // @copyright		2020+, BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
-// @version			2.4
+// @version			2.7
 // @homepage		https://github.com/hjk789/NXEnhancer
 // @license			https://github.com/hjk789/NXEnhancer#license
 // @supportURL		https://github.com/hjk789/NXEnhancer/issues
@@ -14,19 +14,17 @@
 // @match			https://my.nextdns.io/*
 // @match			https://api.nextdns.io/*
 // ==/UserScript==
-
+/* eslint-disable no-multi-spaces, curly, no-loop-func, no-multi-str, no-caller, dot-notation, no-undef, no-implicit-globals */
 
 if (window.top == window.self)
 {
 	let page = ""
 	let hideDevices = false
 	let filtering = true
-	let intervals = []
-
-	const isChrome = window.chrome != null
-	var descriptions, allowDenyOptions
+	const intervals = []
 
 
+	// Load all NX Enhancer's settings
 	getGMsettings()
 
 
@@ -43,15 +41,15 @@ if (window.top == window.self)
 
 
 	window.addEventListener("message", function(e) {
-		eval(e.data.callback)  		// Run the callback when the HTTP request is completed. Here, PostMessage is only necessary for asynchronous requests,
-	}, false)						// as it would be pretty hacky to do this in any other way, and asynchronous requests here are only necessary for slow connections.
+		if (e.data.callback != "")
+			dispatchEvent(new CustomEvent(e.data.callback, {detail: e.data.response}))  // Run the event listener callback including the response when the HTTP request is completed. Here, PostMessage is only necessary for asynchronous
+	})																					// requests, as it would be pretty hacky to do this in any other way, and asynchronous requests here are only necessary for slow connections.
 
 
 	const ApiFrame = document.createElement("object")  // Here an OBJECT element is being used instead of an IFRAME because of a bug in GreaseMonkey that makes it not run inside IFRAMEs, but it runs fine inside EMBEDs and OBJECTs.
 	ApiFrame.data = "https://api.nextdns.io/configurations/"
 	document.body.appendChild(ApiFrame)
 	ApiFrame.style = "display: none;"	 // The frame needs to be hidden *after* the append, otherwise Chrome won't load it. In Firefox it works fine.
-
 
 
 	function main()
@@ -61,17 +59,18 @@ if (window.top == window.self)
 			if (page != location.href)
 			{
 				page = location.href
-				destroyIntervalsAndObjects()
+				clearAllIntervals()
 
 
-				// ---------------------- Logs page -------------------------
+				// ---------------------------- Logs page ---------------------------
 
 
 				if (/logs(#\w*)?$/i.test(location.href))
 				{
-					let selector = "div > img + span:not(.processed)"
+					let selector = "div > img + span:not(.processed)"  // The element containing the domain name
+					let allowDenyPopup
 
-					waitForItems = setInterval(function()
+					const waitForItems = setInterval(function()
 					{
 						if (/logs(#\w*)?$/i.test(location.href))
 						{
@@ -81,11 +80,11 @@ if (window.top == window.self)
 							{
 								// Setup the devices dropdown
 
-								if (typeof otherDevices == "undefined")
+								if (document.getElementById("otherDevicesBtn") == null)
 								{
-									waitForDropdown = setInterval(function()
+									const waitForDropdown = setInterval(function()
 									{
-										devicesDropdown = document.getElementById("root").children[1].getElementsByClassName("dropdown")[0].querySelector("button:not([disabled])")
+										let devicesDropdown = document.getElementById("root").children[1].getElementsByClassName("dropdown")[0].querySelector("button:not([disabled])")
 
 										if (!!devicesDropdown)  // If it's found
 										{
@@ -93,13 +92,14 @@ if (window.top == window.self)
 
 											devicesDropdown = devicesDropdown.parentElement
 
-											devicesDropdown.firstChild.click()  // Load the list of devices
+											devicesDropdown.firstChild.click()  // Click the first time to trigger the loading of the list of devices, as the list is empty before this
 
 
 											// Clone the devices dropdown and use it as a visual representation of the original. This makes it much easier to customize and more reliable
 
-											customDevicesDropdown = devicesDropdown.cloneNode(true)
+											const customDevicesDropdown = devicesDropdown.cloneNode(true)
 											devicesDropdown.style.cssText += "display: none;"
+											customDevicesDropdown.id = "customDevicesDropdown"
 											customDevicesDropdown.classList.remove("show")
 											customDevicesDropdown.lastChild.classList.remove("show")
 											customDevicesDropdown.lastChild.style.cssText += "top: 40px; opacity: 1; pointer-events: initial;"
@@ -112,19 +112,21 @@ if (window.top == window.self)
 												else classes.remove("show")
 											}
 
-											devicesCustom = customDevicesDropdown.lastChild.children
+											const devicesCustom = customDevicesDropdown.lastChild.children
 
 											// When clicking on a device in the custom devices dropdown, click on the respective device in the original devices dropdown
 
-											for (i=0; i < devicesCustom.length; i++)
+											for (let i=0; i < devicesCustom.length; i++)
 											{
 												devicesCustom[i].removeAttribute("href")
 												devicesCustom[i].onclick = function()
 												{
 													const index = Array.from(this.parentElement.children).indexOf(this)
-													const devices = this.parentElement.parentElement.previousSibling.lastChild.children
+													const devices = this.parentElement.parentElement.previousSibling.lastChild.children  // The list of devices in the original dropdown
 
 													devices[index].click()
+
+													// Update the current device selected
 
 													this.parentElement.querySelector(".active").classList.remove("active")
 													this.classList.add("active")
@@ -140,20 +142,21 @@ if (window.top == window.self)
 
 											// Create the "Other devices" button
 
-											otherDevices = document.createElement("button")
-											otherDevices.className = "dropdown-item"
-											otherDevices.style = "border-top: 1px solid lightgray;"  // Separator
-											otherDevices.innerHTML = "Other devices"
-											otherDevices.onclick = function()
+											const otherDevicesBtn = document.createElement("button")
+											otherDevicesBtn.className = "dropdown-item"
+											otherDevicesBtn.id = "otherDevicesBtn"
+											otherDevicesBtn.style = "border-top: 1px solid lightgray;"  // Separator
+											otherDevicesBtn.innerHTML = "Other devices"
+											otherDevicesBtn.onclick = function()
 											{
-												devicesDropdown.lastChild.firstChild.click()   // All devices. Use the full log to filter the devices
+												devicesDropdown.lastChild.firstChild.click()   // Click the "All devices" button. Use the full log to filter the devices
 												customDevicesDropdown.firstChild.innerHTML = "Other devices"
 												this.parentElement.querySelector(".active").classList.remove("active")
 												this.classList.add("active")
 												hideDevices = true
 											}
 
-											customDevicesDropdown.lastChild.appendChild(otherDevices)
+											customDevicesDropdown.lastChild.appendChild(otherDevicesBtn)
 
 										}
 
@@ -164,11 +167,12 @@ if (window.top == window.self)
 
 								// Setup the filtering's buttons and inputs
 
-								if (typeof filtersButton == "undefined" && typeof domainsToHideInput == "undefined")
+								if (document.getElementById("filtersButton") == null)
 								{
-									// Create "Filters" button
+									// Create the "Filters" button
 
-									filtersButton = document.createElement("button")
+									const filtersButton = document.createElement("button")
+									filtersButton.id = "filtersButton"
 									filtersButton.className = "btn btn-secondary"
 									filtersButton.style = "position: absolute; right: 15px; bottom: 7px;"
 									filtersButton.innerHTML = "Filters"
@@ -194,29 +198,31 @@ if (window.top == window.self)
 
 									// Create the "Enable filtering" switch
 
-									enableFilteringSwitch = createSwitchCheckbox("Enable filtering")
+									const enableFilteringSwitch = createSwitchCheckbox("Enable filtering")
 									enableFilteringSwitch.style.cssText += "position: absolute; right: -140px; top: -15px; visibility: hidden;"
 									enableFilteringSwitch.firstChild.checked = true
 									enableFilteringSwitch.onchange = function()
 									{
 										filtering = enableFilteringSwitch.firstChild.checked
 
-										if (typeof customDevicesDropdown != "undefined")
+										const customDevicesDropdown = document.getElementById("customDevicesDropdown")
+										if (customDevicesDropdown != null)
 										{
 											const currentDevice = customDevicesDropdown.querySelector(".active")
 											currentDevice.click()
-											currentDevice.parentElement.classList.remove("show")  // Prevent the list from appearing because of the click()
+											currentDevice.parentElement.classList.remove("show")  // The list automatically appears because of the click(), this hides it back
 										}
 									}
 
 
 									// Create the filter's inputbox
 
-									domainsToHideInput = document.createElement("textarea")
+									const domainsToHideInput = document.createElement("textarea")
+									domainsToHideInput.id = "domainsToHideInput"
 									domainsToHideInput.spellcheck = false
 									domainsToHideInput.value = domainsToHide.join("\n")
-									domainsToHideInput.style = "position: absolute; left: 1140px; top: 15px; width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; border: 1px groove lightgray; \
-																outline: 0px; padding-left: 10px; padding-right: 5px; padding-top: 5px; visibility: hidden; resize: both; overflow-wrap: normal;"
+									domainsToHideInput.style = "position: absolute; left: 1140px; top: 15px; width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; resize: both; \
+																border: 1px groove lightgray; outline: 0px; padding-left: 10px; padding-right: 5px; padding-top: 5px; visibility: hidden; overflow-wrap: normal;"
 
 									const container = document.getElementById("root").children[1].firstChild.firstChild
 									container.style.cssText += "position: relative;"
@@ -228,7 +234,7 @@ if (window.top == window.self)
 									function updateFilters()
 									{
 										GM.setValue("domainsToHide", domainsToHideInput.value)
-										domainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "") // Don't include empty lines
+										domainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "") // Store each entry in an array, but don't include empty lines
 
 										if (selector.includes(":not(.processed)"))
 											selector = selector.replace(":not(.processed)", "") // Reinclude already processed queries so that it can refilter in realtime
@@ -272,22 +278,31 @@ if (window.top == window.self)
 										{
 											allowDenyPopup.errorMsg.innerHTML = "Submitting..."
 
-											makeAPIrequest(allowDenyPopup.listName + "/hex:" + convertToHex(allowDenyPopup.input.value), "PUT", `(function()
+											// In NextDNS site, domains, TLDs, blocklists, and pretty much anything added by clicking an "Add" button, are added by sending these items' name with
+											// each character converted to hexadecimal, instead of plain text (ASCII). This converts the specified domain to hex then sends it to the respective list.
+											const requestString = allowDenyPopup.listName + "/hex:" + convertToHex(allowDenyPopup.input.value)
+
+											makeApiRequestAndAddEvent("PUT", requestString, function(e)  // Make an asynchronous HTTP request and run this callback when finished
 											{
-												if (e.data.response.includes(allowDenyPopup.input.value))
-												{
+												if (e.detail.includes(allowDenyPopup.input.value))  // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
+												{													// This checks if it was successful.
 													allowDenyPopup.errorMsg.innerHTML = 'Done!'
 
+													// Auto dismiss the popup after 1 second
 													setTimeout(function() {
 														allowDenyPopup.container.style.cssText += 'visibility: hidden;'
 														allowDenyPopup.errorMsg.innerHTML = ''
 													}, 1000)
 
-													makeAPIrequest(allowDenyPopup.listName, "GET", "allowDenyPopup.domainsList[allowDenyPopup.listName] = e.data.response")
+													// Update the cached list of domains from the allow/denylist
+													makeApiRequestAndAddEvent("GET", allowDenyPopup.listName, function(e) {
+														allowDenyPopup.domainsList[allowDenyPopup.listName] = e.detail
+													})
 												}
-												else if (e.data.response.includes("error"))
+												else if (e.detail.includes("error"))  // If it wasn't successful, get the error from the response and show the respective message above the popup's input box
 												{
-													let error = JSON.parse(e.data.response).error
+													let error = JSON.parse(e.detail).error
+
 													if (error.includes("exist"))
 														error = "This domain has already been added"
 													else if (error.includes("invalid"))
@@ -297,11 +312,13 @@ if (window.top == window.self)
 													allowDenyPopup.errorMsg.classList.add("invalid-feedback")
 													allowDenyPopup.input.classList.add("is-invalid")
 												}
-											})()`)
+
+											})
+
 										}
 										else
 										{
-											domainsToHideInput.value += "\n" + allowDenyPopup.input.value
+											document.getElementById("domainsToHideInput").value += "\n" + allowDenyPopup.input.value
 											updateFilters()
 											allowDenyPopup.errorMsg.innerHTML = 'Done!'
 
@@ -332,7 +349,7 @@ if (window.top == window.self)
 									const logsContainer = document.getElementsByClassName("list-group")[0].parentElement
 									logsContainer.appendChild(elementsContainer)
 
-
+									// Add all these elements in an object for easy access
 									allowDenyPopup = {
 										parent: logsContainer,
 										container: elementsContainer,
@@ -348,10 +365,13 @@ if (window.top == window.self)
 									}
 
 
-									// Get the list of domains in the allowlist, then get the list of domains in the denylist
-									makeAPIrequest("allowlist", "GET", 'allowDenyPopup.domainsList.allowlist = e.data.response; \
-																		makeAPIrequest("denylist", "GET", "allowDenyPopup.domainsList.denylist = e.data.response")'
-									)
+									// Cache the list of domains in the allowlist, then cache the list of domains in the denylist
+
+									makeApiRequestAndAddEvent("GET", "allowlist", function(e)
+									{
+										allowDenyPopup.domainsList.allowlist = e.detail;
+										makeApiRequestAndAddEvent("GET", "denylist", function(e) { allowDenyPopup.domainsList.denylist = e.detail })
+									})
 
 								}
 
@@ -364,8 +384,13 @@ if (window.top == window.self)
 									{
 										allowDenyPopup.container.style.cssText += 'visibility: hidden;'
 
-										if (typeof customDevicesDropdown != "undefined" && event.target != customDevicesDropdown.firstChild)
+										const customDevicesDropdown = document.getElementById("customDevicesDropdown")
+
+										if (customDevicesDropdown != null && event.target != customDevicesDropdown.firstChild)
 											customDevicesDropdown.lastChild.classList.remove("show")
+
+										const filtersButton = document.getElementById("filtersButton")
+										const domainsToHideInput = filtersButton.nextSibling
 
 										if (!filtersButton.className.includes("secondary"))
 										{
@@ -393,7 +418,7 @@ if (window.top == window.self)
 										|| (hideDevices && deviceName != "")   // If enabled, named devices. Queries from unnamed devices just have a whitespace
 										|| (filtering && domainsToHide.some(d => currentDomain.includes(d))) )   // If enabled, domains included in the list of domains to hide
 									{
-										listItem.style = "display:none"
+										listItem.style = "display: none !important"
 										listItem.className = ""
 										queries[i].className = "processed"
 										continue
@@ -442,17 +467,15 @@ if (window.top == window.self)
 
 								if (window.innerWidth == document.body.clientWidth && (document.body.clientHeight / window.innerHeight * 100) < 90)  // If there is no vertical scrollbar and the page's height takes less than 90% of the window height,
 								{																													 // then surely the body height is insufficient to trigger the infinite scroll
-									const dummyTallEll = document.createElement("div") // Create a temporary element to fill the empty space
-									dummyTallEll.style.cssText = "height: " + (window.innerHeight - 300) + "px;"	// A static value is insufficient for big resolutions. This makes it relative to the window size
-									document.getElementById("root").children[1].firstChild.getElementsByClassName("list-group")[0].appendChild(dummyTallEll)
-									scrollTo(0, document.body.clientHeight)
-									dummyTallEll.remove()
+									document.body.style.marginBottom = (window.innerHeight + 100) + "px"	// A static value is insufficient for big resolutions. This makes it relative to the window size
+									scrollTo(0, document.body.scrollHeight)
+									document.body.style.marginBottom = "0px"
 								}
 								else if (visibleQueries < 7 && document.body.getBoundingClientRect().bottom < window.innerHeight + 200)
 								{
 									// If all or almost all of the chunk's queries are hidden, automatically scroll up and down to trigger the loading of the next chunk
-									scrollTo(0, document.body.clientHeight - window.innerHeight)
-									scrollTo(0, document.body.clientHeight)
+									scrollTo(0, document.body.scrollHeight - window.innerHeight)
+									scrollTo(0, document.body.scrollHeight)
 								}
 
 
@@ -465,12 +488,12 @@ if (window.top == window.self)
 								{
 									const relativeQueries = document.getElementsByClassName("visible")
 
-									for (i=0; i < relativeQueries.length; i++)
+									for (let i=0; i < relativeQueries.length; i++)
 									{
 										const time = relativeQueries[i].querySelector("time")
 
 										if (/ago|in/.test(time.textContent) && !time.textContent.includes(":"))
-											time.innerHTML = time.innerText + "&nbsp; (" + new Date(+time.attributes["datetime"].value).toLocaleTimeString() + ")"
+											time.innerHTML = time.innerText + "&nbsp; (" + new Date(+time.attributes["datetime"].value).toLocaleTimeString() + ")"  // The queries' date-time is in Unix time. This converts it to normal date format
 										else if (time.textContent.includes("202"))
 											break	 // Stop when there's no more queries with relative time
 									}
@@ -507,12 +530,14 @@ if (window.top == window.self)
 							{
 								allowDenyPopup.listName = this.innerText.toLowerCase() + "list"
 
-								while (upperDomain.indexOf(".") >= 0)
-								{
-									upperDomain = upperDomain.substring(upperDomain.indexOf(".") + 1)
+								// Check if there's already an upper domain entry that includes the chosen subdomain
 
-									if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))
-									{
+								while (upperDomain.indexOf(".") >= 0)  // As long as there's a dot...
+								{
+									upperDomain = upperDomain.substring(upperDomain.indexOf(".") + 1)  // ... get the domain after the next dot.
+
+									if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))  // If there's an entry which is this upper domain, set a message
+									{																							// to warn the user. Otherwise, check the next upper domain.
 										allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry!"
 										allowDenyPopup.input.classList.add("is-invalid")
 										allowDenyPopup.errorMsg.classList.add("invalid-feedback")
@@ -534,6 +559,8 @@ if (window.top == window.self)
 							allowDenyPopup.rootDomainButton.title = this.innerText + " any subdomain under *." + rootDomain
 
 
+							// Set the button's label and color according to the action
+
 							allowDenyPopup.fullDomainButton.className =
 							allowDenyPopup.rootDomainButton.className = this.innerText == "Allow" ? "btn btn-success mt-1" : this.innerText == "Deny" ? "btn btn-danger mt-1" : "btn btn-secondary mt-1"
 
@@ -550,13 +577,13 @@ if (window.top == window.self)
 
 
 
-				// ---------------------- Privacy page -------------------------
+				// --------------------------- Privacy page ---------------------------
 
 
 				}
 				else if (/privacy$/.test(location.href))
 				{
-					waitForLists = setInterval(function()
+					const waitForLists = setInterval(function()
 					{
 						if (document.querySelector(".list-group-item") != null)
 						{
@@ -570,7 +597,7 @@ if (window.top == window.self)
 
 							document.querySelector(".card-footer button").onclick = function()
 							{
-								waitForListsModal = setInterval(function()
+								const waitForListsModal = setInterval(function()
 								{
 									if (document.querySelector(".modal-body .list-group-item") != null)
 									{
@@ -590,13 +617,13 @@ if (window.top == window.self)
 
 
 
-				// ---------------------- Security page -------------------------
+				// --------------------------- Security page ---------------------------
 
 
 				}
 				else if (/security$/.test(location.href))
 				{
-					waitForLists = setInterval(function()
+					const waitForLists = setInterval(function()
 					{
 						if (document.querySelector(".list-group-item") != null)
 						{
@@ -610,7 +637,7 @@ if (window.top == window.self)
 
 							document.querySelector(".card-footer button").onclick = function()
 							{
-								waitForListsModal = setInterval(function()
+								const waitForListsModal = setInterval(function()
 								{
 									if (document.querySelector(".modal-body .list-group-item") != null)
 									{
@@ -622,81 +649,75 @@ if (window.top == window.self)
 										addAll.innerHTML = "Add all TLDs"
 										addAll.onclick = function()
 										{
-											if (confirm("This will add all TLDs to the block list. Are you sure?"))
+											const modal = document.getElementsByClassName("modal-body")[0]
+											const numTLDsToBeAdded = modal.getElementsByClassName("btn-primary").length
+
+											if (numTLDsToBeAdded > 0)
 											{
-												// Create the "please wait" modal
-												
-												const hourGlass = document.createElement("span")
-												hourGlass.style = "font-size: 40px; margin-top: -6px; margin-right: 20px;"
-												hourGlass.innerText = "⏳"
-												
-												const message = document.createElement("div")
-												message.innerText = "Adding all TLDs, this will take some seconds, please wait...\n The page will be reloaded when finished."
-												
-												const elementsContainer = document.createElement("div")
-												elementsContainer.style = "background: white; z-index: 9999; position: absolute; left: 33.3vw; padding: 20px; border-radius: 10px; display: flex; font-size: large; user-select: none;"
-												elementsContainer.style.cssText += "top:" + ((document.body.getBoundingClientRect().y * -1) + window.innerHeight / 3) + "px;"  // Put the modal at a little above the center of the screen
-												elementsContainer.appendChild(hourGlass)
-												elementsContainer.appendChild(message)
-												
-												document.body.appendChild(elementsContainer)
-												
-												document.getElementsByClassName("modal-backdrop")[0].style.cssText += "z-index: 2000;"  // Make the "Add a TLD" modal be under the backdrop
-												
-												
-												// Process the TLDs
-												
-												buttons = document.getElementsByClassName("modal-body")[0].getElementsByClassName("btn")  // Here a getElementsByClassName is required instead of a querySelectorAll, as the former returns a list of references, while the latter returns a list of static copies that are applied to the original when set
-												numTLDsToBeAdded = document.getElementsByClassName("modal-body")[0].getElementsByClassName("btn-primary").length
-												TLDsAdded = 0
-												buttonsClicked = []
-
-												for (i=0; i < buttons.length; i++)
+												if (confirm("This will add all TLDs to the block list. Are you sure?"))
 												{
-													const TLD = buttons[i].parentElement.previousSibling.textContent.replace(".","")
+													createPleaseWaitModal("Adding all TLDs")
 
-													if (buttons[i].classList.contains("btn-primary"))
+
+													// Process the TLDs
+
+													const buttons = modal.getElementsByClassName("btn")  // Here a getElementsByClassName is required instead of a querySelectorAll, as the former returns a list of references, while the latter returns a list of static copies that are applied to the original when set
+													const buttonsClicked = []
+													let numTLDsAdded = 0
+
+													const checkIfFinished = function()
 													{
-														if (!/[^\w]/.test(TLD))  // If there isn't a character in the TLD which is not a-z, then make the request normally.
+														if (numTLDsAdded == numTLDsToBeAdded)
 														{
-															makeAPIrequest("security/blocked_tlds/hex:" + convertToHex(TLD), "PUT", "TLDsAdded++")
-														}
-														else 	// Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn-abcde),
-														{		// instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
-															setTimeout(function(i)
+															setInterval(function()
 															{
-																buttons[i].click();
-																buttonsClicked.push(i)
-																TLDsAdded++
-
-																if (TLDsAdded == numTLDsToBeAdded)
-																{
-																	setInterval(function() 
-																	{
-																		for (j=0; j < buttonsClicked.length; j++)
-																		{
-																			if (buttons[buttonsClicked[j]].classList.contains("btn-danger"))  // It wouldn't be possible to get an updated classList if querySelectorAll was used
-																				buttonsClicked.splice(j,1)
-																		}
-
-																		if (buttonsClicked.length == 0)
-																			location.reload()
-
-																	}, 500)
+																for (let j=0; j < buttonsClicked.length; j++)
+																{																	  // If the "Add" button changed to the "Remove" button, this means that the TLD was successfully added.
+																	if (buttons[buttonsClicked[j]].classList.contains("btn-danger"))  // It wouldn't be possible to get an updated classList if querySelectorAll was used.
+																		buttonsClicked.splice(j,1)
 																}
 
-															}, 500, i)
+																if (buttonsClicked.length == 0)
+																	location.reload()
+
+															}, 500)
+														}
+													}
+
+													for (let i=0; i < buttons.length; i++)
+													{
+														const TLD = buttons[i].parentElement.previousSibling.textContent.replace(".","")
+
+														if (buttons[i].classList.contains("btn-primary"))
+														{
+															if (!/[^\w]/.test(TLD))  // If there isn't a character in the TLD which is not a-z, then make the request normally.
+															{
+																makeApiRequestAndAddEvent("PUT", "security/blocked_tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
+															}
+															else 	// Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
+															{		// instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
+																setTimeout(function(i)
+																{
+																	buttons[i].click();
+																	buttonsClicked.push(i)  // Store in an array the index of all buttons that were clicked, then check whether they finished adding
+																	numTLDsAdded++
+
+																	checkIfFinished()
+
+																}, 500, i)
+															}
 														}
 													}
 												}
 											}
+											else alert("All TLDs are already added.")
 										}
-										
+
 
 										const header = document.querySelector(".modal-header")
 										header.style = "position: relative;"
 										header.appendChild(addAll)
-										
+
 									}
 								}, 500)
 							}
@@ -713,7 +734,7 @@ if (window.top == window.self)
 				}
 				else if (/allowlist$|denylist$/.test(location.href))
 				{
-					waitForLists = setInterval(function()
+					const waitForLists = setInterval(function()
 					{
 						if (document.querySelector(".list-group-item") != null)
 						{
@@ -788,12 +809,12 @@ if (window.top == window.self)
 
 							const domainsItems = document.querySelectorAll(".list-group-item")
 
-							for (i=1; i < domainsItems.length; i++)
+							for (let i=1; i < domainsItems.length; i++)
 							{
 								const descriptionInput = document.createElement("input")
 								descriptionInput.className = "description"
 								descriptionInput.placeholder = "Add a description. Press Enter to submit"
-								descriptionInput.style = "margin-left: 40px; border: 0; background: transparent; color: gray;"
+								descriptionInput.style = "margin-left: 30px; border: 0; background: transparent; color: gray;"
 								descriptionInput.onkeypress = function(event)
 								{
 									if (event.key == "Enter")
@@ -830,6 +851,186 @@ if (window.top == window.self)
 
 					intervals.push(waitForLists)
 
+
+
+				// --------------------------- Settings page ---------------------------
+
+
+				}
+				else if (/settings$/.test(location.href))
+				{
+					const waitForContent = setInterval(function()
+					{
+						if (document.querySelector(".card-body") != null)
+						{
+							clearInterval(waitForContent)
+
+							const exportButton = document.createElement("button")
+							exportButton.className = "btn btn-primary"
+							exportButton.style = "position: absolute; right: 210px; top: 20px;"
+							exportButton.innerHTML = "Export this config"
+							exportButton.onclick = function()
+							{
+								const config = {}
+								const pages = ["security", "privacy", "parentalcontrol", "denylist", "allowlist", "settings"]
+								let numPagesExported = 0
+
+								createSpinner(this) // Add a spinning circle beside the button to indicate that something is happening
+
+
+								for (let i=0; i < pages.length; i++)
+								{
+									makeApiRequestAndAddEvent("GET", pages[i], function(e)  // Get the settings from each page
+									{
+										config[pages[i]] = JSON.parse(e.detail)
+										numPagesExported++
+
+										if (numPagesExported == pages.length)
+										{
+											// Export only the relevant data from these settings
+
+											config.privacy.blocklists = config.privacy.blocklists.map(b => b.id)
+											config.settings.rewrites = config.settings.rewrites.map((r) => {return {name: r.name, answer: r.answer}})
+											config.parentalcontrol.services = config.parentalcontrol.services.map((s) => {return {id: s.id, active: s.active}})
+
+											// Create the file
+
+											const blob = URL.createObjectURL(new Blob([JSON.stringify(config)], {type: "text/plain"}))
+											const a = document.createElement("a")
+											a.href = blob
+											a.download = location.href.split("/")[3] + "-Export.json"
+											document.body.appendChild(a)
+											a.click()
+
+											exportButton.lastChild.remove() // Remove the spinner when done
+										}
+									})
+								}
+
+							}
+
+							const importButton = document.createElement("button")
+							importButton.className = "btn btn-primary"
+							importButton.style = "position: absolute; right: 40px; top: 20px;"
+							importButton.innerHTML = "Import a config"
+							importButton.onclick = function() { this.nextSibling.click() } // Click the file input button
+
+							const fileInput = document.createElement("input")
+							fileInput.type = "file"
+							fileInput.style = "display: none;"
+							fileInput.onchange = function()
+							{
+								const file = new FileReader()
+								file.onload = function()
+								{
+									const config = JSON.parse(this.result);
+									delete config.settings.name  // Don't import the config name
+
+									const numItemsImported = {
+										allowlist: 0,
+										denylist: 0,
+										blocked_tlds: 0,
+										blocklists: 0,
+										"parentalcontrol/services": 0,
+										"parentalcontrol/categories": 0
+									}
+
+									const importAllAndSwitchDisabledItems = function(listName, idPropName)
+									{
+										let listObj = config[listName]
+
+										if (listName.includes("/"))
+										{
+											const listSplit = listName.split("/")
+											listObj = config[listSplit[0]]
+											if (listSplit.length == 2)
+												listObj = listObj[listSplit[1]]
+										}
+
+										for (let i=0; i < listObj.length; i++)
+										{
+											const item = listObj[i]
+											const hexedId = convertToHex(item[idPropName])
+
+											makeApiRequestAndAddEvent("PUT", listName + "/hex:" + hexedId, function(e)
+											{
+												numItemsImported[listName]++
+												if (numItemsImported[listName] == listObj.length)
+												{
+													const disabledItems = listObj.filter(d => !d.active).map(d => convertToHex(d[idPropName]))  // Store in an array the hex of each disabled item id
+
+													for (let i=0; i < disabledItems.length; i++)
+														makeApiRequest("PATCH", listName+"/hex:" + disabledItems[i], {"active":false})
+												}
+											})
+										}
+									}
+
+
+									// Import Security page
+
+									makeApiRequest("PATCH", "security", config.security)
+
+									for (let i=0; i < config.security.blocked_tlds.length; i++)  // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added individually
+										makeApiRequestAndAddEvent("PUT", "security/blocked_tlds/hex:" + convertToHex(config.security.blocked_tlds[i]), ()=> numItemsImported.blocked_tlds++)
+
+									// Import Privacy page
+
+									makeApiRequest("PATCH", "privacy", config.privacy)
+
+									for (let i=0; i < config.privacy.blocklists.length; i++)
+										makeApiRequestAndAddEvent("PUT", "privacy/blocklists/hex:" + convertToHex(config.privacy.blocklists[i]), ()=> numItemsImported.blocklists++)
+
+									for (let i=0; i < config.privacy.natives.length; i++)
+										makeApiRequest("PUT", "privacy/natives/hex:" + convertToHex(config.privacy.natives[i].id))
+
+									// Import Parental Control page
+
+									makeApiRequest("PATCH", "parentalcontrol", config.parentalcontrol)
+
+									importAllAndSwitchDisabledItems("parentalcontrol/services", "id")
+									importAllAndSwitchDisabledItems("parentalcontrol/categories", "id")
+
+									// Import Allow/Denylists
+
+									importAllAndSwitchDisabledItems("denylist", "domain")
+									importAllAndSwitchDisabledItems("allowlist", "domain")
+
+									// Import Settings page
+
+									makeApiRequest("PATCH", "settings", config.settings)
+
+									for (let i=0; i < config.settings.rewrites.length; i++)
+										makeApiRequest("POST", "settings/rewrites", config.settings.rewrites[i])
+
+									setInterval(function()
+									{
+										if (config.security.blocked_tlds.length == numItemsImported.blocked_tlds
+										   && config.privacy.blocklists.length == numItemsImported.blocklists
+										   && config.denylist.length == numItemsImported.denylist
+										   && config.allowlist.length == numItemsImported.allowlist)
+										{
+											setTimeout(()=> location.reload(), 1000)
+										}
+									}, 1000)
+
+								}
+
+								file.readAsText(this.files[0])
+
+								createPleaseWaitModal("Importing settings")
+							}
+
+							const container = document.querySelector(".card-body")
+							container.appendChild(exportButton)
+							container.appendChild(importButton)
+							container.appendChild(fileInput)
+
+						}
+
+					}, 500)
+
+					intervals.push(waitForContent)
 				}
 
 			}
@@ -841,10 +1042,9 @@ if (window.top == window.self)
 
 
 
-
 	function getGMsettings()
 	{
-		GMsettings = new Object()
+		GMsettings = {}
 		ind = 0
 		settings = ["domainDescriptions", "AllowDenyOptions"]
 
@@ -881,7 +1081,7 @@ if (window.top == window.self)
 			ind++
 
 			if (ind < settings.length)
-				getOrCreateGMsetting(settings[ind])	 // This is to make sure that all settings are loaded before the interval starts
+				getOrCreateGMsetting(settings[ind])	 // This is to make sure that all settings are loaded before the main function starts
 			else
 				main()
 
@@ -889,7 +1089,7 @@ if (window.top == window.self)
 	}
 
 
-	SLDs = ["co","com","org","edu","gov","mil","net"]
+	const SLDs = ["co","com","org","edu","gov","mil","net"]
 
 	function styleDomains(type, enable)
 	{
@@ -897,7 +1097,7 @@ if (window.top == window.self)
 		{
 			const items = document.querySelectorAll(".list-group-item span[class='notranslate']")
 
-			for (i=0; i < items.length; i++)
+			for (let i=0; i < items.length; i++)
 			{
 				const rootSpan = items[i].querySelector("span + span")
 
@@ -940,7 +1140,7 @@ if (window.top == window.self)
 		else if (type == "rightAlign")
 		{
 			const domainContainers = document.querySelectorAll(".list-group-item > div > div:nth-child(1)")
-			for (i=0; i < domainContainers.length; i++)
+			for (let i=0; i < domainContainers.length; i++)
 			{
 				const favicon = domainContainers[i].firstChild.querySelector("img")
 				favicon.className = enable ? "ml-2" : "mr-2"
@@ -972,6 +1172,43 @@ if (window.top == window.self)
 		container.appendChild(label)
 
 		return container
+	}
+
+
+	function createPleaseWaitModal(whatIsDoing)
+	{
+		const hourGlass = document.createElement("span")
+		hourGlass.style = "font-size: 40px; margin-top: -6px; margin-right: 20px;"
+		hourGlass.innerText = "⏳"
+
+		const message = document.createElement("div")
+		message.innerText = whatIsDoing + ". This will take some seconds, please wait...\n The page will be reloaded when finished."
+
+		const elementsContainer = document.createElement("div")
+		elementsContainer.style = "background: white; z-index: 9999; position: absolute; left: 33.3vw; padding: 20px; border-radius: 10px; display: flex; font-size: large; user-select: none;"
+		elementsContainer.style.top = ((document.body.getBoundingClientRect().y * -1) + window.innerHeight / 2.5) + "px"  // Put the modal at a little above the center of the screen
+		elementsContainer.appendChild(hourGlass)
+		elementsContainer.appendChild(message)
+
+		document.body.appendChild(elementsContainer)
+
+		const backdrop = document.createElement("div")
+		backdrop.style = "background: black; position: absolute; top: 0px; left: 0px; z-index: 9998; opacity: 0.5; width: 100%;"
+		backdrop.style.height = document.body.scrollHeight + "px"
+
+		document.body.appendChild(backdrop)
+
+		const origBackdrop = document.getElementsByClassName("modal-backdrop")[0]
+		if (origBackdrop != null) origBackdrop.remove()
+	}
+
+
+	function createSpinner(container)
+	{
+		const spinner = document.createElement("span")
+		spinner.className = "ml-2 spinner-border spinner-border-sm"
+		spinner.style = "vertical-align: middle;"
+		container.appendChild(spinner)
 	}
 
 
@@ -1048,15 +1285,10 @@ if (window.top == window.self)
 	}
 
 
-	function destroyIntervalsAndObjects()
+	function clearAllIntervals()
 	{
-		for (i=0; i < intervals.length; i++)
+		for (let i=0; i < intervals.length; i++)
 			clearInterval(intervals[i])
-
-		otherDevices  = undefined   // Force destroy when the page is changed
-		filtersButton = undefined
-		domainsToHideInput = undefined
-		allowDenyPopup = undefined
 
 		hideDevices = false
 	}
@@ -1098,16 +1330,26 @@ if (window.top == window.self)
 	}
 
 
-
-	function makeAPIrequest(requestString, HTTPmethod, callback = "")
+	function makeApiRequestAndAddEvent(HTTPmethod, requestString, callback, requestBody = null)
 	{
-		// The callback is code as string which is handed over the chain: top window's makeAPIrequest > frame's message listener > frame's makeRequest function > top window's message listener > callback.
-		// Because the HTTP request is made asynchronously, this ensures that the callback is executed only after this whole chain is completed.
-		// None of this is needed with a synchronous request, but when the connection gets slow, it freezes the browser until it's completed.
+		const eventName = Date.now() * Math.random()  // There's no need to specify a human-readable event name, but it needs to be unique
+		addEventListener(eventName, callback, {once: true, capture: true})  // A one-time event listener that runs the request callback as soon as possible, then removes itself
+		makeApiRequest(HTTPmethod, requestString, requestBody, eventName)
+	}
+
+
+	function makeApiRequest(HTTPmethod, requestString, requestBody = null, callbackEventName = "", contentType = "")
+	{
+		// The callbackEventName is a string representing the name of the event listener that should be fired when the request is finished, which is handed
+		// over the chain: top window's makeApiRequest > frame's message listener > frame's makeRequest function > top window's message listener > dispatchEvent > callback.
+		// Because the HTTP request is made asynchronously and requires to be handed to the frame, this ensures that the callback is executed only after this whole chain is completed.
+		// None of this is needed with a synchronous request, but when the connection gets slow, it freezes the browser tab until it's completed.
 
 		const requestURL = ApiFrame.data + location.href.split("/")[3] + "/" + requestString  // Update the URL for each request. This ensures that the request will be made to the correct config
-		
-		window.frames[0].postMessage({request: requestURL, method: HTTPmethod, callback: callback}, "https://api.nextdns.io")
+
+		if (HTTPmethod == "PATCH" || HTTPmethod == "POST")  requestBody = JSON.stringify(requestBody)
+
+		window.frames[0].postMessage({request: requestURL, body: requestBody, type: contentType, method: HTTPmethod, callback: callbackEventName}, "https://api.nextdns.io")
 	}
 
 
@@ -1117,23 +1359,24 @@ if (window.top == window.self)
 else if (location.href.includes("https://api.nextdns.io/"))
 {
 	// This function needs to be in the frame's body, otherwise the request is refused due to CORS.
-	// Script engines have the GM_xmlHttpRequest that allows CORS, but it doesn't include cookies in the request, which are needed to use the API, otherwise the server justs responds "Forbidden"
+	// Script engines have the GM_xmlHttpRequest function that allows CORS, but it doesn't include cookies in the request, which are needed to use the API, otherwise the server justs responds "Forbidden"
 
 	const script = document.createElement("script")
 	script.innerHTML = `
-		function makeRequest(requestURL, HTTPmethod, callback)
+		function makeRequest(requestURL, requestBody, contentType, HTTPmethod, callback)
 		{
-			xmlHttp = new XMLHttpRequest()
+			const xmlHttp = new XMLHttpRequest()
 			xmlHttp.open(HTTPmethod, requestURL)
+			xmlHttp.setRequestHeader("Content-Type", "application/json;charset=utf-8")
 			xmlHttp.onload = function() { window.top.postMessage({response: xmlHttp.response, callback: callback}, "https://my.nextdns.io") }
 			xmlHttp.onerror = function() { alert("Couldn't reach the server!") }
-			xmlHttp.send()
+			xmlHttp.send(requestBody)
 		}
 	`
 	document.head.appendChild(script)
 
 	window.addEventListener("message", function (e) {
-		unsafeWindow.makeRequest(e.data.request, e.data.method, e.data.callback)
+		unsafeWindow.makeRequest(e.data.request, e.data.body, e.data.type, e.data.method, e.data.callback)
 	}, false)
 
 
