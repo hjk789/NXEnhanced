@@ -75,7 +75,7 @@ This project takes a lot of time and effort developing, analyzing, testing, fixi
 
 ## Disclaimers
 
-I have no association with NextDNS Inc., I'm just a user of their service. NX Enhancer is a completely voluntary work. There are no warranties.
+I have no association with NextDNS Inc., I'm just a user of their service. NX Enhancer is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
 
 ## License
 
