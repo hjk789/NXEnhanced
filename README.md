@@ -7,7 +7,8 @@ A userscript that adds "quality-of-life" features to NextDNS website to make the
 
 - Allow/Deny buttons in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
 ![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)    
-You can either add the respective domain or the whole root domain, or even edit the domain if you want.  [Read more](https://github.com/hjk789/NXEnhancer/wiki#an-allowdeny-button-for-each-log-entry)
+You can either add the respective domain or the whole root domain, or even edit the domain if you want.   
+[Read more](https://github.com/hjk789/NXEnhancer/wiki#an-allowdeny-button-for-each-log-entry)
 
 - Hide those Chrome based browsers' randomly generated domains queries (like `vkpwqcakgflqeq`, `lfujniwzrouh`, etc.)
 
