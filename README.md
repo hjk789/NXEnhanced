@@ -5,63 +5,67 @@ A userscript that adds "quality-of-life" features to NextDNS website to make the
 
 ### Logs page:
 
-- An Allow/Deny button in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
+- Allow/Deny buttons in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
 ![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)    
-When clicked, it pops a small dialog with the domain respective to the button clicked, allowing you to edit the domain name if you want, and when finished, just press Enter or click on the "Allow/Deny domain".   
-If you want to allow/deny a whole root domain, you just need to click on the "Allow/Deny root". In case you are unsure what is the root domain, just hover over the "Allow/Deny root" button and it will tell you in a tooltip what is the root domain.
+You can either add the respective domain or the whole root domain, or even edit the domain if you want.  [Read more](https://github.com/hjk789/NXEnhancer/wiki#an-allowdeny-button-for-each-log-entry)
 
 - Hide those Chrome based browsers' randomly generated domains queries (like `vkpwqcakgflqeq`, `lfujniwzrouh`, etc.)
 
-- Option to show only queries from unnamed devices.   
+- Option to show only queries from unnamed devices   
 ![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
 
-- Ability to specify domains that should be hidden from the logs. 
+- Ability to specify domains that should be hidden from the logs 
 ![New domain filtering for the logs](https://i.imgur.com/cdbwwaJ.png)        
-You can either manually type (or paste) domains, or click on the new "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks. Clicking on it opens the same popup used by the "Allow/Deny" buttons, enabling you to edit the domain first if you want, or hiding the whole root domain. If you click on the "Filters" button, you can view and edit the current list of domains set to be hidden. All domains that include any one of these domains are hidden. By default, it hides **\*.nextdns.io** and **\*.arpa** queries, but can be changed as you like. You can also temporarily disable the filtering, by switching off the "Enable filtering" switch. (Note: the specified domains are hidden only from you, it doesn't remove from the server.)
+You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhancer/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
 
-- Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago").   
+- Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
 ![Absolute time](https://i.imgur.com/KMtc55K.png)    
 
 ### Privacy page:
 
-- Hide the list of blocklists enabled and adds a button to unhide them if needed. This is good for people with a long list of blocklists added.   
+- Hide the list of blocklists enabled and adds a button to unhide them if needed    
 ![Hidden lists](https://i.imgur.com/8b70mXH.png)    
+This is good for people with a long list of blocklists added.
 
-- Sort alphabetically the list of blocklists in the "Add a blocklist" screen.
+- Sort alphabetically the list of blocklists in the "Add a blocklist" screen
 
 ### Security page:
 
 - Hide the list of added TLDs. It behaves the exact same way as the one in the Privacy page.
 
-- A button that allows you to add every TLD in the "Add a TLD" screen in one click.   
+- A button that allows you to add every TLD in the "Add a TLD" screen in one click. [Read more](https://github.com/hjk789/NXEnhancer/wiki#a-button-that-allows-you-to-add-every-tld-in-the-add-a-tld-screen-in-one-click)   
 ![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)     
-This will take around 30 seconds to finish, but it can take much less, depending on your connection's latency. During the process, a modal dialog will popup with instructions:    
-![Please wait modal](https://i.imgur.com/ugkRMZs.png)
 
 ### Allowlist/Denylist pages:
 
-- Ability to add a description to each domain in the deny/allow lists.   
+- Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhancer/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
 ![Description input](https://i.imgur.com/TqlKWxr.png)    
-Just click on the "Add a description" message, input the description/label you want and press Enter to save it. Having done that, anytime you open the allowlist/Denylist pages, the description will appear beside the respective domain name.
 
-- A button to sort the allow/deny lists alphabetically.   
+- A button to sort the allow/deny lists alphabetically   
 ![Sort A-Z](https://i.imgur.com/KKhgMdd.png)    
 
 - Styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
 ![Stylish domains](https://i.imgur.com/czNmQqB.png)
 ![Styling options](https://i.imgur.com/Iiernta.png)
 
+### Settings page:
+
+- Ability to export/import all settings from/to a config. [Read more](https://github.com/hjk789/NXEnhancer/wiki#ability-to-exportimport-all-settings-fromto-a-config)   
+![Export/import buttons](https://i.imgur.com/2oEl8t2.png)    
+
+
 ## How to use it
 
-To use this userscript, just install in your browser GreaseMonkey (Firefox), TamperMonkey (Chrome and Firefox) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
+To use this userscript, just install in your browser TamperMonkey (Chrome and Firefox), GreaseMonkey (Firefox) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
 
 A window will pop asking if you want to install the script, just confirm it, and it's done! 
 
-If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons feature.
+If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons, Add all TLDs and export/import features.
 
 On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install GreaseMonkey/TamperMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhancer isn't optimized for mobile yet.
 
-**Note:** Although I'm supporting the compatibility with GreaseMonkey, I recommend that you avoid using it if you don't have a reason that forces you to use only GreaseMonkey. GreaseMonkey 4 is pretty buggy, specially with frames, and lacks many features that TamperMonkey has. You can use NX Enhancer in GreaseMonkey, but keep in mind that I don't know how long I'll keep support for it.
+**Note:** Although almost all features should work fine with it, GreaseMonkey is not supported. I recommend that you avoid using it if you don't have a reason that forces you to use only GreaseMonkey. GreaseMonkey 4 is quite buggy, specially with frames, and lacks many features that TamperMonkey has. You can use NX Enhancer in GreaseMonkey, but keep in mind that I won't make big efforts to make NX Enhancer compatible with it.    
+NX Enhancer was tested in Firefox and Chrome, in TamperMonkey and in GreaseMonkey, running perfectly in TamperMonkey, and with a few little bugs in GreaseMonkey. It should work fine in ViolentMonkey and pretty much any browser in which you can install any of these three script-managers, though I didn't tested them.
 
 ## Bug reports and suggestions
 
