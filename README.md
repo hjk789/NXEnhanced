@@ -43,7 +43,7 @@ This is good for people with a long list of blocklists added.
 ![Description input](https://i.imgur.com/TqlKWxr.png)    
 
 - A button to sort the allow/deny lists alphabetically   
-![Sort A-Z](https://i.imgur.com/KKhgMdd.png)    
+![Sort A-Z](https://i.imgur.com/gKWSagQ.png)    
 
 - Styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
 ![Stylish domains](https://i.imgur.com/czNmQqB.png)
