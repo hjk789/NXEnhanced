@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name			NX Enhancer
+// @name			NX Enhanced
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
 // @copyright		2020+, BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
-// @version			2.7
-// @homepage		https://github.com/hjk789/NXEnhancer
-// @license			https://github.com/hjk789/NXEnhancer#license
-// @supportURL		https://github.com/hjk789/NXEnhancer/issues
-// @downloadURL		https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
-// @updateURL		https://greasyfork.org/scripts/408934-nx-enhancer/code/NX%20Enhancer.user.js
+// @version			2.7.1
+// @homepage		https://github.com/hjk789/NXEnhanced
+// @license			https://github.com/hjk789/NXEnhanced#license
+// @supportURL		https://github.com/hjk789/NXEnhanced/issues
+// @downloadURL		https://greasyfork.org/scripts/408934-nx-enhanced/code/NX%20Enhanced.user.js
+// @updateURL		https://greasyfork.org/scripts/408934-nx-enhanced/code/NX%20Enhanced.user.js
 // @grant			GM.setValue
 // @grant			GM.getValue
 // @match			https://my.nextdns.io/*
@@ -24,7 +24,7 @@ if (window.top == window.self)
 	const intervals = []
 
 
-	// Load all NX Enhancer's settings
+	// Load all NX Enhanced's settings
 	getGMsettings()
 
 
