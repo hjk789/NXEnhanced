@@ -20,12 +20,18 @@ You can either add the respective domain or the whole root domain, or even edit 
 You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
-![Absolute time](https://i.imgur.com/KMtc55K.png)    
+![Absolute time](https://i.imgur.com/I3pGNL8.png)    
+
+- A refresh button    
+![refresh button](https://i.imgur.com/yBEo3mV.png)
+
+- An option to show the number of entries currently loaded, either visible or hidden by filters    
+![counters](https://i.imgur.com/jj9Cbp2.png)
 
 ### Privacy page:
 
 - Hide the list of blocklists enabled and adds a button to unhide them if needed    
-![Hidden lists](https://i.imgur.com/8b70mXH.png)    
+![Hidden lists](https://i.imgur.com/JQ4JOdN.png)    
 This is good for people with a long list of blocklists added.
 
 - Sort alphabetically the list of blocklists in the "Add a blocklist" screen
@@ -63,9 +69,9 @@ A window will pop asking if you want to install the script, just confirm it, and
 
 If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons, Add all TLDs and export/import features.
 
-On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install GreaseMonkey/TamperMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhanced isn't optimized for mobile yet.
+On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install TamperMonkey/GreaseMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhanced isn't optimized for mobile yet.
 
-**Note:** Although almost all features should work fine with it, GreaseMonkey is not supported. I recommend that you avoid using it if you don't have a reason that forces you to use only GreaseMonkey. GreaseMonkey 4 is quite buggy, specially with frames, and lacks many features that TamperMonkey has. You can use NX Enhanced in GreaseMonkey, but keep in mind that I won't make big efforts to make NX Enhanced compatible with it.    
+**Note:** Although almost all features should work fine with it, GreaseMonkey is not supported. I recommend that you avoid using it if you don't have a reason that forces you to use only GreaseMonkey. GreaseMonkey 4 is quite buggy and lacks many features that TamperMonkey has. You can use NX Enhanced in GreaseMonkey, but keep in mind that I won't make big efforts to make NX Enhanced compatible with it.    
 NX Enhanced was tested in Firefox and Chrome, in TamperMonkey and in GreaseMonkey, running perfectly in TamperMonkey, and with a few little bugs in GreaseMonkey. It should work fine in ViolentMonkey and pretty much any browser in which you can install any of these three script-managers, though I didn't tested them.
 
 ## Bug reports and suggestions
