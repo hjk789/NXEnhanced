@@ -3,7 +3,7 @@
 // @description		Adds quality-of-life features to NextDNS website for a more practical experience
 // @author			BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
 // @copyright		2020+, BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
-// @version			3.0
+// @version			3.2
 // @homepage		https://github.com/hjk789/NXEnhanced
 // @license			https://github.com/hjk789/NXEnhanced#license
 // @supportURL		https://github.com/hjk789/NXEnhanced/issues
@@ -77,7 +77,7 @@ if (window.top == window.self)
 					let hideDevices = false, filtering = true
 					let loadingChunk = false, cancelLoading = false
 					let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval
-					let visibleEntriesCountEll, hiddenEntriesCountEll
+					let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
 					let lastBefore, currentDeviceId, searchString, blockedQueriesOnly
 					const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
@@ -91,10 +91,18 @@ if (window.top == window.self)
 						// NX Enhanced loads the log entries by itself instead of letting the site load them, because this way NX Enhanced has access to the log entries' raw data instead of having to depend on what the page
 						// actually shows, which can change anytime and require constant adaptations for every layout or code change. Also, this makes it possible to implement other features to the logs that require such access.
 
-						if (frameReady)
-							makeApiRequestAndAddEvent("GET", "logs", function(e) { firstChunkLength = JSON.parse(e.detail).logs.length + 1 })  // Get the number of log entries of the first chunk
+						if (frameReady && !loadingChunk)
+						{
+							loadingChunk = true
+							makeApiRequestAndAddEvent("GET", "logs", function(e) // Get the number of log entries of the first chunk
+							{
+								firstChunkLength = JSON.parse(e.detail).logs.length + 1  // It's "+ 1" because the area that contains the search bar is also a list-group-item, so it always takes the first index.
+								if (firstChunkLength == 1)
+									clearInterval(waitForItems)
+							})
+						}
 
-						// Start setting things up only when all of the original log entries are loaded. It's "+ 1" because the area that contains the search bar is also a list-group-item, so it always takes the first index.
+						// Start setting things up only when all of the original log entries are loaded.
 						if (pageContentContainer && firstChunkLength && pageContentContainer.getElementsByClassName("list-group-item").length == firstChunkLength)
 						{
 							clearInterval(waitForItems)
@@ -172,6 +180,7 @@ if (window.top == window.self)
 													this.parentElement.previousSibling.innerHTML = this.firstChild.innerHTML
 
 													hideDevices = false
+													allHiddenEntriesCountEll.parentElement.style.display = "none"
 												}
 											}
 
@@ -190,6 +199,7 @@ if (window.top == window.self)
 												this.parentElement.querySelector(".active").classList.remove("active")
 												this.classList.add("active")
 												hideDevices = true
+												allHiddenEntriesCountEll.parentElement.style.display = "initial"
 											}
 
 											customDevicesDropdown.lastChild.appendChild(otherDevicesBtn)
@@ -238,7 +248,7 @@ if (window.top == window.self)
 								// Create the filtering options
 
 								const filteringOptionsContainer = document.createElement("div")
-								filteringOptionsContainer.style = "position: absolute; right: 55px; top: 145px; visibility: hidden; display: grid; grid-gap: 10px;"
+								filteringOptionsContainer.style = "position: absolute; right: 60px; top: 145px; visibility: hidden; display: grid; grid-gap: 10px;"
 								filteringOptionsContainer.onclick = function() { event.stopPropagation() }
 
 
@@ -252,7 +262,7 @@ if (window.top == window.self)
 									filtering = this.checked
 
 									if (filtering)
-										filterLogEntries()
+										refilterLogEntries()
 									else
 										reloadLogs()
 								}
@@ -392,7 +402,7 @@ if (window.top == window.self)
 										document.getElementById("domainsToHideInput").value += "\n" + allowDenyPopup.input.value
 										updateFilters()
 										allowDenyPopup.errorMsg.innerHTML = 'Done!'
-										filterLogEntries()
+										refilterLogEntries()
 
 										setTimeout(function() {
 											allowDenyPopup.container.style.cssText += 'visibility: hidden;'
@@ -453,21 +463,25 @@ if (window.top == window.self)
 								{
 									const countingsContainer = document.createElement("div")
 									countingsContainer.id = "counters"
-									countingsContainer.style = "text-align: right; border: solid 2px #aaa; border-radius: 10px; padding: 0px 10px 5px; width: 130px; background: white;"
+									countingsContainer.style = "text-align: right; border: solid 2px #aaa; border-radius: 10px; padding: 0px 10px 5px; width: 150px; background: white;"
 									countingsContainer.style.visibility = GMsettings.LogsOptions.ShowCounters ? "visible" : "hidden"
 									countingsContainer.innerHTML = `
 										<b style="line-height: 35px;">Queries count</b>
-										Listed: <b id="visibleEntriesCount"></b>
-										Hidden: <b id="hiddenEntriesCount"></b>`
+										Listed: <b id="visibleEntriesCount"></b><br>
+										Filtered: <b id="filteredEntriesCount"></b><br>
+										<span style="display: none;">All Hidden: <b id="allHiddenEntriesCount"></b><br></span>
+										Loaded: <b id="loadedEntriesCount"></b>`
 
 									const hoverContainer = document.createElement("div")
-									hoverContainer.style = "position: fixed; bottom: 20px; right: 13%;"
+									hoverContainer.style = "position: fixed; bottom: 20px; right: 12%;"
 									hoverContainer.appendChild(countingsContainer)
 
 									document.body.appendChild(hoverContainer)
 
-									hiddenEntriesCountEll  = document.getElementById("hiddenEntriesCount")
-									visibleEntriesCountEll = document.getElementById("visibleEntriesCount")
+									visibleEntriesCountEll   = document.getElementById("visibleEntriesCount")
+									filteredEntriesCountEll  = document.getElementById("filteredEntriesCount")   // Entries filtered by the domains filters
+									allHiddenEntriesCountEll = document.getElementById("allHiddenEntriesCount")  // Entries from named devices
+									loadedEntriesCountEll    = document.getElementById("loadedEntriesCount")     // All the entries of the loaded chunks
 								}
 							}
 
@@ -575,11 +589,14 @@ if (window.top == window.self)
 
 							// Make the "Blocked queries only" switch use NXE's code
 
-							document.getElementById("blocked-queries-only").outerHTML += ""  // Remove all the original events
-							document.getElementById("blocked-queries-only").onchange = function()
+							if (document.getElementById("blocked-queries-only"))  // Temporary "fix"
 							{
-								blockedQueriesOnly = +this.checked
-								reloadLogs()
+								document.getElementById("blocked-queries-only").outerHTML += ""  // Remove all the original events
+								document.getElementById("blocked-queries-only").onchange = function()
+								{
+									blockedQueriesOnly = +this.checked
+									reloadLogs()
+								}
 							}
 
 
@@ -590,6 +607,8 @@ if (window.top == window.self)
 								existingEntries[i].style = "display: none !important;"
 								existingEntries[i].className = ""
 							}
+
+							pageContentContainer.firstChild.children[2].getByClass("spinner-border").remove()
 
 
 
@@ -679,7 +698,7 @@ if (window.top == window.self)
 								for (let i = existingEntries.length-1; i > 0; i--)
 									existingEntries[i].remove()  // If clear is true, then remove all the loaded custom log entries to load again
 
-								visibleEntriesCountEll.textContent = hiddenEntriesCountEll.textContent = 0
+								visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = allHiddenEntriesCountEll.textContent = loadedEntriesCountEll.textContent = 0
 							}
 						}
 
@@ -712,13 +731,14 @@ if (window.top == window.self)
 
 						// Recreate the spinner when loading. It has a different color than the original to indicate that it's being loaded by NXE
 						{
-							if (!document.getByClass("spinner-border"))
-							{
-								const spinner = document.createElement("span")
-								spinner.className = "spinner-border text-primary my-4 removable"
-								spinner.style = "height: 50px; width: 50px; align-self: center;"
-								logsContainer.appendChild(spinner)
-							}
+							let spinner = logsContainer.getByClass("spinner-border")
+
+							if (spinner)  spinner.remove()
+
+							spinner = document.createElement("span")
+							spinner.className = "spinner-border text-primary my-4 removable"
+							spinner.style = "height: 50px; width: 50px; align-self: center;"
+							logsContainer.appendChild(spinner)
 						}
 
 						// Load the log entries data
@@ -749,6 +769,8 @@ if (window.top == window.self)
 											}
 										}
 
+										loadedEntriesCountEll.textContent++  // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed
+
 										// Check if the entry matches any filter, and if so, remove it from the list
 										{
 											var domainName = entriesData[i].name
@@ -760,7 +782,12 @@ if (window.top == window.self)
 											{
 												entriesData.splice(i,1)
 												i--
-												hiddenEntriesCountEll.textContent++  // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed
+
+												if (!hideDevices || hideDevices && !isNamedDevice)
+													filteredEntriesCountEll.textContent++
+
+												allHiddenEntriesCountEll.textContent++
+
 												continue
 											}
 										}
@@ -950,6 +977,7 @@ if (window.top == window.self)
 
 										visibleEntriesCountEll.textContent++
 
+
 									}
 								}
 							}
@@ -1004,10 +1032,11 @@ if (window.top == window.self)
 						}, 20000)
 					}
 
-					function filterLogEntries()
+					function refilterLogEntries()
 					{
 						const entries = logsContainer.getElementsByClassName("list-group-item")
-						visibleEntriesCountEll.textContent = hiddenEntriesCountEll.textContent = 0
+						allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
+						visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = 0
 
 						for (let i=1; i < entries.length; i++)
 						{
@@ -1018,7 +1047,8 @@ if (window.top == window.self)
 							{
 								entries[i].remove()
 								i--
-								hiddenEntriesCountEll.textContent++
+								filteredEntriesCountEll.textContent++
+								allHiddenEntriesCountEll.textContent++
 							}
 							else visibleEntriesCountEll.textContent++
 						}
