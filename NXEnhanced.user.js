@@ -841,7 +841,7 @@ if (window.top == window.self)
 
 														// matchedName is the CNAME that got blocked. lists is an array containing the name of each list that includes this domain
 														const blockReasonText = (entriesData[i].matchedName ? "<b style='font-size: 13px; display: block; margin: 5px 3px 8px 3px;'>→ " + entriesData[i].matchedName + "</b>": "")
-														+ (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].lists.join(", ")
+																			  + (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].lists.join(", ")
 														blockReasonIcon.createStylizedTooltip(blockReasonText)
 
 														leftSideContainer.appendChild(blockReasonIcon)
