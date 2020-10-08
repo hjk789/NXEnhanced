@@ -63,16 +63,16 @@ This is good for people with a long list of blocklists added.
 
 ## How to use it
 
-To use this userscript, just install in your browser TamperMonkey (Chrome and Firefox), GreaseMonkey (Firefox) or ViolentMonkey (Chrome and Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://greasyfork.org/scripts/408934-nx-enhanced/code/NX%20Enhanced.user.js
+To use this userscript, just install in your browser Tampermonkey (Chrome and Firefox), Violentmonkey (Chrome and Firefox) or Greasemonkey (Firefox) extension, if you hadn't yet. Having it installed, then just go to the following link: https://greasyfork.org/scripts/408934-nx-enhanced/code/NX%20Enhanced.user.js
 
 A window will pop asking if you want to install the script, just confirm it, and it's done! 
 
 If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons, Add all TLDs and export/import features.
 
-On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install TamperMonkey/GreaseMonkey/ViolentMonkey and then install the userscript. However, keep in mind that NX Enhanced isn't optimized for mobile yet.
+On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install Tampermonkey/Violentmonkey/Greasemonkey and then install the userscript. However, keep in mind that NX Enhanced isn't optimized for mobile yet.
 
-**Note:** Although almost all features should work fine with it, GreaseMonkey is not supported. I recommend that you avoid using it if you don't have a reason that forces you to use only GreaseMonkey. GreaseMonkey 4 is quite buggy and lacks many features that TamperMonkey has. You can use NX Enhanced in GreaseMonkey, but keep in mind that I won't make big efforts to make NX Enhanced compatible with it.    
-NX Enhanced was tested in Firefox and Chrome, in TamperMonkey and in GreaseMonkey, running perfectly in TamperMonkey, and with a few little bugs in GreaseMonkey. It should work fine in ViolentMonkey and pretty much any browser in which you can install any of these three script-managers, though I didn't tested them.
+**Note:** Although almost all features should work fine with it, Greasemonkey is not supported. Greasemonkey 4 is quite buggy and lacks many features that Tampermonkey has. You can use NX Enhanced in Greasemonkey, but keep in mind that I won't make big efforts to make NX Enhanced compatible with it.    
+NX Enhanced was tested in Firefox and Chrome, in Tampermonkey and in Greasemonkey, running perfectly in Tampermonkey, and with a few little bugs in Greasemonkey. Most features were also tested in Violentmonkey, and all tested features works perfectly. It should work fine in pretty much any browser in which you can install any of these three script-managers, although I didn't tested them.
 
 ## Bug reports and suggestions
 
