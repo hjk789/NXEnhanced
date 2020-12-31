@@ -97,4 +97,4 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 - You can modify your copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
 - You cannot do any other action not allowed in this license.  
 
-Copyright (c) 2020 BLBC ([hjk789](https://github.com/hjk789))
+Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
