@@ -69,10 +69,10 @@ A window will pop asking if you want to install the script, just confirm it, and
 
 If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons, Add all TLDs and export/import features.
 
-On mobile, only Firefox Mobile has support for userscripts. The procedure is the same, install Tampermonkey/Violentmonkey/Greasemonkey and then install the userscript. However, keep in mind that NX Enhanced isn't optimized for mobile yet.
+On mobile, you need a browser that supports installing extensions. You can use Kiwi Browser, Firefox Nightly or Firefox 68. The procedure is the same, install Tampermonkey/Violentmonkey/Greasemonkey and then install the userscript. However, keep in mind that NX Enhanced isn't optimized for mobile yet.
 
 **Note:** Although almost all features should work fine with it, Greasemonkey is not supported. Greasemonkey 4 is quite buggy and lacks many features that Tampermonkey has. You can use NX Enhanced in Greasemonkey, but keep in mind that I won't make big efforts to make NX Enhanced compatible with it.    
-NX Enhanced was tested in Firefox and Chrome, in Tampermonkey and in Greasemonkey, running perfectly in Tampermonkey, and with a few little bugs in Greasemonkey. Most features were also tested in Violentmonkey, and all tested features works perfectly. It should work fine in pretty much any browser in which you can install any of these three script-managers, although I didn't tested them.
+NX Enhanced was tested in Firefox and Chrome, in Tampermonkey and in Greasemonkey, running perfectly in Tampermonkey, and with a few little bugs in Greasemonkey. Most features were also tested in Violentmonkey, and all tested features work perfectly. It should work fine in pretty much any browser in which you can install any of these three script-managers, although I didn't tested them.
 
 ## Bug reports and suggestions
 
@@ -90,11 +90,12 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 
 ## License
 
-- You can view the code, download copies and run this software as is.
+- You can view the code, download copies and run this software.
 - You can suggest changes, either by opening issues or by doing pull requests. 
-- You can participate in discussions or comment/opinate about new features.
+- You can participate in discussions or comment/opinate about the features.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
 - You can modify your copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
+- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this repository's web page; and 2. You fork it in order to push changes to this repository through a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead.
 - You cannot do any other action not allowed in this license.  
 
 Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
