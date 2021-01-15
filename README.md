@@ -95,7 +95,7 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 - You can participate in discussions or comment/opinate about the features.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
 - You can modify your copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this repository's web page; and 2. You fork it in order to push changes to this repository through a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead.
+- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository through a pull request. If you don't fit in these conditions, don't fork it, "*Star*"/favorite it instead.
 - You cannot do any other action not allowed in this license.  
 
 Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
