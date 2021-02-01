@@ -76,11 +76,16 @@ NX Enhanced was tested in Firefox and Chrome, in Tampermonkey and in Greasemonke
 
 ## Bug reports and suggestions
 
-Although it's a work in progress, this userscript is completely usable at the current state, but there might be some situations where an unnoticed bug might get noticed. In these cases, please report it posting an issue on the [issues section](https://github.com/hjk789/NXEnhanced/issues). If you want to suggest more features, you can freely do it there too.
+This userscript is completely usable at the current state, but there might be some situations where an unnoticed bug might get noticed. In these cases, please report it posting an issue on the [issues section](https://github.com/hjk789/NXEnhanced/issues). If you want to suggest more features, you can freely do it there too.
 
-## Support
+## How to contribute
 
-This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, you can make a donation via PayPal:
+If you would like to contribute with code, you just need to:
+1. [Make a fork](https://github.com/hjk789/NXEnhanced/fork) of this project's repository by clicking on the "Fork" button on the top-right corner of the repository page;
+2. Make your proposed changes in the code of the fork you created. When done, commit the changes;
+3. Go to the [Pull requests page](https://github.com/hjk789/NXEnhanced/pulls) and click the "New pull request" button. And finally, click the "Create pull request" button.
+
+If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation via PayPal:
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CK5BFYUP9TWBJ&source=url)
 
@@ -95,7 +100,7 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 - You can participate in discussions or comment/opinate about the features.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
 - You can modify your copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository through a pull request. If you don't fit in these conditions, don't fork it, "*Star*"/favorite it instead.
+- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*"/favorite it instead.
 - You cannot do any other action not allowed in this license.  
 
 Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
