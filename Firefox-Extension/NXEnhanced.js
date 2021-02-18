@@ -1,18 +1,18 @@
-// @name            NX Enhanced
-// @description     Adds quality-of-life features to NextDNS website for a more practical experience
-// @author          BLBC (github.com/hjk789)
-// @copyright       2020+, BLBC (github.com/hjk789)
-// @version         4.0
-// @homepage        https://github.com/hjk789/NXEnhanced
-// @license         https://github.com/hjk789/NXEnhanced#license
-// @supportURL      https://github.com/hjk789/NXEnhanced/issues
+// Name            NX Enhanced
+// Description     Adds quality-of-life features to NextDNS website for a more practical experience
+// Author          BLBC (github.com/hjk789)
+// Copyright       2020+, BLBC (github.com/hjk789)
+// Version         4.0
+// Homepage        https://github.com/hjk789/NXEnhanced
+// License         https://github.com/hjk789/NXEnhanced#license
+// SupportURL      https://github.com/hjk789/NXEnhanced/issues
 
-
+let currentPage = ""
 const intervals = []
 
 
 // Load all NX Enhanced's settings
-//getGMsettings()
+loadNXsettings()
 
 // Add some internal functions to the code
 extendFunctions()
@@ -36,6 +36,11 @@ main()
 
 function main()
 {
+    if (currentPage == location.href)       // The browser.tabs.onUpdated event sometimes can trigger
+        return                              // more than once. This prevents from duplicating things.
+
+    currentPage = location.href
+
     clearAllIntervals()
 
 
@@ -175,88 +180,93 @@ function main()
                 // Setup the filtering's buttons and inputs
                 {
                     // Create the "Filters" button
-
-                    const filtersButton = document.createElement("button")
-                    filtersButton.id = "filtersButton"
-                    filtersButton.className = "btn btn-secondary"
-                    filtersButton.style = "align-self: center; margin-right: 15px;"
-                    filtersButton.innerHTML = "Filters"
-                    filtersButton.onclick = function()
-                    {
-                        event.stopPropagation()
-
-                        if (this.className.includes("secondary"))
+                    //{
+                        const filtersButton = document.createElement("button")
+                        filtersButton.id = "filtersButton"
+                        filtersButton.className = "btn btn-secondary"
+                        filtersButton.style = "align-self: center; margin-right: 15px;"
+                        filtersButton.innerHTML = "Filters"
+                        filtersButton.onclick = function()
                         {
-                            filteringOptionsContainer.style.visibility = "visible"
-                            this.innerHTML = "OK"
-                            this.className = this.className.replace("secondary", "primary")
+                            event.stopPropagation()
+
+                            if (this.className.includes("secondary"))
+                            {
+                                filteringOptionsContainer.style.visibility = "visible"
+                                this.innerHTML = "OK"
+                                this.className = this.className.replace("secondary", "primary")
+                            }
+                            else        // If it's clicked the second time.
+                            {
+                                updateFilters()
+                                filteringOptionsContainer.style.visibility = "hidden"
+                                this.innerHTML = "Filters"
+                                this.className = this.className.replace("primary", "secondary")
+                            }
                         }
-                        else        // If it's clicked the second time.
-                        {
-                            updateFilters()
-                            filteringOptionsContainer.style.visibility = "hidden"
-                            this.innerHTML = "Filters"
-                            this.className = this.className.replace("primary", "secondary")
-                        }
-                    }
+
+                        const container = pageContentContainer.firstChild.firstChild
+                        container.appendChild(filtersButton)
+                    //}
 
 
                     // Create the filtering options
-
-                    const filteringOptionsContainer = document.createElement("div")
-                    filteringOptionsContainer.style = "position: absolute; right: 60px; top: 145px; visibility: hidden; display: grid; grid-gap: 10px;"
-                    filteringOptionsContainer.onclick = function() { event.stopPropagation() }
-
-
-                    // Create the "Enable filtering" switch
-
-                    const enableFilteringSwitch = createSwitchCheckbox("Enable filtering")
-                    enableFilteringSwitch.style.marginLeft = "-7px"
-                    enableFilteringSwitch.firstChild.checked = true
-                    enableFilteringSwitch.firstChild.onchange = function()
-                    {
-                        filtering = this.checked
-
-                        if (filtering)
-                            refilterLogEntries()
-                        else
-                            reloadLogs()
-                    }
+                    //{
+                        const filteringOptionsContainer = document.createElement("div")
+                        filteringOptionsContainer.style = "position: absolute; right: 60px; top: 145px; visibility: hidden; display: grid; grid-gap: 10px;"
+                        filteringOptionsContainer.onclick = function() { event.stopPropagation() }
 
 
-                    // Create the filter's inputbox
+                        // Create the "Enable filtering" switch
 
-                    const domainsToHideInput = document.createElement("textarea")
-                    domainsToHideInput.id = "domainsToHideInput"
-                    domainsToHideInput.spellcheck = false
-                    //domainsToHideInput.value = domainsToHide.join("\n")
-                    domainsToHideInput.style = "width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; resize: both; padding-top: 5px;\
-                                                border: 1px groove lightgray; outline: 0px; padding-left: 10px; padding-right: 5px; overflow-wrap: normal;"
+                        const enableFilteringSwitch = createSwitchCheckbox("Enable filtering")
+                        enableFilteringSwitch.style.marginLeft = "-7px"
+                        enableFilteringSwitch.firstChild.checked = true
+                        enableFilteringSwitch.firstChild.onchange = function()
+                        {
+                            filtering = this.checked
+
+                            if (filtering)
+                                refilterLogEntries()
+                            else
+                                reloadLogs()
+                        }
 
 
-                    // Create the "Show number of entries" switch
+                        // Create the filter's inputbox
 
-                    const showNumEntriesSwitch = createSwitchCheckbox("Show number of entries")
-                    //showNumEntriesSwitch.firstChild.checked = GMsettings.LogsOptions.ShowCounters
-                    showNumEntriesSwitch.firstChild.onchange = function()
-                    {
-                        //visibleEntriesCountEll.parentElement.style.visibility = this.checked ? "visible" : "hidden"
-                        GMsettings.LogsOptions.ShowCounters = this.checked
-                        GM.setValue("LogsOptions", JSON.stringify(GMsettings.LogsOptions))
-                    }
+                        const domainsToHideInput = document.createElement("textarea")
+                        domainsToHideInput.id = "domainsToHideInput"
+                        domainsToHideInput.spellcheck = false
+                        domainsToHideInput.value = NXsettings.LogsPage.DomainsToHide.join("\n")
+                        domainsToHideInput.style = "width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; resize: both; padding-top: 5px;\
+                                                    border: 1px groove lightgray; outline: 0px; padding-left: 10px; padding-right: 5px; overflow-wrap: normal;"
 
-                    filteringOptionsContainer.appendChild(enableFilteringSwitch)
-                    filteringOptionsContainer.appendChild(domainsToHideInput)
-                    filteringOptionsContainer.appendChild(showNumEntriesSwitch)
 
-                    const container = pageContentContainer.firstChild.firstChild
-                    container.appendChild(filtersButton)
-                    container.appendChild(filteringOptionsContainer)
+                        // Create the "Show number of entries" switch
+
+                        const showNumEntriesSwitch = createSwitchCheckbox("Show number of entries")
+                        showNumEntriesSwitch.firstChild.checked = NXsettings.LogsPage?.ShowCounters
+                        showNumEntriesSwitch.firstChild.onchange = function()
+                        {
+                            //visibleEntriesCountEll.parentElement.style.visibility = this.checked ? "visible" : "hidden"
+                            NXsettings.LogsPage.ShowCounters = this.checked
+                            writeSetting(NXsettings)
+                        }
+
+                        filteringOptionsContainer.appendChild(enableFilteringSwitch)
+                        filteringOptionsContainer.appendChild(domainsToHideInput)
+                        filteringOptionsContainer.appendChild(showNumEntriesSwitch)
+
+                        container.appendChild(filteringOptionsContainer)
+                    //}
+
+
 
                     function updateFilters()
                     {
-                        GM.setValue("domainsToHide", domainsToHideInput.value)
-                        domainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "")        // Store each entry in an array, but don't include empty lines.
+                        NXsettings.LogsPage.DomainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "")        // Store each entry in an array, but don't include empty lines.
+                        writeSetting(NXsettings)
                     }
                 }
 
@@ -298,7 +308,7 @@ function main()
                         if (event.key == "Enter")  allowDenyPopup.fullDomainButton.click()
                         else if (event.key == "Escape")  allowDenyPopup.container.style.cssText += 'visibility: hidden;'
                     }
-                    input.oninput = function(event)
+                    input.oninput = function()
                     {
                         this.classList.remove("is-invalid")
                         this.previousSibling.innerHTML = ""
@@ -317,7 +327,7 @@ function main()
                             // each character converted to hexadecimal, instead of plain text (ASCII). This converts the specified domain to hex then sends it to the respective list.
                             const requestString = allowDenyPopup.listName + "/hex:" + convertToHex(allowDenyPopup.input.value)
 
-                            makeApiRequest("PUT", requestString, function(response)     // Make an asynchronous HTTP request and run this callback when finished
+                            makeApiRequest("PUT", requestString, function(response)     // Make an asynchronous HTTP request and run this callback when finished.
                             {
                                 if (response.includes(allowDenyPopup.input.value))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
                                 {                                                           // This checks if it was successful.
@@ -325,7 +335,7 @@ function main()
 
                                     // Auto dismiss the popup after 1 second
                                     setTimeout(function() {
-                                        allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is refreshed
+                                        allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is refreshed.
                                         allowDenyPopup.errorMsg.innerHTML = ''
                                     }, 1000)
 
@@ -334,7 +344,7 @@ function main()
                                         allowDenyPopup.domainsList[allowDenyPopup.listName] = response
                                     })
                                 }
-                                else if (response.includes("error"))        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box
+                                else if (response.includes("error"))        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
                                 {
                                     let error = JSON.parse(response).error
 
@@ -369,10 +379,10 @@ function main()
                     rootDomainButton.onclick = function()
                     {
                         let input = allowDenyPopup.input
-                        input.value = this.title.substring(this.title.indexOf("*") + 2)     // Instead of parsing the root domain again, get it from the title set by the Allow/Deny/Hide buttons
+                        input.value = this.title.substring(this.title.indexOf("*") + 2)     // Instead of parsing the root domain again, get it from the title set by the Allow/Deny/Hide buttons.
 
                         if (allowDenyPopup.listName == "Hide")
-                            input.value = "." + input.value     // Add a dot before the root domain to prevent false positives
+                            input.value = "." + input.value     // Add a dot before the root domain to prevent false positives.
 
                         allowDenyPopup.fullDomainButton.click()
                     }
@@ -418,24 +428,24 @@ function main()
                         const countingsContainer = document.createElement("div")
                         countingsContainer.id = "counters"
                         countingsContainer.style = "text-align: right; border: solid 2px #aaa; border-radius: 10px; padding: 0px 10px 5px; width: 160px; background: white;"
-                        //countingsContainer.style.visibility = GMsettings.LogsOptions.ShowCounters ? "visible" : "hidden"
+                        countingsContainer.style.visibility = NXsettings.LogsPage?.ShowCounters ? "visible" : "hidden"
                         countingsContainer.innerHTML = `
                             <b style="line-height: 35px;">Queries count</b>
                             Listed: <b id="visibleEntriesCount"></b><br>
                             Filtered: <b id="filteredEntriesCount"></b><br>
                             <span style="display: none;">All Hidden: <b id="allHiddenEntriesCount"></b><br></span>
-                            Loaded: <b id="loadedEntriesCount"></b>`
-
+                            Loaded: <b id="loadedEntriesCount"></b>
+                        `
                         const hoverContainer = document.createElement("div")
                         hoverContainer.style = "position: fixed; bottom: 20px; right: 11.5%;"
                         hoverContainer.appendChild(countingsContainer)
 
                         document.body.appendChild(hoverContainer)
 
-                        //visibleEntriesCountEll   = document.getElementById("visibleEntriesCount")
-                        //filteredEntriesCountEll  = document.getElementById("filteredEntriesCount")   // Entries filtered by the domains filters
-                        //allHiddenEntriesCountEll = document.getElementById("allHiddenEntriesCount")  // Entries from named devices
-                        //loadedEntriesCountEll    = document.getElementById("loadedEntriesCount")     // All the entries of the loaded chunks
+                        visibleEntriesCountEll   = document.getElementById("visibleEntriesCount")
+                        filteredEntriesCountEll  = document.getElementById("filteredEntriesCount")   // Entries filtered by the domains filters.
+                        allHiddenEntriesCountEll = document.getElementById("allHiddenEntriesCount")  // Entries from named devices.
+                        loadedEntriesCountEll    = document.getElementById("loadedEntriesCount")     // All the entries of the loaded chunks.
                     }
                 }
 
@@ -472,30 +482,30 @@ function main()
 
                 addEventListener("scroll", function(e)
                 {
-                    e.stopPropagation()  // Don't let the original event listener receive this event
+                    e.stopPropagation()     // Don't let the original event listener receive this event.
 
-                    if (!cancelLoading && document.body.getBoundingClientRect().bottom < window.innerHeight * 3)  // Only load the next chunk if the user is three screens above the page bottom.
-                        loadLogChunk({before: lastBefore})                                                        // This big distance makes scrolling the logs much more fluid, because when you
-                                                                                                                  // reach the bottom, the next chunk is already loaded and you don't need to wait.
+                    if (!cancelLoading && document.body.getBoundingClientRect().bottom < window.innerHeight * 3)        // Only load the next chunk if the user is three screens above the page bottom.
+                        loadLogChunk({before: lastBefore})                                                              // This big distance makes scrolling the logs much more fluid, because when you
+                                                                                                                        // reach the bottom, the next chunk is already loaded and you don't need to wait.
                 }, true)
+
 
 
                 // Make the search bar use NXE's code
                 {
-
                     const searchBarForm = logsContainer.querySelector("form")
-                    //searchBarForm.outerHTML = searchBarForm.firstChild.outerHTML  // Take out the input from inside the form and remove the form element, so that when hitting
-                                                                                  // Enter, it doesn't reload the page. This also stripes all the original events of the input box.
+                    searchBarForm.outerHTML = searchBarForm.firstChild.outerHTML      // Take out the input from inside the form and remove the form element, so that when hitting
+                                                                                      // Enter, it doesn't reload the page. This also stripes all the original events of the input box.
                     var searchBar = logsContainer.querySelector("[type='search']")
 
                     searchBar.onkeyup = function(e)
                     {
                         if (e.key == "Enter")
                         {
-                            searchString = this.value.split(" ")[0]  // Take only the part before a space character to make the request. This is in preparation for the feature of excluding entries from a search
+                            searchString = this.value.split(" ")[0]     // Take only the part before a space character to make the request. This is in preparation for the feature of excluding entries from a search.
                             reloadLogs()
                         }
-                        else clearSearchButton.style.display = this.value == "" ? "none" : "block"  // Hide the clear button when the input box is empty, and display it otherwise
+                        else clearSearchButton.style.display = this.value == "" ? "none" : "block"      // Hide the clear button when the input box is empty, and display it otherwise.
                     }
 
 
@@ -522,7 +532,7 @@ function main()
 
                 // Make the "Blocked queries only" switch use NXE's code
 
-                if (document.getElementById("blocked-queries-only"))  // Temporary "fix"
+                if (document.getElementById("blocked-queries-only"))
                 {
                     document.getElementById("blocked-queries-only").outerHTML += ""  // Remove all the original events
                     document.getElementById("blocked-queries-only").onchange = function()
@@ -532,13 +542,12 @@ function main()
                     }
                 }
 
-
-                //pageContentContainer.firstChild.children[2].getByClass("spinner-border").remove()
-
+                logsContainer.querySelector("div.text-center").remove()
 
 
                 reloadLogs()
 
+                //pageContentContainer.firstChild.children[2].getByClass("spinner-border")?.remove()
             }
 
 
@@ -695,16 +704,16 @@ function main()
                                 }
                             }
 
-                            //loadedEntriesCountEll.textContent++  // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed
+                            //loadedEntriesCountEll.textContent++  // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed.
 
 
                             // Check if the entry matches any filter, and if so, remove it from the list
                             {
                                 var domainName = entriesData[i].name
                                 var isNamedDevice = !!entriesData[i].deviceName
-                                if ((filtering && !domainName.includes("."))    // Chrome's random queries never have a dot
-                                    || (hideDevices && isNamedDevice)   // If enabled, named devices
-                                    /*|| (filtering && domainsToHide.some(d => domainName.includes(d)))*/ )   // If enabled, domains included in the list of domains to hide
+                                if ((filtering && !domainName.includes("."))        // Chrome's random queries never have a dot.
+                                    || (hideDevices && isNamedDevice)               // If enabled, named devices.
+                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d))) )   // If enabled, domains included in the list of domains to hide.
                                 {
                                     entriesData.splice(i,1)
                                     i--
@@ -959,21 +968,21 @@ function main()
 
         function refilterLogEntries()
         {
-            const entries = logsContainer.getElementsByClassName("list-group-item")
-            allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
+            const entries = logsContainer.querySelectorAll(".log")
+
+            //allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
             //visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = 0
 
-            for (let i=1; i < entries.length; i++)
+            for (let i=0; i < entries.length; i++)
             {
                 const domainName = entries[i].getByClass("domainName").textContent
 
                 if (!domainName.includes(".")   // Chrome's random queries
-                    || domainsToHide.some(d => domainName.includes(d)) )   // Domains included in the list of domains to hide.
+                    || NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d)) )   // Domains included in the list of domains to hide.
                 {
                     entries[i].remove()
-                    i--
-                    filteredEntriesCountEll.textContent++
-                    allHiddenEntriesCountEll.textContent++
+                    //filteredEntriesCountEll.textContent++
+                    //allHiddenEntriesCountEll.textContent++
                 }
                 //else visibleEntriesCountEll.textContent++
             }
@@ -1470,50 +1479,45 @@ function main()
 
 
 
-function getGMsettings()
+function loadNXsettings()
 {
-    GMsettings = {}
-    ind = 0
-    settings = ["domainDescriptions", "AllowDenyOptions", "LogsOptions"]
-
-    GM.getValue("changed").then(function(value)
+    readSetting("NotFirstRun").then((obj) =>
     {
-        if (value != true)
+        if (obj.NotFirstRun != true)
         {
-            GM.setValue("domainsToHide", ".nextdns.io\n.in-addr.arpa\n.ip6.arpa")   // Hide theses queries by default, but only at the first time
-            GM.setValue("changed", true)
+            writeSetting(
+            {
+                NXsettings:
+                {
+                    LogsPage: { DomainsToHide: [".nextdns.io", ".in-addr.arpa", ".ip6.arpa"] },     // Hide these queries by default.
+                    AllowDenylistPage: {},
+                    PrivacyPage: {},
+                    SecurityPage: {}
+                },
+                NotFirstRun: true
+            })
+
         }
 
-        GM.getValue("domainsToHide").then(function(value)
+        readSetting("NXsettings").then((obj) =>
         {
-            domainsToHide = value.split("\n").filter(d => d.trim() != "")  // Create an array with the domains to be hidden, excluding empty lines
+            NXsettings = obj.NXsettings
 
-            getOrCreateGMsetting(settings[0])
+            main()
         })
     })
 
 }
 
 
-function getOrCreateGMsetting(settingName)
+function writeSetting(object)
 {
-    GM.getValue(settingName).then(function(value)
-    {
-        if (value == undefined)
-        {
-            GMsettings[settingName] = new Object()
-            GM.setValue(settingName, JSON.stringify(GMsettings[settingName]))
-        }
-        else GMsettings[settingName] = JSON.parse(value)
+    return browser.storage.local.set({"NXsettings": object})
+}
 
-        ind++
-
-        if (ind < settings.length)
-            getOrCreateGMsetting(settings[ind])  // This is to make sure that all settings are loaded before the main function starts
-        else
-            main()
-
-    })
+function readSetting(settingName)
+{
+    return browser.storage.local.get(settingName)
 }
 
 
