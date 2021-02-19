@@ -23,7 +23,8 @@ style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important;
                    .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }   /* Show the tooltip when hovering it's container */
                    .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }    /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
                     div:hover #counters { visibility: hidden !important; }                                          /* Hide the log entries counters on hover */
-                   .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */ `
+                   .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */
+                  `
 
 document.head.appendChild(style)
 
@@ -53,7 +54,7 @@ function main()
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval
         let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
-        let lastBefore, currentDeviceId, searchString, blockedQueriesOnly
+        let lastBefore, lastAfter, currentDeviceId, searchString, blockedQueriesOnly, simpleLogs = 1
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -62,11 +63,24 @@ function main()
 
             if (pageContentContainer)
             {
+                logsContainer = pageContentContainer.getByClass("list-group")
+
+                const svgs = logsContainer.querySelectorAll(".settings-button svg, .stream-button svg")
+
+                if (svgs.length < 2)                                                        // Wait for the SVGs to finish loading before overriding the logs container, otherwise they fail to load and leave a blank space.
+                    return
+
+                let searchBarForm = logsContainer.querySelector("form")
+
+                if (!searchBarForm || !logsContainer.querySelector("div.text-center"))      // Wait for the search bar and the first log row to finish loading before overriding the logs container.
+                    return
+
+
                 clearInterval(waitForItems)
 
-                pageContentContainer.getByClass("list-group").outerHTML += ""       // Remove all events from the logs container, so it can be used statically (without interferences from other scripts).
+                logsContainer.outerHTML += ""                                               // Override the logs container code to remove all events attached to it, so it can be used statically (without interferences from other scripts).
 
-                logsContainer = pageContentContainer.getByClass("list-group")
+                logsContainer = pageContentContainer.getByClass("list-group")               // Update the "pointer" to the new instance.
 
 
                 // Setup the devices dropdown
@@ -141,7 +155,7 @@ function main()
                                         this.parentElement.previousSibling.innerText = this.innerText
 
                                         hideDevices = false
-                                        //allHiddenEntriesCountEll.parentElement.style.display = "none"
+                                        allHiddenEntriesCountEll.parentElement.style.display = "none"
                                     }
 
                                     devicesDropdownMenu.appendChild(deviceCustom)
@@ -162,7 +176,7 @@ function main()
                                     this.parentElement.querySelector(".active").classList.remove("active")
                                     this.classList.add("active")
                                     hideDevices = true
-                                    //allHiddenEntriesCountEll.parentElement.style.display = "initial"
+                                    allHiddenEntriesCountEll.parentElement.style.display = "initial"
                                 }
 
                                 devicesDropdownMenu.appendChild(otherDevicesBtn)
@@ -180,7 +194,7 @@ function main()
                 // Setup the filtering's buttons and inputs
                 {
                     // Create the "Filters" button
-                    //{
+                    {
                         const filtersButton = document.createElement("button")
                         filtersButton.id = "filtersButton"
                         filtersButton.className = "btn btn-secondary"
@@ -205,61 +219,66 @@ function main()
                             }
                         }
 
-                        const container = pageContentContainer.firstChild.firstChild
+                        var container = pageContentContainer.firstChild.firstChild
                         container.appendChild(filtersButton)
-                    //}
+                    }
 
 
                     // Create the filtering options
-                    //{
-                        const filteringOptionsContainer = document.createElement("div")
+                    {
+                        var filteringOptionsContainer = document.createElement("div")
                         filteringOptionsContainer.style = "position: absolute; right: 60px; top: 145px; visibility: hidden; display: grid; grid-gap: 10px;"
                         filteringOptionsContainer.onclick = function() { event.stopPropagation() }
 
 
                         // Create the "Enable filtering" switch
-
-                        const enableFilteringSwitch = createSwitchCheckbox("Enable filtering")
-                        enableFilteringSwitch.style.marginLeft = "-7px"
-                        enableFilteringSwitch.firstChild.checked = true
-                        enableFilteringSwitch.firstChild.onchange = function()
                         {
-                            filtering = this.checked
+                            const enableFilteringSwitch = createSwitchCheckbox("Enable filtering")
+                            enableFilteringSwitch.style.marginLeft = "-7px"
+                            enableFilteringSwitch.firstChild.checked = true
+                            enableFilteringSwitch.firstChild.onchange = function()
+                            {
+                                filtering = this.checked
 
-                            if (filtering)
-                                refilterLogEntries()
-                            else
-                                reloadLogs()
+                                if (filtering)
+                                    refilterLogEntries()
+                                else
+                                    reloadLogs()
+                            }
+
+                            filteringOptionsContainer.appendChild(enableFilteringSwitch)
                         }
 
 
                         // Create the filter's inputbox
+                        {
+                            var domainsToHideInput = document.createElement("textarea")
+                            domainsToHideInput.id = "domainsToHideInput"
+                            domainsToHideInput.spellcheck = false
+                            domainsToHideInput.value = NXsettings.LogsPage.DomainsToHide.join("\n")
+                            domainsToHideInput.style = "width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; resize: both; padding-top: 5px;\
+                                                        border: 1px groove lightgray; outline: 0px; padding-left: 10px; padding-right: 5px; overflow-wrap: normal;"
 
-                        const domainsToHideInput = document.createElement("textarea")
-                        domainsToHideInput.id = "domainsToHideInput"
-                        domainsToHideInput.spellcheck = false
-                        domainsToHideInput.value = NXsettings.LogsPage.DomainsToHide.join("\n")
-                        domainsToHideInput.style = "width: 320px; height: 240px; min-width: 250px; min-height: 100px; border-radius: 15px; resize: both; padding-top: 5px;\
-                                                    border: 1px groove lightgray; outline: 0px; padding-left: 10px; padding-right: 5px; overflow-wrap: normal;"
+                            filteringOptionsContainer.appendChild(domainsToHideInput)
+                        }
 
 
                         // Create the "Show number of entries" switch
-
-                        const showNumEntriesSwitch = createSwitchCheckbox("Show number of entries")
-                        showNumEntriesSwitch.firstChild.checked = NXsettings.LogsPage?.ShowCounters
-                        showNumEntriesSwitch.firstChild.onchange = function()
                         {
-                            //visibleEntriesCountEll.parentElement.style.visibility = this.checked ? "visible" : "hidden"
-                            NXsettings.LogsPage.ShowCounters = this.checked
-                            writeSetting(NXsettings)
+                            const showNumEntriesSwitch = createSwitchCheckbox("Show number of entries")
+                            showNumEntriesSwitch.firstChild.checked = NXsettings.LogsPage.ShowCounters
+                            showNumEntriesSwitch.firstChild.onchange = function()
+                            {
+                                visibleEntriesCountEll.parentElement.style.visibility = this.checked ? "visible" : "hidden"
+                                NXsettings.LogsPage.ShowCounters = this.checked
+                                writeSetting(NXsettings)
+                            }
+
+                            filteringOptionsContainer.appendChild(showNumEntriesSwitch)
                         }
 
-                        filteringOptionsContainer.appendChild(enableFilteringSwitch)
-                        filteringOptionsContainer.appendChild(domainsToHideInput)
-                        filteringOptionsContainer.appendChild(showNumEntriesSwitch)
-
                         container.appendChild(filteringOptionsContainer)
-                    //}
+                    }
 
 
 
@@ -457,7 +476,6 @@ function main()
                     if (/\/logs/i.test(location.href))
                     {
                         // Hide the allow/deny popup
-
                         allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'
 
                         // Hide the devices dropdown
@@ -488,7 +506,6 @@ function main()
                         loadLogChunk({before: lastBefore})                                                              // This big distance makes scrolling the logs much more fluid, because when you
                                                                                                                         // reach the bottom, the next chunk is already loaded and you don't need to wait.
                 }, true)
-
 
 
                 // Make the search bar use NXE's code
@@ -530,24 +547,101 @@ function main()
                 }
 
 
-                // Make the "Blocked queries only" switch use NXE's code
-
-                if (document.getElementById("blocked-queries-only"))
+                // Adapt the options button
                 {
-                    document.getElementById("blocked-queries-only").outerHTML += ""  // Remove all the original events
-                    document.getElementById("blocked-queries-only").onchange = function()
+                    const settingsButton = logsContainer.getByClass("settings-button")
+                    settingsButton.onclick = function()
                     {
-                        blockedQueriesOnly = +this.checked
-                        reloadLogs()
+                        if (optionsContainer.style.display == "none")
+                        {
+                            optionsContainer.style.cssText += "display: flex !important;"
+                            settingsButton.classList.add("active")
+                        }
+                        else
+                        {
+                            optionsContainer.style.cssText += "display: none !important;"
+                            settingsButton.classList.remove("active")
+                        }
+
+                    }
+
+                    const optionsContainer = document.createElement("div")
+                    optionsContainer.className = "d-md-flex mt-3"
+                    optionsContainer.style = "display: none !important; color: #777;"
+
+                    // Adapt the "Blocked Queries Only" switch
+                    {
+                        optionsContainer.appendChild(createSwitchCheckbox("Blocked Queries Only"))
+                        optionsContainer.firstChild.classList.add("mr-5")
+                        optionsContainer.firstChild.lastChild.style.fontSize = "80%"
+                        optionsContainer.firstChild.firstChild.onchange = function()
+                        {
+                            blockedQueriesOnly = +this.checked
+                            reloadLogs()
+                        }
+                    }
+
+                    // Adapt the "Raw DNS logs" switch
+                    {
+                        optionsContainer.appendChild(createSwitchCheckbox("Raw DNS logs"))
+                        optionsContainer.lastChild.lastChild.style.fontSize = "80%"
+                        optionsContainer.lastChild.firstChild.onchange = function()
+                        {
+                            simpleLogs = +!this.checked
+                            reloadLogs()
+                        }
+                    }
+
+
+                    settingsButton.parentElement.parentElement.parentElement.appendChild(optionsContainer)
+                }
+
+
+                // Adapt the "Stream" button (real-time log)
+                {
+                    const streamButton = logsContainer.getByClass("stream-button")
+                    streamButton.onclick = function()
+                    {
+                        if (streamButton.classList.contains("streaming"))
+                        {
+                            streamButton.classList.remove("streaming")
+
+                            clearInterval(realTimeLogsPolling)
+                        }
+                        else
+                        {
+                            streamButton.classList.add("streaming")
+
+                            realTimeLogsPolling = setInterval(function() { loadLogChunk({after: lastAfter}) }, 2000)        // Poll for new log entries each 2 seconds.
+                        }
                     }
                 }
 
+
+                // Remove leftover of the original logs container
                 logsContainer.querySelector("div.text-center").remove()
 
 
+
+                // Remove the original spinner. It takes some seconds to appear after the page is already loaded.
+                waitForSpinner = setInterval(function()
+                {
+                    const originalSpinner = pageContentContainer.firstChild.children[2].getByClass("spinner-border")
+
+                    if (originalSpinner)
+                    {
+                        clearInterval(waitForSpinner)
+
+                        originalSpinner.parentElement.parentElement.remove()
+                    }
+                }, 100)
+
+
+
+
+                // And finally start loading the logs
                 reloadLogs()
 
-                //pageContentContainer.firstChild.children[2].getByClass("spinner-border")?.remove()
             }
 
 
@@ -555,71 +649,67 @@ function main()
 
 
 
-        function setOnClickButton(button)
+        function openAllowDenyPopup(button)
         {
-            button.onclick = function()
+            const domainContainer = button.parentElement.parentElement.firstChild
+            const fullDomain = domainContainer.secondChild().textContent
+            let upperDomain =
+            allowDenyPopup.input.value = fullDomain
+
+            allowDenyPopup.errorMsg.classList.remove("invalid-feedback")
+            allowDenyPopup.input.classList.remove("is-invalid")
+            allowDenyPopup.errorMsg.innerHTML = ""
+
+            if (button.innerText != "Hide")
             {
-                const domainContainer = this.parentElement.parentElement.firstChild
-                const fullDomain = domainContainer.secondChild().textContent
-                let upperDomain =
-                allowDenyPopup.input.value = fullDomain
+                allowDenyPopup.listName = button.innerText.toLowerCase() + "list"
 
-                allowDenyPopup.errorMsg.classList.remove("invalid-feedback")
-                allowDenyPopup.input.classList.remove("is-invalid")
-                allowDenyPopup.errorMsg.innerHTML = ""
+                // Check if there's already an upper domain entry that includes the chosen subdomain
 
-                if (this.innerText != "Hide")
+                while (upperDomain.indexOf(".") >= 0)                                       // As long as there's a dot...
                 {
-                    allowDenyPopup.listName = this.innerText.toLowerCase() + "list"
+                    upperDomain = upperDomain.substring(upperDomain.indexOf(".") + 1)       // ... get the domain after the next dot.
 
-                    // Check if there's already an upper domain entry that includes the chosen subdomain
+                    if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))      // If there's an entry which is included in this upper domain, set
+                    {                                                                                               // a message to warn the user. Otherwise, check the next upper domain.
+                        allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry!"
+                        allowDenyPopup.input.classList.add("is-invalid")
+                        allowDenyPopup.errorMsg.classList.add("invalid-feedback")
 
-                    while (upperDomain.indexOf(".") >= 0)  // As long as there's a dot...
-                    {
-                        upperDomain = upperDomain.substring(upperDomain.indexOf(".") + 1)  // ... get the domain after the next dot.
-
-                        if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))  // If there's an entry which is this upper domain, set a message
-                        {                                                                                           // to warn the user. Otherwise, check the next upper domain.
-                            allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry!"
-                            allowDenyPopup.input.classList.add("is-invalid")
-                            allowDenyPopup.errorMsg.classList.add("invalid-feedback")
-
-                            break
-                        }
+                        break
                     }
                 }
-                else allowDenyPopup.listName = "Hide"
-
-                const subdomains = allowDenyPopup.input.value.split(".")
-                let rootDomain = subdomains[subdomains.length-2]
-
-                if (SLDs.includes(rootDomain))
-                    rootDomain = subdomains[subdomains.length-3] + "." + rootDomain
-
-                rootDomain += "." + subdomains[subdomains.length-1]
-
-                allowDenyPopup.rootDomainButton.title = this.innerText + " any subdomain under *." + rootDomain
-
-
-                // Set the button's label and color according to the action
-
-                allowDenyPopup.fullDomainButton.className =
-                allowDenyPopup.rootDomainButton.className = this.innerText == "Allow" ? "btn btn-success mt-1" : this.innerText == "Deny" ? "btn btn-danger mt-1" : "btn btn-secondary mt-1"
-
-                allowDenyPopup.fullDomainButton.innerHTML = this.innerText + " domain"
-                allowDenyPopup.rootDomainButton.innerHTML = this.innerText + " root"
-
-                allowDenyPopup.container.style.cssText += "visibility: visible; top: " + (this.getBoundingClientRect().y - allowDenyPopup.parent.getBoundingClientRect().y - 170) + "px;"    // Show the popup right above the buttons
-                allowDenyPopup.input.focus()
-                event.stopPropagation()   // Don't raise this event to the body, as the body hides the popup when clicked
-
             }
+            else allowDenyPopup.listName = "Hide"
+
+            const subdomains = allowDenyPopup.input.value.split(".")
+            let rootDomain = subdomains[subdomains.length-2]
+
+            if (SLDs.includes(rootDomain))
+                rootDomain = subdomains[subdomains.length-3] + "." + rootDomain
+
+            rootDomain += "." + subdomains[subdomains.length-1]
+
+            allowDenyPopup.rootDomainButton.title = button.innerText + " any subdomain under *." + rootDomain
+
+
+            // Set the button's label and color according to the action
+
+            allowDenyPopup.fullDomainButton.className =
+            allowDenyPopup.rootDomainButton.className = button.innerText == "Allow" ? "btn btn-success mt-1" : button.innerText == "Deny" ? "btn btn-danger mt-1" : "btn btn-secondary mt-1"
+
+            allowDenyPopup.fullDomainButton.innerHTML = button.innerText + " domain"
+            allowDenyPopup.rootDomainButton.innerHTML = button.innerText + " root"
+
+            allowDenyPopup.container.style.cssText += "visibility: visible; top: " + (button.getBoundingClientRect().y - allowDenyPopup.parent.getBoundingClientRect().y - 170) + "px;"    // Show the popup right above the buttons.
+            allowDenyPopup.input.focus()
+            event.stopPropagation()     // Don't raise this event to the body, as the body hides the popup when clicked.
         }
 
 
         function loadLogChunk(params)
         {
-            if (loadingChunk && !cancelLoading)  // Load only one chunk at a time
+            if (loadingChunk && !cancelLoading)     // Load only one chunk at a time.
                 return
             else
                 loadingChunk = true
@@ -633,47 +723,39 @@ function main()
                     for (let i = 0; i < existingEntries.length; i++)
                         existingEntries[i].remove()     // If clear is true, then remove all the loaded log entries to load again.
 
-                    //visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = allHiddenEntriesCountEll.textContent = loadedEntriesCountEll.textContent = 0
+                    visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = allHiddenEntriesCountEll.textContent = loadedEntriesCountEll.textContent = 0
                 }
             }
 
             // Build the request string
             {
-                var logsRequestString = "logs?"
-
-                const buildLogsRequestString = function(paramName, paramValue = null)
-                {
-                    const value = paramValue || params[paramName]
-
-                    if (value)
-                    {
-                        if (logsRequestString.includes("="))
-                            logsRequestString += "&"
-
-                        logsRequestString += paramName + "=" + value
-                    }
-                }
+                logsRequestString = "logs?"
 
                 buildLogsRequestString("device", currentDeviceId)       // The device id when loading the logs of specific devices.
-                buildLogsRequestString("before")                        // NextDNS' logs always responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
+                buildLogsRequestString("before", params.before)         // NextDNS' logs always responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
+                buildLogsRequestString("after", params.after)           // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
                 buildLogsRequestString("search", searchString)          // The search string. Used by the search bar.
-                buildLogsRequestString("blockedQueriesOnly", blockedQueriesOnly)    // Used by the "Blocked queries only" switch.
+                buildLogsRequestString("blockedQueriesOnly", blockedQueriesOnly)    // Used by the "Blocked Queries Only" switch.
+                buildLogsRequestString("simple", simpleLogs)            // Used by the "Raw DNS logs" switch.
             }
 
             // Remove the "No logs" message
             const noLogsSpan = document.getElementById("noLogsSpan")
-            if (noLogsSpan) noLogsSpan.remove()
+            if (noLogsSpan)  noLogsSpan.remove()
 
-            // Recreate the spinner when loading. It has a different color than the original to indicate that it's being loaded by NXE
+            // Recreate the spinner when loading. It has a different color than the original to indicate that it's being loaded by NXE.
             {
-                let spinner = logsContainer.getByClass("spinner-border")
+                if (!params.after)      // Don't show the spinner when the real-time log is enabled.
+                {
+                    let spinner = logsContainer.getByClass("spinner-border")
 
-                if (spinner)  spinner.remove()
+                    if (spinner)  spinner.remove()
 
-                spinner = document.createElement("span")
-                spinner.className = "spinner-border text-primary my-4 removable"
-                spinner.style = "height: 50px; width: 50px; align-self: center;"
-                logsContainer.appendChild(spinner)
+                    spinner = document.createElement("span")
+                    spinner.className = "spinner-border text-primary my-4"
+                    spinner.style = "height: 50px; width: 50px; align-self: center;"
+                    logsContainer.appendChild(spinner)
+                }
             }
 
             // Load the log entries data
@@ -684,10 +766,10 @@ function main()
 
                 if (entriesData.length > 0)
                 {
-                    lastBefore = entriesData.lastItem().timestamp  // Store the timestamp of the last entry to load the next chunk starting from this timestamp. This timestamp is in Unix time
+                    lastBefore = entriesData.lastItem().timestamp       // Store the timestamp of the last entry, to load the older chunk starting from this timestamp. This timestamp is in Unix time.
+                    lastAfter  = entriesData[0].timestamp               // Store the timestamp of the first entry, to load the newer chunk starting from this timestamp.
 
-
-                    const now = Date.now()  // Get the current date-time in Unix time
+                    const now = Date.now()          // Get the current date-time in Unix time.
 
                     // Process the chunk's log entries
                     {
@@ -704,7 +786,7 @@ function main()
                                 }
                             }
 
-                            //loadedEntriesCountEll.textContent++  // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed.
+                            loadedEntriesCountEll.textContent++     // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed.
 
 
                             // Check if the entry matches any filter, and if so, remove it from the list
@@ -718,10 +800,10 @@ function main()
                                     entriesData.splice(i,1)
                                     i--
 
-                                    //if (!hideDevices || hideDevices && !isNamedDevice)
-                                        //filteredEntriesCountEll.textContent++
+                                    if (!hideDevices || hideDevices && !isNamedDevice)
+                                        filteredEntriesCountEll.textContent++
 
-                                    //allHiddenEntriesCountEll.textContent++
+                                    allHiddenEntriesCountEll.textContent++
                                     continue
                                 }
                             }
@@ -784,11 +866,14 @@ function main()
 
                                     // Create the query type element
                                     {
-                                        const queryTypeEll = document.createElement("span")
-                                        queryTypeEll.style = "font-weight: 600; font-size: 10px; opacity: 0.4; margin-left: 10px; background: #eee; padding: 1px 4px;"
-                                        queryTypeEll.innerText = entriesData[i].type
+                                        if (entriesData[i].type)
+                                        {
+                                            const queryTypeEll = document.createElement("span")
+                                            queryTypeEll.style = "font-weight: 600; font-size: 10px; opacity: 0.4; margin-left: 10px; background: #eee; padding: 1px 4px;"
+                                            queryTypeEll.innerText = entriesData[i].type
 
-                                        leftSideContainer.appendChild(queryTypeEll)
+                                            leftSideContainer.appendChild(queryTypeEll)
+                                        }
                                     }
 
                                     // Create the block/allow reason icon and tooltip
@@ -823,7 +908,7 @@ function main()
                                     const hideButton = document.createElement("button")
                                     hideButton.className = "btn btn-secondary mr-4"
                                     hideButton.innerHTML = "Hide"
-                                    setOnClickButton(hideButton)
+                                    hideButton.onclick = function() { openAllowDenyPopup(hideButton) }
 
                                     buttonsContainer.appendChild(hideButton)
 
@@ -832,7 +917,7 @@ function main()
                                         const denyButton = document.createElement("button")
                                         denyButton.className = "btn btn-danger"
                                         denyButton.innerHTML = "Deny"
-                                        setOnClickButton(denyButton)
+                                        denyButton.onclick = function() { openAllowDenyPopup(denyButton) }
 
                                         buttonsContainer.appendChild(denyButton)
                                     }
@@ -842,7 +927,7 @@ function main()
                                         const allowButton = document.createElement("button")
                                         allowButton.className = "btn btn-success ml-4"
                                         allowButton.innerHTML = "Allow"
-                                        setOnClickButton(allowButton)
+                                        allowButton.onclick = function() { openAllowDenyPopup(allowButton) }
 
                                         buttonsContainer.appendChild(allowButton)
                                     }
@@ -906,11 +991,14 @@ function main()
                                     entryContainer.appendChild(rightSideContainer)
                                 }
 
-                                logsContainer.appendChild(entryContainer)
+                                if (params.after)
+                                    logsContainer.insertBefore(entryContainer, logsContainer.children[i+1])
+                                else
+                                    logsContainer.appendChild(entryContainer)
                             }
 
 
-                            //visibleEntriesCountEll.textContent++
+                            visibleEntriesCountEll.textContent++
 
 
                         }
@@ -928,16 +1016,17 @@ function main()
 
                 // Now that all entries were processed, the spinner can be removed.
                 const spinner = logsContainer.getByClass("spinner-border")
-                if (spinner) spinner.remove()
+                if (spinner)  spinner.remove()
 
                 loadingChunk = false
 
-                if (!response.hasMore)      // For every chunk, NextDNS sets a property called hasMore, which indicates whether there are more log entries to load.
+                if (!response.hasMore && !params.after)      // For every chunk, NextDNS sets a property called hasMore, which indicates whether there are more log entries to load.
                     cancelLoading = true
 
-                if (!cancelLoading && entriesData.length < 25 && document.body.getBoundingClientRect().bottom < window.innerHeight * 5)     // Automatically load the next chunk when less than 25 entries of the chunk are listed.
+                if (!cancelLoading && entriesData.length < 25 && document.body.getBoundingClientRect().bottom < window.innerHeight * 5 && !params.after)     // Automatically load the next chunk when less than 25 entries of the chunk are listed.
                 {
                     loadLogChunk({before: lastBefore})
+
                     if (entriesData.length < 7 && document.body.getBoundingClientRect().bottom < window.innerHeight + 400)      // 400 is the vertical space taken by 6 entries.
                         scrollTo(0, document.body.scrollHeight)     // Automatically scroll to bottom when less than 7 entries of the chunk are listed.
                 }
@@ -970,8 +1059,8 @@ function main()
         {
             const entries = logsContainer.querySelectorAll(".log")
 
-            //allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
-            //visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = 0
+            allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
+            visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = 0
 
             for (let i=0; i < entries.length; i++)
             {
@@ -981,17 +1070,17 @@ function main()
                     || NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d)) )   // Domains included in the list of domains to hide.
                 {
                     entries[i].remove()
-                    //filteredEntriesCountEll.textContent++
-                    //allHiddenEntriesCountEll.textContent++
+                    filteredEntriesCountEll.textContent++
+                    allHiddenEntriesCountEll.textContent++
                 }
-                //else visibleEntriesCountEll.textContent++
+                else visibleEntriesCountEll.textContent++
             }
         }
 
         function processTimestamp(timestamp, now, dateTimeElement)
         {
             const relativeSecs = (now - timestamp) / 1000       // Get the relative time in seconds.
-            if (relativeSecs > 1800)        // If older than 30 minutes, show the full date-time.
+            if (relativeSecs > 1800)                            // If older than 30 minutes, show the full date-time.
             {
                 dateTimeElement.innerHTML = dateTimeFormatter.format(new Date(timestamp))
                 dateTimeElement.classList.remove("relativeTime")
@@ -1013,7 +1102,16 @@ function main()
             }
         }
 
+        function buildLogsRequestString(paramName, paramValue)
+        {
+            if (paramValue)
+            {
+                if (logsRequestString.includes("="))
+                    logsRequestString += "&"
 
+                logsRequestString += paramName + "=" + paramValue
+            }
+        }
 
 
 
@@ -1487,15 +1585,17 @@ function loadNXsettings()
         {
             writeSetting(
             {
-                NXsettings:
+                LogsPage:
                 {
-                    LogsPage: { DomainsToHide: [".nextdns.io", ".in-addr.arpa", ".ip6.arpa"] },     // Hide these queries by default.
-                    AllowDenylistPage: {},
-                    PrivacyPage: {},
-                    SecurityPage: {}
+                    DomainsToHide: ["nextdns.io", ".in-addr.arpa", ".ip6.arpa"],        // Hide these queries by default.
+                    ShowCounters: false
                 },
-                NotFirstRun: true
+                AllowDenylistPage: {},
+                PrivacyPage: {},
+                SecurityPage: {}
             })
+
+            browser.storage.local.set({NotFirstRun: true})
 
         }
 
@@ -1512,7 +1612,7 @@ function loadNXsettings()
 
 function writeSetting(object)
 {
-    return browser.storage.local.set({"NXsettings": object})
+    return browser.storage.local.set({NXsettings: object})
 }
 
 function readSetting(settingName)
@@ -1811,7 +1911,14 @@ function makeApiRequest(HTTPmethod, requestString, callback, requestBody = null)
     xhr.open(HTTPmethod, requestURL)
     xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")          // This is required when sending data in the request body to the server, otherwise it returns an internal server error (500). In other cases, it's optional.
     xhr.onload = function() { if (callback)   callback(xhr.response) }
-    xhr.onerror = function() { alert("Couldn't reach the server!") }
+    xhr.onerror = function()
+    {
+        // When there's a network problem while fetching the log chunk, try again after 5 seconds
+
+        setTimeout(function() {
+            makeApiRequest(HTTPmethod, requestString, callback, requestBody)
+        }, 5000)
+    }
     xhr.withCredentials = true                                                      // Include the session cookie in the request, otherwise it responds with "Forbidden".
     xhr.send(requestBody)
 
