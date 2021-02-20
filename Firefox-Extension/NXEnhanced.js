@@ -1194,7 +1194,6 @@ function main()
                 // Hide list of TLDs and create the Show button and the collapse switch
                 hideAllListItemsAndCreateButton("Show added TLDs", NXsettings.SecurityPage)
 
-
                 // Create the "Add all TLDs" button in the modal
 
                 document.querySelector(".card-footer button").onclick = function()
@@ -1529,7 +1528,7 @@ function main()
                                         const disabledItems = listObj.filter(d => !d.active).map(d => convertToHex(d[idPropName]))  // Store in an array the hex of each disabled item id
 
                                         for (let i=0; i < disabledItems.length; i++)
-                                            makeApiRequest("PATCH", listName+"/hex:" + disabledItems[i], {"active":false})
+                                            makeApiRequest("PATCH", listName+"/hex:" + disabledItems[i], false, {"active":false})
                                     }
                                 })
                             }
@@ -1538,14 +1537,14 @@ function main()
 
                         // Import Security page
 
-                        makeApiRequest("PATCH", "security", config.security)
+                        makeApiRequest("PATCH", "security", false, config.security)
 
                         for (let i=0; i < config.security.blocked_tlds.length; i++)  // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added individually
                             makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(config.security.blocked_tlds[i]), ()=> numItemsImported.blocked_tlds++)
 
                         // Import Privacy page
 
-                        makeApiRequest("PATCH", "privacy", config.privacy)
+                        makeApiRequest("PATCH", "privacy", false, config.privacy)
 
                         for (let i=0; i < config.privacy.blocklists.length; i++)
                             makeApiRequest("PUT", "privacy/blocklists/hex:" + convertToHex(config.privacy.blocklists[i]), ()=> numItemsImported.blocklists++)
@@ -1555,7 +1554,7 @@ function main()
 
                         // Import Parental Control page
 
-                        makeApiRequest("PATCH", "parentalcontrol", config.parentalcontrol)
+                        makeApiRequest("PATCH", "parentalcontrol", false, config.parentalcontrol)
 
                         importAllAndSwitchDisabledItems("parentalcontrol/services", "id")
                         importAllAndSwitchDisabledItems("parentalcontrol/categories", "id")
@@ -1567,10 +1566,10 @@ function main()
 
                         // Import Settings page
 
-                        makeApiRequest("PATCH", "settings", config.settings)
+                        makeApiRequest("PATCH", "settings", false, config.settings)
 
                         for (let i=0; i < config.settings.rewrites.length; i++)
-                            makeApiRequest("POST", "settings/rewrites", config.settings.rewrites[i])
+                            makeApiRequest("POST", "settings/rewrites", false, config.settings.rewrites[i])
 
                         // Check if the longest settings finished importing. The shorter ones most likely already finished
 
