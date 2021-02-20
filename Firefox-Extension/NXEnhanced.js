@@ -25,7 +25,6 @@ style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important;
                     div:hover #counters { visibility: hidden !important; }                                          /* Hide the log entries counters on hover */
                    .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */
                   `
-
 document.head.appendChild(style)
 
 // Run the main function when receiving a message from the background script.
@@ -54,7 +53,7 @@ function main()
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval
         let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
-        let lastBefore, lastAfter, currentDeviceId, searchString, blockedQueriesOnly, simpleLogs = 1
+        let lastBefore, lastAfter = 1, currentDeviceId, searchString, blockedQueriesOnly, simpleLogs = 1
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -67,18 +66,18 @@ function main()
 
                 const svgs = logsContainer.querySelectorAll(".settings-button svg, .stream-button svg")
 
-                if (svgs.length < 2)                                                        // Wait for the SVGs to finish loading before overriding the logs container, otherwise they fail to load and leave a blank space.
+                if (svgs.length < 2)                                                        // Wait for the SVGs to finish loading before overriding, otherwise they fail to load and leave a blank space.
                     return
 
                 let searchBarForm = logsContainer.querySelector("form")
 
-                if (!searchBarForm || !logsContainer.querySelector("div.text-center"))      // Wait for the search bar and the first log row to finish loading before overriding the logs container.
+                if (!searchBarForm || !logsContainer.querySelector("div.text-center"))      // Wait for the search bar and the first log row to finish loading before overriding.
                     return
 
 
                 clearInterval(waitForItems)
 
-                logsContainer.outerHTML += ""                                               // Override the logs container code to remove all events attached to it, so it can be used statically (without interferences from other scripts).
+                pageContentContainer.firstChild.outerHTML += ""                             // Override the content container code (reparse) to remove all events attached to it, so it can be used statically (without interferences from other scripts).
 
                 logsContainer = pageContentContainer.getByClass("list-group")               // Update the "pointer" to the new instance.
 
@@ -612,7 +611,12 @@ function main()
                         {
                             streamButton.classList.add("streaming")
 
-                            realTimeLogsPolling = setInterval(function() { loadLogChunk({after: lastAfter}) }, 2000)        // Poll for new log entries each 2 seconds.
+                            realTimeLogsPolling = setInterval(function()        // Poll for new log entries each 2 seconds.
+                            {
+                                if (!loadingChunk)
+                                    loadLogChunk({after: lastAfter})
+
+                            }, 2000)
                         }
                     }
                 }
@@ -714,6 +718,7 @@ function main()
             else
                 loadingChunk = true
 
+
             // Clear the logs
             {
                 if (params.clear)
@@ -739,13 +744,9 @@ function main()
                 buildLogsRequestString("simple", simpleLogs)            // Used by the "Raw DNS logs" switch.
             }
 
-            // Remove the "No logs" message
-            const noLogsSpan = document.getElementById("noLogsSpan")
-            if (noLogsSpan)  noLogsSpan.remove()
-
             // Recreate the spinner when loading. It has a different color than the original to indicate that it's being loaded by NXE.
             {
-                if (!params.after)      // Don't show the spinner when the real-time log is enabled.
+                if (!params.after)     // Don't show the spinner when the real-time log is enabled.
                 {
                     let spinner = logsContainer.getByClass("spinner-border")
 
@@ -1007,11 +1008,22 @@ function main()
 
                 if (entriesData.length == 0)        // If NextDNS responds with an empty list or all entries were filtered, then show the "No logs yet" message.
                 {
-                    const noLogsSpan = document.createElement("span")
-                    noLogsSpan.id = "noLogsSpan"
-                    noLogsSpan.innerHTML = "No logs yet."
-                    noLogsSpan.style = "text-align: center; margin: 20px; color: #aaa;"
-                    logsContainer.appendChild(noLogsSpan)
+                    if (!document.getElementById("noLogsSpan") && document.getElementsByClassName("log").length == 0)
+                    {
+                        const noLogsSpan = document.createElement("span")
+                        noLogsSpan.id = "noLogsSpan"
+                        noLogsSpan.innerHTML = "No logs yet."
+                        noLogsSpan.style = "text-align: center; margin: 20px; color: #aaa;"
+                        logsContainer.appendChild(noLogsSpan)
+                    }
+
+                    cancelLoading = false
+                }
+                else
+                {
+                    // Remove the "No logs" message
+                    const noLogsSpan = document.getElementById("noLogsSpan")
+                    if (noLogsSpan)  noLogsSpan.remove()
                 }
 
                 // Now that all entries were processed, the spinner can be removed.
@@ -1127,8 +1139,8 @@ function main()
             {
                 clearInterval(waitForLists)
 
-                // Hide list of blocklists
-                hideAllListItems("Show added lists")
+                // Hide list of blocklists and create the Show button and the collapse switch
+                hideAllListItemsAndCreateButton("Show added lists", NXsettings.PrivacyPage)
 
 
                 // Sort blocklists alphabetically in the modal
@@ -1141,17 +1153,29 @@ function main()
                         {
                             clearInterval(waitForListsModal)
 
-                            sortItemsAZ(".modal-body .list-group")
+                            const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
+                            sortAZSwitch.firstChild.checked = NXsettings.PrivacyPage.SortDomainsAZ
+                            sortAZSwitch.style = "position: absolute; right: 100px; bottom: 15px;"
+                            sortAZSwitch.firstChild.onchange = function()
+                            {
+                                sortItemsAZ(".modal-body .list-group")
+                                NXsettings.PrivacyPage.SortDomainsAZ = this.checked
+                                writeSetting(NXsettings)
+                            }
+
+                            const container = document.querySelector(".modal-header")
+                            container.style.position = "relative"
+                            container.appendChild(sortAZSwitch)
+
+                            if (NXsettings.PrivacyPage.SortDomainsAZ)
+                                sortItemsAZ(".modal-body .list-group")
 
                         }
                     }, 100)
 
-                    intervals.push(waitForListsModal)
                 }
             }
         }, 500)
-
-        intervals.push(waitForLists)
 
 
 
@@ -1167,8 +1191,8 @@ function main()
             {
                 clearInterval(waitForLists)
 
-                // Hide list of TLDs
-                hideAllListItems("Show added TLDs")
+                // Hide list of TLDs and create the Show button and the collapse switch
+                hideAllListItemsAndCreateButton("Show added TLDs", NXsettings.SecurityPage)
 
 
                 // Create the "Add all TLDs" button in the modal
@@ -1198,8 +1222,8 @@ function main()
 
                                         // Process the TLDs
 
-                                        const buttons = modal.getElementsByClassName("btn")  // Here a getElementsByClassName is required instead of a querySelectorAll, as the former returns a list of
-                                        const buttonsClicked = []                            // references, while the latter returns a list of static copies that are applied to the original when set.
+                                        const buttons = modal.getElementsByClassName("btn")     // Here a getElementsByClassName is required instead of a querySelectorAll, as the former returns a list of
+                                        const buttonsClicked = []                               // references, while the latter returns a list of static copies that are applied to the original when set.
                                         let numTLDsAdded = 0
 
                                         const checkIfFinished = function()
@@ -1209,8 +1233,8 @@ function main()
                                                 setInterval(function()
                                                 {
                                                     for (let j=0; j < buttonsClicked.length; j++)
-                                                    {                                                                     // If the "Add" button changed to the "Remove" button, this means that the TLD was successfully added.
-                                                        if (buttons[buttonsClicked[j]].classList.contains("btn-danger"))  // It wouldn't be possible to get an updated classList if querySelectorAll was used.
+                                                    {                                                                           // If the "Add" button changed to the "Remove" button, this means that the TLD was successfully added.
+                                                        if (buttons[buttonsClicked[j]].classList.contains("btn-danger"))        // It wouldn't be possible to get an updated classList if querySelectorAll was used.
                                                             buttonsClicked.splice(j,1)
                                                     }
 
@@ -1227,16 +1251,16 @@ function main()
 
                                             if (buttons[i].classList.contains("btn-primary"))
                                             {
-                                                if (!/[^\w]/.test(TLD))  // If there isn't a character in the TLD which is not a-z, then make the request normally.
+                                                if (!/[^\w]/.test(TLD))             // If there isn't a character in the TLD which is not a-z, then make the request normally.
                                                 {
                                                     makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
                                                 }
-                                                else    // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
-                                                {       // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
+                                                else                                // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
+                                                {                                   // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
                                                     setTimeout(function(i)
                                                     {
                                                         buttons[i].click();
-                                                        buttonsClicked.push(i)  // Store in an array the index of all buttons that were clicked, then check whether they finished adding
+                                                        buttonsClicked.push(i)      // Store in an array the index of all buttons that were clicked, then check whether they finished adding.
                                                         numTLDsAdded++
 
                                                         checkIfFinished()
@@ -1250,7 +1274,6 @@ function main()
                                 else alert("All TLDs are already added.")
                             }
 
-
                             const header = document.querySelector(".modal-header")
                             header.style = "position: relative;"
                             header.appendChild(addAll)
@@ -1260,8 +1283,6 @@ function main()
                 }
             }
         }, 500)
-
-        intervals.push(waitForLists)
 
 
 
@@ -1280,38 +1301,55 @@ function main()
 
                 // Create the options menu
 
+                const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
+                sortAZSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortAZ
+                sortAZSwitch.onchange = function()
+                {
+                    sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
+                    NXsettings.AllowDenylistPage.SortAZ = this.firstChild.checked
+                    writeSetting(NXsettings)
+                }
+
                 const sortTLDSwitch = createSwitchCheckbox("Sort by TLD")
+                sortTLDSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortTLD
+                sortTLDSwitch.onchange = function()
+                {
+                    sortItemsAZ(".list-group:nth-child(2)", "domain", this.firstChild)
+                    NXsettings.AllowDenylistPage.SortTLD = this.firstChild.checked
+                    writeSetting(NXsettings)
+                }
 
                 const boldRootSwitch = createSwitchCheckbox("Bold root domain")
-                boldRootSwitch.firstChild.checked = GMsettings.AllowDenyOptions.bold
+                boldRootSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Bold
                 boldRootSwitch.onchange = function()
                 {
                     styleDomains("bold", this.firstChild.checked)
-                    GMsettings.AllowDenyOptions.bold = this.firstChild.checked
-                    GM.setValue("AllowDenyOptions", JSON.stringify(GMsettings.AllowDenyOptions))
+                    NXsettings.AllowDenylistPage.Bold = this.firstChild.checked
+                    writeSetting(NXsettings)
                 }
 
                 const lightenSwitch = createSwitchCheckbox("Lighten subdomains")
-                lightenSwitch.firstChild.checked = GMsettings.AllowDenyOptions.lighten
+                lightenSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Lighten
                 lightenSwitch.onchange = function()
                 {
                     styleDomains("lighten", this.firstChild.checked)
-                    GMsettings.AllowDenyOptions.lighten = this.firstChild.checked
-                    GM.setValue("AllowDenyOptions", JSON.stringify(GMsettings.AllowDenyOptions))
+                    NXsettings.AllowDenylistPage.Lighten = this.firstChild.checked
+                    writeSetting(NXsettings)
                 }
 
                 const rightAlignSwitch = createSwitchCheckbox("Right-aligned")
-                rightAlignSwitch.firstChild.checked = GMsettings.AllowDenyOptions.rightAligned
+                rightAlignSwitch.firstChild.checked = NXsettings.AllowDenylistPage.RightAligned
                 rightAlignSwitch.onchange = function()
                 {
                     styleDomains("rightAlign", this.firstChild.checked)
-                    GMsettings.AllowDenyOptions.rightAligned = this.firstChild.checked
-                    GM.setValue("AllowDenyOptions", JSON.stringify(GMsettings.AllowDenyOptions))
+                    NXsettings.AllowDenylistPage.RightAligned = this.firstChild.checked
+                    writeSetting(NXsettings)
                 }
 
 
                 const optionsContainer = document.createElement("div")
                 optionsContainer.style = "position:absolute; top: 7px; border: 1px solid lightgray; border-radius: 15px; padding: 5px 15px 5px 0px; left: 1160px; width: max-content; display: none;"
+                optionsContainer.appendChild(sortAZSwitch)
                 optionsContainer.appendChild(sortTLDSwitch)
                 optionsContainer.appendChild(boldRootSwitch)
                 optionsContainer.appendChild(lightenSwitch)
@@ -1326,17 +1364,10 @@ function main()
                     this.blur()
                 }
 
-                const sortAZButton = document.createElement("button")
-                sortAZButton.className = "btn btn-primary"
-                sortAZButton.style = "position: absolute; right: 20px; bottom: 6px"
-                sortAZButton.innerHTML = "Sort A-Z"
-                sortAZButton.onclick = function() { sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild); this.blur() }
-
                 const rectangleAboveInput = document.querySelector(".list-group")
                 rectangleAboveInput.style = "position: relative;"
                 rectangleAboveInput.appendChild(optionsContainer)
                 rectangleAboveInput.appendChild(optionsButton)
-                rectangleAboveInput.appendChild(sortAZButton)
                 rectangleAboveInput.onclick = function() { event.stopPropagation() }
 
                 document.body.onclick = function() { optionsContainer.style.cssText += 'display: none;' }
@@ -1356,14 +1387,14 @@ function main()
                     {
                         if (event.key == "Enter")
                         {
-                            GMsettings.domainDescriptions[this.previousSibling.textContent.substring(2)] = this.value
-                            GM.setValue("domainDescriptions", JSON.stringify(GMsettings.domainDescriptions))
+                            NXsettings.AllowDenylistPage.DomainsDescriptions[this.previousSibling.textContent.substring(2)] = this.value
+                            writeSetting(NXsettings)
                             this.style.cssText += this.value != "" ? "visibility: visible;" : "visibility: hidden;"
                             this.blur()
                         }
                     }
 
-                    descriptionInput.value = GMsettings.domainDescriptions[domainsItems[i].textContent.substring(2)] || ""
+                    descriptionInput.value = NXsettings.AllowDenylistPage.DomainsDescriptions[domainsItems[i].textContent.substring(2)] || ""
 
                     if (descriptionInput.value == "")
                         descriptionInput.style.cssText += "visibility: hidden;"
@@ -1376,6 +1407,9 @@ function main()
 
                 // Apply the highlighting options
 
+                if (sortAZSwitch.firstChild.checked)
+                    sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
+
                 styleDomains("bold", boldRootSwitch.firstChild.checked)
                 styleDomains("lighten", lightenSwitch.firstChild.checked)
 
@@ -1385,8 +1419,6 @@ function main()
             }
 
         }, 500)
-
-        intervals.push(waitForLists)
 
 
 
@@ -1569,7 +1601,6 @@ function main()
 
         }, 500)
 
-        intervals.push(waitForContent)
     }
 }
 
@@ -1581,18 +1612,30 @@ function loadNXsettings()
 {
     readSetting("NotFirstRun").then((obj) =>
     {
-        if (obj.NotFirstRun != true)
+        if (obj.NotFirstRun != true)        // If it's running for the first time, store the following default settings.
         {
             writeSetting(
             {
+                SecurityPage: { CollapseList: true },
+                PrivacyPage:
+                {
+                    CollapseList: true,
+                    SortBlocklistsAZ: false
+                },
+                AllowDenylistPage:
+                {
+                    SortDomainsAZ: false,
+                    SortTLD: false,
+                    Bold: false,
+                    Lighten: false,
+                    RightAligned: false,
+                    DomainsDescriptions: []
+                },
                 LogsPage:
                 {
-                    DomainsToHide: ["nextdns.io", ".in-addr.arpa", ".ip6.arpa"],        // Hide these queries by default.
-                    ShowCounters: false
-                },
-                AllowDenylistPage: {},
-                PrivacyPage: {},
-                SecurityPage: {}
+                    ShowCounters: false,
+                    DomainsToHide: ["nextdns.io", ".in-addr.arpa", ".ip6.arpa"]
+                }
             })
 
             browser.storage.local.set({NotFirstRun: true})
@@ -1864,28 +1907,53 @@ function clearAllIntervals()
 }
 
 
-function hideAllListItems(text)
+function hideAllListItemsAndCreateButton(text, settingObject)
 {
-    const items = document.querySelector(".list-group").children
+    if (settingObject.CollapseList)
+    {
+        const items = document.querySelector(".list-group").children
 
-    // Hide items
+        // Hide items
 
-    for (let i = 1; i < items.length; i++)
-        items[i].style.cssText += "display: none;"
-
-    // Create "Show" button
-
-    const show = document.createElement("button")
-    show.className = "btn btn-light"
-    show.style = "margin-top: 20px; background-color: #eee; border-color: #eee;"
-    show.innerHTML = text
-    show.onclick = function() {
         for (let i = 1; i < items.length; i++)
-            items[i].style.cssText += "display: block;"
+            items[i].style.cssText += "display: none;"
+
+        // Create "Show" button
+
+        const show = document.createElement("button")
+        show.id = "showList"
+        show.className = "btn btn-light"
+        show.style = "margin-top: 20px; background-color: #eee; border-color: #eee;"
+        show.innerHTML = text
+        show.onclick = function() {
+            for (let i = 1; i < items.length; i++)
+                items[i].style.cssText += "display: block;"
+        }
+
+        items[0].style.cssText += "position: relative;"
+        items[0].appendChild(show)
     }
 
-    items[0].style += "position: relative;"
-    items[0].appendChild(show)
+
+    // Create the "Collapse the list" switch
+
+    const collapseSwitch = createSwitchCheckbox("Collapse the list")
+    collapseSwitch.firstChild.checked = settingObject.CollapseList
+    collapseSwitch.style = "position: absolute; right: 200px; bottom: 50%;"
+    collapseSwitch.firstChild.onchange = function()
+    {
+        settingObject.CollapseList = this.checked
+        writeSetting(NXsettings)
+
+        const showButton = document.getElementById("showList")
+
+        if (this.checked && !showButton)
+            hideAllListItemsAndCreateButton("Show added TLDs", settingObject)
+        else
+            showButton.click()
+    }
+
+    document.querySelector(".list-group-item").appendChild(collapseSwitch)
 }
 
 
