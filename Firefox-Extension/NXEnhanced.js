@@ -1,11 +1,11 @@
 // Name            NX Enhanced
 // Description     Adds quality-of-life features to NextDNS website for a more practical experience
 // Author          BLBC (github.com/hjk789)
-// Copyright       2020+, BLBC (github.com/hjk789)
 // Version         4.0
 // Homepage        https://github.com/hjk789/NXEnhanced
 // License         https://github.com/hjk789/NXEnhanced#license
 // SupportURL      https://github.com/hjk789/NXEnhanced/issues
+// Copyright (c) 2020+ BLBC (github.com/hjk789)
 
 let currentPage = ""
 const intervals = []
@@ -127,7 +127,7 @@ function main()
                                 {
                                     const deviceCustom = document.createElement("button")
                                     deviceCustom.className = i == 0 ? "dropdown-item active" : "dropdown-item"
-                                    deviceCustom.innerHTML = i == 0 ? "All devices" : devicesData[i-1].name
+                                    deviceCustom.textContent = i == 0 ? "All devices" : devicesData[i-1].name
                                     deviceCustom.onclick = function()       // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
                                     {
                                         const index = Array.from(this.parentElement.children).indexOf(this)     // Get the index of this dropdown item.
@@ -371,7 +371,7 @@ function main()
                                     else if (error.includes("invalid"))
                                         error = "Please enter a valid domain"
 
-                                    allowDenyPopup.errorMsg.innerHTML = error
+                                    allowDenyPopup.errorMsg.textContent = error
                                     allowDenyPopup.errorMsg.classList.add("invalid-feedback")
                                     allowDenyPopup.input.classList.add("is-invalid")
                                 }
@@ -510,9 +510,13 @@ function main()
                 // Make the search bar use NXE's code
                 {
                     const searchBarForm = logsContainer.querySelector("form")
-                    searchBarForm.outerHTML = searchBarForm.firstChild.outerHTML      // Take out the input from inside the form and remove the form element, so that when hitting
-                                                                                      // Enter, it doesn't reload the page. This also stripes all the original events of the input box.
-                    var searchBar = logsContainer.querySelector("[type='search']")
+                    var searchBar = searchBarForm.firstChild.cloneNode(true)        // Take out the search bar from inside the form ...
+                    const container = searchBarForm.parentElement
+
+                    searchBarForm.remove()                                          // ... remove the form element ...
+                    container.appendChild(searchBar)                                // ... then add back the search bar. This is so that when hitting Enter, it doesn't reload the page.
+
+                    searchBar = container.lastChild
 
                     searchBar.onkeyup = function(e)
                     {
@@ -702,8 +706,8 @@ function main()
             allowDenyPopup.fullDomainButton.className =
             allowDenyPopup.rootDomainButton.className = button.innerText == "Allow" ? "btn btn-success mt-1" : button.innerText == "Deny" ? "btn btn-danger mt-1" : "btn btn-secondary mt-1"
 
-            allowDenyPopup.fullDomainButton.innerHTML = button.innerText + " domain"
-            allowDenyPopup.rootDomainButton.innerHTML = button.innerText + " root"
+            allowDenyPopup.fullDomainButton.textContent = button.innerText + " domain"
+            allowDenyPopup.rootDomainButton.textContent = button.innerText + " root"
 
             allowDenyPopup.container.style.cssText += "visibility: visible; top: " + (button.getBoundingClientRect().y - allowDenyPopup.parent.getBoundingClientRect().y - 170) + "px;"    // Show the popup right above the buttons.
             allowDenyPopup.input.focus()
@@ -845,9 +849,15 @@ function main()
                                     {
                                         const domainEll = document.createElement("span")
                                         domainEll.className = "domainName"
-                                        domainEll.innerHTML = "<span style='opacity: 0.6;'>" + domainName.substring(0, entriesData[i].rootDomainStartIndex) + "</span>"
-                                                            + domainName.substring(entriesData[i].rootDomainStartIndex)  // NextDNS stores at which character starts the root domain name,
-                                                                                                                         // so everything before rootDomainStartIndex is a subdomain
+
+                                        const innerHTML = "<span style='opacity: 0.6;'>" + domainName.substring(0, entriesData[i].rootDomainStartIndex) + "</span>"     // NextDNS stores at which character starts the root domain name,
+                                                          + domainName.substring(entriesData[i].rootDomainStartIndex)                                                   // so everything before rootDomainStartIndex is a subdomain.
+
+                                        const innerNode = (new DOMParser).parseFromString(innerHTML, "text/html").body      // It's required to parseFromString the HTML in order to pass AMO's code validation.
+
+                                        domainEll.appendChild(innerNode.firstChild)
+                                        domainEll.appendChild(innerNode.lastChild)
+
                                         leftSideContainer.appendChild(domainEll)
                                     }
 
@@ -945,7 +955,7 @@ function main()
                                     // Create the device name element
                                     {
                                         const deviceEll = document.createElement("span")
-                                        deviceEll.innerHTML = entriesData[i].deviceName
+                                        deviceEll.textContent = entriesData[i].deviceName
                                         deviceEll.style = "height: 15px; margin-bottom: 10px; margin-left: auto;"
 
                                         if (!isNamedDevice)     // If the query was made from an unnamed device, then show the gray empty space
@@ -1094,7 +1104,7 @@ function main()
             const relativeSecs = (now - timestamp) / 1000       // Get the relative time in seconds.
             if (relativeSecs > 1800)                            // If older than 30 minutes, show the full date-time.
             {
-                dateTimeElement.innerHTML = dateTimeFormatter.format(new Date(timestamp))
+                dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp))
                 dateTimeElement.classList.remove("relativeTime")
             }
             else        // Otherwise, show the relative time
@@ -1102,15 +1112,15 @@ function main()
                 dateTimeElement.className = "relativeTime"
 
                 if (relativeSecs < 10)
-                    dateTimeElement.innerHTML = "a few seconds ago"
+                    dateTimeElement.textContent = "a few seconds ago"
                 else if (relativeSecs < 60)
-                    dateTimeElement.innerHTML = "some seconds ago"
+                    dateTimeElement.textContent = "some seconds ago"
                 else if (relativeSecs < 120)
-                    dateTimeElement.innerHTML = "a minute ago"
+                    dateTimeElement.textContent = "a minute ago"
                 else
-                    dateTimeElement.innerHTML = parseInt(relativeSecs/60) + " minutes ago"
+                    dateTimeElement.textContent = parseInt(relativeSecs/60) + " minutes ago"
 
-                dateTimeElement.innerHTML += " &nbsp;(" + new Date(timestamp).toLocaleTimeString() + ")"
+                dateTimeElement.textContent += String.fromCharCode(160) + " (" + new Date(timestamp).toLocaleTimeString() + ")"     // Char code 160 is the &nbsp; character.
             }
         }
 
@@ -1692,7 +1702,23 @@ function styleDomains(type, enable)
                 rootDomain += "." + subdomains[subdomains.length-1]
 
                 if (!rootSpan)
-                    items[i].innerHTML = items[i].innerHTML.replace(rootDomain, "<span style='" + domainStyle + "'>" + rootDomain + "</span>")
+                {
+                    const subdomainsText = items[i].innerHTML.replace(rootDomain, "<" + rootDomain).match(/\/span>(.*?)</)[1]
+                    items[i].textContent = ""
+
+                    const spanWildcard = document.createElement("span")
+                    spanWildcard.style = "opacity: 0.3;"
+                    spanWildcard.textContent = "*."
+                    items[i].appendChild(spanWildcard)
+
+                    const nodeSubdomains = document.createTextNode(subdomainsText)
+                    items[i].appendChild(nodeSubdomains)
+
+                    const spanRootDomain = document.createElement("span")
+                    spanRootDomain.style = domainStyle
+                    spanRootDomain.textContent = rootDomain
+                    items[i].appendChild(spanRootDomain)
+                }
                 else
                     rootSpan.style.cssText += domainStyle
 
@@ -1726,7 +1752,7 @@ function styleDomains(type, enable)
 }
 
 
-function createSwitchCheckbox(inner)
+function createSwitchCheckbox(text)
 {
     const container = document.createElement("div")
     container.className = "custom-switch"
@@ -1737,7 +1763,7 @@ function createSwitchCheckbox(inner)
     checkbox.className = "custom-control-input"
 
     const label = document.createElement("label")
-    label.innerHTML = inner
+    label.textContent = text
     label.style = "margin-left: 10px; user-select: none;"
     label.htmlFor = checkbox.id
     label.className = "custom-control-label"
@@ -1885,7 +1911,11 @@ function extendFunctions()
     Node.prototype.createStylizedTooltip = function(innerHTML)
     {
         const tooltipDiv = document.createElement("div")
-        tooltipDiv.innerHTML = innerHTML
+        const innerNodes = (new DOMParser).parseFromString(innerHTML, "text/html").body.childNodes       // It's required to parseFromString the HTML in order to pass AMO's code validation.
+
+        for (let i=0; i < innerNodes.length; i++)
+            tooltipDiv.appendChild(innerNodes[i])
+
         tooltipDiv.className = "customTooltip"
         tooltipDiv.style = 'position: absolute; background: #333; color: white; z-index: 99; font-family: var(--font-family-sans-serif); padding: 7px; font-size: 11px; font-weight: initial; \
                             text-align: center; border-radius: 5px; line-height: 20px; margin-top: 10px; min-width: 3.2cm; max-width: 5.5cm; visibility: hidden; opacity: 0; transition: 0.2s;'
@@ -1923,7 +1953,7 @@ function hideAllListItemsAndCreateButton(text, settingObject)
         show.id = "showList"
         show.className = "btn btn-light"
         show.style = "margin-top: 20px; background-color: #eee; border-color: #eee;"
-        show.innerHTML = text
+        show.textContent = text
         show.onclick = function() {
             for (let i = 1; i < items.length; i++)
                 items[i].style.cssText += "display: block;"

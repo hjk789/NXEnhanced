@@ -4,6 +4,8 @@
   "version": "4.0",
   "description": "Adds quality-of-life features to NextDNS website for a more practical experience",
 
+  "icons": { "96": "icon.png" },
+
   "permissions": ["storage", "tabs"],
 
   "content_scripts":
