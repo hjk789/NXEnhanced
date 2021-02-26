@@ -16,7 +16,7 @@ You can either add the respective domain or the whole root domain, or even edit 
 ![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
 
 - Ability to specify domains that should be hidden from the logs  
-![New domain filtering for the logs](https://i.imgur.com/l8Ouzh1.png        
+![New domain filtering for the logs](https://i.imgur.com/l8Ouzh1.png)        
 You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
