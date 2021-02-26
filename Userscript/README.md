@@ -16,7 +16,7 @@ You can either add the respective domain or the whole root domain, or even edit 
 ![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
 
 - Ability to specify domains that should be hidden from the logs  
-![New domain filtering for the logs](https://i.imgur.com/l0b8J2B.png)        
+![New domain filtering for the logs](https://i.imgur.com/l8Ouzh1.png        
 You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
@@ -26,12 +26,12 @@ You can either manually input domains, or click on the "Hide" button, alongside 
 ![refresh button](https://i.imgur.com/yBEo3mV.png)
 
 - An option to show the number of entries currently loaded, either visible or hidden by filters    
-![counters](https://i.imgur.com/LtoNaok.png)
+![counters](https://i.imgur.com/8mTEDt1.png)
 
 ### Privacy page:
 
 - Collapse the list of blocklists enabled and adds a button to unhide them if needed    
-![Hidden lists](https://i.imgur.com/wlQBunU.png)    
+![Hidden lists](https://i.imgur.com/ifnmNiv.png)    
 This is good for people with a long list of blocklists added.
 
 - Sort alphabetically the list of blocklists in the "Add a blocklist" screen  
@@ -47,7 +47,7 @@ This is good for people with a long list of blocklists added.
 ### Allowlist/Denylist pages:
 
 - Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
-![Description input](https://i.imgur.com/TqlKWxr.png)    
+![Description input](https://i.imgur.com/DiuO5TB.png)    
 
 - Sort the allow/deny lists alphabetically, and styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
 ![allow/deny options](https://i.imgur.com/ull7njg.png)
