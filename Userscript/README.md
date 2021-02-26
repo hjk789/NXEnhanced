@@ -47,10 +47,10 @@ This is good for people with a long list of blocklists added.
 ### Allowlist/Denylist pages:
 
 - Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
-![Description input](https://i.imgur.com/DiuO5TB.png)    
+![Description input](https://i.imgur.com/TqlKWxr.png)    
 
 - Sort the allow/deny lists alphabetically, and styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
-![allow/deny options](https://i.imgur.com/ull7njg.png)
+![allow/deny options](https://i.imgur.com/DiuO5TB.png)
 
 ### Settings page:
 
