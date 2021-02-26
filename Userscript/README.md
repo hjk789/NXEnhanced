@@ -68,10 +68,6 @@ If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the a
 
 **Note:** Although almost all features should work fine with it, Greasemonkey is not supported. NX Enhanced userscript was tested in Firefox and Chrome, in Tampermonkey, Greasemonkey and Violentmonkey. It used to work in Firefox, but it's working partially now. You have to use the [Firefox extension](https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=userscript) instead. If you really have to use this userscript in Firefox, you have to disable the `security.csp.enable` setting in about:config (not recommended for security reasons). In Chrome, to this date, it still works fine. To this date, it should work fine in pretty much any other browsers in which you can install any of these three script-managers, although I didn't tested them.
 
-## Disclaimers
-
-I have no association with NextDNS Inc., I'm just a user of their service. NX Enhanced is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
-
 ## License
 
 - You can view the code, download copies, install, run, use the features and uninstall this software.
@@ -79,5 +75,7 @@ I have no association with NextDNS Inc., I'm just a user of their service. NX En
 - You can modify your downloaded copy as you like.
 - You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it.
 - You cannot do any other action not allowed in this license.  
+
+I have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
 
 Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
