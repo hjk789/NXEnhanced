@@ -640,21 +640,6 @@ function main()
 
 
 
-            // Remove the original spinner. It takes some seconds to appear after the page is already loaded.
-            waitForSpinner = setInterval(function()
-            {
-                const originalSpinner = pageContentContainer.firstChild.children[2].getByClass("spinner-border")
-
-                if (originalSpinner)
-                {
-                    clearInterval(waitForSpinner)
-
-                    originalSpinner.parentElement.parentElement.remove()
-                }
-            }, 100)
-
-
-
 
             // And finally start loading the logs
             reloadLogs()
