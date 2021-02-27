@@ -90,7 +90,7 @@ If you can't code, but still want to contribute, you can do so by making a donat
 
 ## License
 
-- You can view the code, download copies and run this software.
+- You can view the code, download copies, install, run, use the features and uninstall this software.
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can create or participate in discussions, give feedback and rate this project.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
