@@ -67,7 +67,8 @@ This is good for people with a long list of blocklists added.
 
 For Firefox, just click the "Get the Addon" link above, then click the "Install" button and confirm.  
 
-For Chrome, it's not available in the Chrome store, so you have to install it manually. To do so, download [the ZIP](https://github.com/hjk789/NXEnhanced/archive/master.zip), extract it, move the extracted folder to somewhere safe, go to chrome://extensions in Chrome, enable the Developer Mode, click "Load Unpacked", open the extracted folder and choose the "WebExtension" folder. Done!
+For Chrome (and other Chromium based browsers), it's not available in the Chrome Web Store, so you have to install it manually. To do so, download [the ZIP](https://github.com/hjk789/NXEnhanced/archive/master.zip), extract it, move the extracted folder to somewhere safe, in Chrome go to `chrome://extensions` (the page with the list of your installed extensions), enable the Developer Mode, click "Load Unpacked", open the extracted folder and choose the "WebExtension" folder. Done! Just remember to never disable the developer mode, or else the extension gets uninstalled and you lose all your settings.  
+To update the extension the process is almost the same, the only difference is that, after you extract the zip, you have to merge the new WebExtension folder to the old one, replacing the old files, then in `chrome://extensions` click the refresh button (the one beside the switch).
 
 NX Enhanced was tested in Firefox and Chrome. It should work fine in pretty much any browser that accepts Firefox or Chrome extensions, although I didn't tested them.
 
@@ -75,7 +76,7 @@ You also have the option of using the userscript version, but it works only in C
 
 ## Bug reports, suggestions and questions
 
-In case you are experiencing any problem with NX Enhanced, or you want to make suggestions, you are encouraged to post a new issue on the [Issues section](https://github.com/hjk789/NXEnhanced/issues). Any feedback is welcome, appreciated and encouraged. If you have any questions you can start a new discussion in the [Discussions section](https://github.com/hjk789/NXEnhanced/discussions).
+In case you experience any problem with NX Enhanced, or you want to make suggestions, you are encouraged to post a new issue on the [Issues section](https://github.com/hjk789/NXEnhanced/issues). Any feedback is welcome, appreciated and encouraged. If you have any questions you can start a new discussion in the [Discussions section](https://github.com/hjk789/NXEnhanced/discussions).
 
 ## How to contribute
 
@@ -90,7 +91,7 @@ If you can't code, but still want to contribute, you can do so by making a donat
 
 ## License
 
-- You can view the code, download copies, install, run, use the features and uninstall this software.
+- You can view the code, download copies, install, run, use the features added to the page and uninstall this software.
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can create or participate in discussions, give feedback and rate this project.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
