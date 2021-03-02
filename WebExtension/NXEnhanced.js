@@ -24,30 +24,32 @@ style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important;
                    .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }   /* Show the tooltip when hovering it's container */
                    .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }    /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
                     div:hover #counters { visibility: hidden !important; }                                          /* Hide the log entries counters on hover */
+                   .btn-light {	background-color: #eee; }                                                           /* Make the btn-light more visible without affecting the hover */
                    .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */
                   `
 document.head.appendChild(style)
 
-// Run the main function when receiving a message from the background script.
-if (isChrome)
-    chrome.runtime.onMessage.addListener(main)     // Currently, the background script sends a message to the content script when the page title of the NextDNS site changes.
-else
-    browser.runtime.onMessage.addListener(main)
 
+// Polling to check when the user switches pages, to add the features of the respective page.
 
-main()
-
-
-function main()
+setIntervalOld(function()
 {
-    if (currentPage == location.href)       // The browser.tabs.onUpdated event sometimes can trigger
-        return                              // more than once. This prevents from duplicating things.
+    if (currentPage == location.href)
+        return
 
     currentPage = location.href
 
     clearAllIntervals()
 
+    main()
 
+}, 250)
+
+
+
+
+function main()
+{
     // ---------------------------- Logs page ----------------------------
 
 
@@ -279,7 +281,7 @@ function main()
                         {
                             visibleEntriesCountEll.parentElement.style.visibility = this.checked ? "visible" : "hidden"
                             NXsettings.LogsPage.ShowCounters = this.checked
-                            writeSetting(NXsettings)
+                            saveSettings()
                         }
 
                         filteringOptionsContainer.appendChild(showNumEntriesSwitch)
@@ -293,7 +295,7 @@ function main()
                 function updateFilters()
                 {
                     NXsettings.LogsPage.DomainsToHide = domainsToHideInput.value.split("\n").filter(d => d.trim() != "")        // Store each entry in an array, but don't include empty lines.
-                    writeSetting(NXsettings)
+                    saveSettings()
                 }
             }
 
@@ -348,7 +350,7 @@ function main()
 
                     if (allowDenyPopup.listName != "Hide")
                     {
-                        allowDenyPopup.errorMsg.innerHTML = "Submitting..."
+                        createSpinner(allowDenyPopup.errorMsg)
 
                         // In NextDNS site, domains, TLDs, blocklists, and pretty much anything added by clicking an "Add" button, are added by sending these items' id with
                         // each character converted to hexadecimal, instead of plain text (ASCII). This converts the specified domain to hex then sends it to the respective list.
@@ -358,7 +360,7 @@ function main()
                         {
                             if (response.includes(allowDenyPopup.input.value))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
                             {                                                           // This checks if it was successful.
-                                allowDenyPopup.errorMsg.innerHTML = 'Done!'
+                                allowDenyPopup.errorMsg.textContent = '✔️'
 
                                 // Auto dismiss the popup after 1 second
                                 setTimeout(function() {
@@ -1163,7 +1165,7 @@ function main()
                             {
                                 sortItemsAZ(".modal-body .list-group")
                                 NXsettings.PrivacyPage.SortAZ = this.checked
-                                writeSetting(NXsettings)
+                                saveSettings()
                             }
 
                             const container = document.querySelector(".modal-header")
@@ -1309,7 +1311,7 @@ function main()
                 {
                     sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
                     NXsettings.AllowDenylistPage.SortAZ = this.firstChild.checked
-                    writeSetting(NXsettings)
+                    saveSettings()
                 }
 
                 const sortTLDSwitch = createSwitchCheckbox("Sort by TLD")
@@ -1318,7 +1320,7 @@ function main()
                 {
                     sortItemsAZ(".list-group:nth-child(2)", "domain", this.firstChild)
                     NXsettings.AllowDenylistPage.SortTLD = this.firstChild.checked
-                    writeSetting(NXsettings)
+                    saveSettings()
                 }
 
                 const boldRootSwitch = createSwitchCheckbox("Bold root domain")
@@ -1327,7 +1329,7 @@ function main()
                 {
                     styleDomains("bold", this.firstChild.checked)
                     NXsettings.AllowDenylistPage.Bold = this.firstChild.checked
-                    writeSetting(NXsettings)
+                    saveSettings()
                 }
 
                 const lightenSwitch = createSwitchCheckbox("Lighten subdomains")
@@ -1336,7 +1338,7 @@ function main()
                 {
                     styleDomains("lighten", this.firstChild.checked)
                     NXsettings.AllowDenylistPage.Lighten = this.firstChild.checked
-                    writeSetting(NXsettings)
+                    saveSettings()
                 }
 
                 const rightAlignSwitch = createSwitchCheckbox("Right-aligned")
@@ -1345,7 +1347,7 @@ function main()
                 {
                     styleDomains("rightAlign", this.firstChild.checked)
                     NXsettings.AllowDenylistPage.RightAligned = this.firstChild.checked
-                    writeSetting(NXsettings)
+                    saveSettings()
                 }
 
 
@@ -1390,7 +1392,7 @@ function main()
                         if (event.key == "Enter")
                         {
                             NXsettings.AllowDenylistPage.DomainsDescriptions[this.previousSibling.textContent.substring(2)] = this.value
-                            writeSetting(NXsettings)
+                            saveSettings()
                             this.style.cssText += this.value != "" ? "visibility: visible;" : "visibility: hidden;"
                             this.blur()
                         }
@@ -1436,11 +1438,42 @@ function main()
             {
                 clearInterval(waitForContent)
 
-                const exportButton = document.createElement("button")
-                exportButton.className = "btn btn-primary"
-                exportButton.style = "position: absolute; right: 210px; top: 20px;"
-                exportButton.innerHTML = "Export this config"
-                exportButton.onclick = function()
+                const exportNXButton = document.createElement("button")
+                exportNXButton.className = "btn btn-light"
+                exportNXButton.innerHTML = "Export NXE settings"
+                exportNXButton.onclick = function()
+                {
+                    exportToFile(NXsettings, "NXE-Settings.json")
+                }
+
+                const importNXButton = document.createElement("button")
+                importNXButton.className = "btn btn-light"
+                importNXButton.innerHTML = "Import NXE settings"
+                importNXButton.onclick = function() { this.nextSibling.click() }      // Click the file input button.
+
+                const fileNXInput = document.createElement("input")
+                fileNXInput.type = "file"
+                fileNXInput.style = "display: none;"
+                fileNXInput.onchange = function()
+                {
+                    const file = new FileReader()
+                    file.onload = function()
+                    {
+                        NXsettings = JSON.parse(this.result)
+                        saveSettings()
+                        importNXButton.textContent += " ✔️"
+
+                        setTimeout(()=> { importNXButton.textContent = importNXButton.textContent.replace("✔️","") }, 2000)
+                    }
+
+                    file.readAsText(this.files[0])
+                }
+
+
+                const exportConfigButton = document.createElement("button")
+                exportConfigButton.className = "btn btn-primary"
+                exportConfigButton.innerHTML = "Export this config"
+                exportConfigButton.onclick = function()
                 {
                     const config = {}
                     const pages = ["security", "privacy", "parentalcontrol", "denylist", "allowlist", "settings"]
@@ -1464,32 +1497,26 @@ function main()
                                 config.settings.rewrites = config.settings.rewrites.map((r) => {return {name: r.name, answer: r.answer}})
                                 config.parentalcontrol.services = config.parentalcontrol.services.map((s) => {return {id: s.id, active: s.active}})
 
-                                // Create the file
+                                const fileName = location.href.split("/")[3] + "-Export.json"       // <Current config ID>-Export.json
 
-                                const blob = URL.createObjectURL(new Blob([JSON.stringify(config)], {type: "text/plain"}))
-                                const a = document.createElement("a")
-                                a.href = blob
-                                a.download = location.href.split("/")[3] + "-Export.json"
-                                document.body.appendChild(a)
-                                a.click()
+                                exportToFile(config, fileName)
 
-                                exportButton.lastChild.remove() // Remove the spinner when done
+                                exportConfigButton.lastChild.remove() // Remove the spinner when done
                             }
                         })
                     }
 
                 }
 
-                const importButton = document.createElement("button")
-                importButton.className = "btn btn-primary"
-                importButton.style = "position: absolute; right: 40px; top: 20px;"
-                importButton.innerHTML = "Import a config"
-                importButton.onclick = function() { this.nextSibling.click() }      // Click the file input button.
+                const importConfigButton = document.createElement("button")
+                importConfigButton.className = "btn btn-primary"
+                importConfigButton.innerHTML = "Import a config"
+                importConfigButton.onclick = function() { this.nextSibling.click() }      // Click the file input button.
 
-                const fileInput = document.createElement("input")
-                fileInput.type = "file"
-                fileInput.style = "display: none;"
-                fileInput.onchange = function()
+                const fileConfigInput = document.createElement("input")
+                fileConfigInput.type = "file"
+                fileConfigInput.style = "display: none;"
+                fileConfigInput.onchange = function()
                 {
                     const file = new FileReader()
                     file.onload = function()
@@ -1628,10 +1655,17 @@ function main()
                     createPleaseWaitModal("Importing settings")
                 }
 
-                const container = document.querySelector(".card-body")
-                container.appendChild(exportButton)
-                container.appendChild(importButton)
-                container.appendChild(fileInput)
+                const container = document.createElement("div")
+                container.style = "display: flex; grid-gap: 20px; margin-top: 20px;"
+
+                container.appendChild(exportConfigButton)
+                container.appendChild(importConfigButton)
+                container.appendChild(fileConfigInput)
+                container.appendChild(exportNXButton)
+                container.appendChild(importNXButton)
+                container.appendChild(fileNXInput)
+
+                document.querySelector(".card-body").appendChild(container)
 
             }
 
@@ -1650,7 +1684,7 @@ function loadNXsettings()
     {
         if (!obj.NXsettings)        // If it's running for the first time, store the following default settings.
         {
-            writeSetting(
+            saveSettings(
             {
                 SecurityPage: { CollapseList: true },
                 PrivacyPage:
@@ -1686,8 +1720,10 @@ function loadNXsettings()
 }
 
 
-function writeSetting(object)
+function saveSettings(object)
 {
+    if (!object)  object = NXsettings
+
     if (isChrome)
         chrome.storage.local.set({NXsettings: object})
     else
@@ -1856,6 +1892,17 @@ function createStylizedTooltipWithImgParent(imgSrc, innerHTML)
 }
 
 
+function exportToFile(fileContent, fileName)
+{
+    fileContent = JSON.stringify(fileContent, null, 2)      // Turn the object into JSON text with 2 spaces indentation.
+    const blob = URL.createObjectURL(new Blob([fileContent], {type: "text/plain"}))
+    const a = document.createElement("a")
+    a.href = blob
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+}
+
 function sortItemsAZ(selector, type = "", element = null)
 {
     const container = document.querySelector(selector)
@@ -1982,7 +2029,7 @@ function hideAllListItemsAndCreateButton(text, settingObject)
         const show = document.createElement("button")
         show.id = "showList"
         show.className = "btn btn-light"
-        show.style = "margin-top: 20px; background-color: #eee; border-color: #eee;"
+        show.style = "margin-top: 20px;"
         show.textContent = text
         show.onclick = function() {
             for (let i = 1; i < items.length; i++)
@@ -2002,7 +2049,7 @@ function hideAllListItemsAndCreateButton(text, settingObject)
     collapseSwitch.firstChild.onchange = function()
     {
         settingObject.CollapseList = this.checked
-        writeSetting(NXsettings)
+        saveSettings()
 
         const showButton = document.getElementById("showList")
 
