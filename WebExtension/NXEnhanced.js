@@ -20,11 +20,12 @@ extendFunctions()
 
 // Add some simple styles for a better UX
 const style = document.createElement("style")
-style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important; }                                  /* Allow/Deny/Hide buttons on hover */
-                   .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }   /* Show the tooltip when hovering it's container */
-                   .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }    /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
-                    div:hover #counters { visibility: hidden !important; }                                          /* Hide the log entries counters on hover */
-                   .btn-light {	background-color: #eee; }                                                           /* Make the btn-light more visible without affecting the hover */
+style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important; }                                     /* Allow/Deny/Hide buttons on hover */
+                   .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }      /* Show the tooltip when hovering it's container */
+                   .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }       /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
+                    div:hover #counters { visibility: hidden !important; }                                             /* Hide the log entries counters on hover */
+                   .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; min-width: 670px; } /* Add a min-width to help the log entries and the filtering options be more responsive on narrow windows */
+                   .btn-light {	background-color: #eee; }                                                              /* Make the btn-light more visible without affecting the hover */
                    .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */
                   `
 document.head.appendChild(style)
@@ -64,31 +65,34 @@ function main()
 
         const waitForItems = setInterval(function()
         {
-            const pageContentContainer = document.getElementById("root").secondChild()
+            // Wait for some elements to finish loading
+            {
+                var pageContentContainer = document.getElementById("root").secondChild()
 
-            if (!pageContentContainer)
-                return
+                if (!pageContentContainer)
+                    return
 
-            logsContainer = pageContentContainer.getByClass("list-group")
+                logsContainer = pageContentContainer.getByClass("list-group")
 
-            if (!logsContainer)
-                return
+                if (!logsContainer)
+                    return
 
-            const svgs = logsContainer.querySelectorAll(".settings-button svg, .stream-button svg")
+                const svgs = logsContainer.querySelectorAll(".settings-button svg, .stream-button svg")
 
-            if (svgs.length < 2)                                                        // Wait for the SVGs to finish loading before overriding, otherwise they fail to load and leave a blank space.
-                return
+                if (svgs.length < 2)                                                        // Wait for the SVGs to finish loading before overriding, otherwise they fail to load and leave a blank space.
+                    return
 
-            let searchBarForm = logsContainer.querySelector("form")
+                let searchBarForm = logsContainer.querySelector("form")
 
-            if (!searchBarForm || !logsContainer.querySelector("div.text-center"))      // Wait for the search bar and the first log row to finish loading before overriding.
-                return
-
-
-            clearInterval(waitForItems)
+                if (!searchBarForm || !logsContainer.querySelector("div.text-center"))      // Wait for the search bar and the first log row to finish loading before overriding.
+                    return
 
 
-            pageContentContainer.firstChild.outerHTML += ""                             // Override the content container code (reparse) to remove all events attached to it, so it can be used statically (without interferences from other scripts).
+                clearInterval(waitForItems)
+            }
+
+
+            pageContentContainer.firstChild.outerHTML += ""                             // Override the content container code (reparse) to remove all events attached and invalidate all "pointers" to it, so it can be used statically (without interferences from other scripts).
 
             logsContainer = pageContentContainer.getByClass("list-group")               // Update the "pointer" to the new instance.
 
@@ -201,6 +205,70 @@ function main()
             }
 
 
+            // Setup the "List queries before" feature
+            {
+                const loadBeforeContainer = document.createElement("div")
+                loadBeforeContainer.textContent = "List queries before: "
+                loadBeforeContainer.style = "align-items: center; display: flex;"
+
+                // Create the date inputbox
+                {
+                    const loadBeforeInput = document.createElement("input")
+                    loadBeforeInput.className = "form-control form-control-sm mx-3"
+                    loadBeforeInput.style = "border-radius: 16px; width: initial;"
+                    loadBeforeInput.value = new Date().toLocaleString().replace(/(202\d),/,"$1")        // Set the input's value as the current date-time in the user's locale, without the comma after the year.
+                    loadBeforeInput.onkeyup = function()
+                    {
+                        if (event.key == "Enter")
+                            this.nextSibling.click()
+                    }
+
+                    loadBeforeContainer.appendChild(loadBeforeInput)
+                }
+
+
+                const isDDMM = new Date(new Date().setDate(25)).toLocaleString().split("/").indexOf("25") == 0     // Get whether the user's locale date format has the day in the first position, to use it below.
+
+                // Create the "Go" button
+                {
+                    const loadBeforeGoButton = document.createElement("button")
+                    loadBeforeGoButton.className = "btn btn-primary"
+                    loadBeforeGoButton.style = "margin-right: 50px; padding-top: 3px; height: 34px;"
+                    loadBeforeGoButton.textContent = "Go"
+                    loadBeforeGoButton.onclick = function()
+                    {
+                        let date = this.previousSibling.value
+                        let datesplit = date.split(" ")[0].split("/")
+
+                        // When parsing the date, only the YYYY/MM/DD and MM/DD/YYYY formats are recognized correctly,
+                        // so to parse the date in DD/MM/YYYY format it's required to swap the day and month.
+
+                        if (isDDMM)
+                        {
+                            const day = datesplit[0]
+                            const month = datesplit[1]
+
+                            datesplit[0] = month
+                            datesplit[1] = day
+                        }
+
+                        datesplit = datesplit.join("/")
+                        date = datesplit + " " + date.split(" ")[1]
+                        const specifiedDateTimeInUnixEpoch = Date.parse(date)
+
+                        reloadLogs({before: specifiedDateTimeInUnixEpoch})
+                    }
+
+                    loadBeforeContainer.appendChild(loadBeforeGoButton)
+                }
+
+
+                const container = pageContentContainer.firstChild.firstChild
+                container.style.minWidth = "750px"
+                container.appendChild(loadBeforeContainer)
+            }
+
+
             // Setup the filtering's buttons and inputs
             {
                 // Create the "Filters" button
@@ -217,6 +285,8 @@ function main()
                         if (this.className.includes("secondary"))
                         {
                             filteringOptionsContainer.style.visibility = "visible"
+                            filteringOptionsContainer.style.position = "relative"
+                            pageContentContainer.firstChild.style = "max-width: 1460px;"        // Sum the filtering options width to the page content container max-width, so the logs container don't get squished when the options are expanded.
                             this.innerHTML = "OK"
                             this.className = this.className.replace("secondary", "primary")
                         }
@@ -224,20 +294,21 @@ function main()
                         {
                             updateFilters()
                             filteringOptionsContainer.style.visibility = "hidden"
+                            filteringOptionsContainer.style.position = "absolute"       // Here the position is set to absolute so that it doesn't take space when invisible, as altering the content of a "display: none" input can cause some bugs.
+                            pageContentContainer.firstChild.style = "max-width: 1140px;"
                             this.innerHTML = "Filters"
                             this.className = this.className.replace("primary", "secondary")
                         }
                     }
 
-                    var container = pageContentContainer.firstChild.firstChild
-                    container.appendChild(filtersButton)
+                    pageContentContainer.firstChild.firstChild.appendChild(filtersButton)
                 }
 
 
                 // Create the filtering options
                 {
                     var filteringOptionsContainer = document.createElement("div")
-                    filteringOptionsContainer.style = "position: absolute; right: 60px; top: 145px; visibility: hidden; display: grid; grid-gap: 10px;"
+                    filteringOptionsContainer.style = "position: absolute; visibility: hidden; display: grid; grid-gap: 10px; margin-bottom: 20px; float: right;"
                     filteringOptionsContainer.onclick = function() { event.stopPropagation() }
 
 
@@ -287,7 +358,7 @@ function main()
                         filteringOptionsContainer.appendChild(showNumEntriesSwitch)
                     }
 
-                    container.appendChild(filteringOptionsContainer)
+                    pageContentContainer.firstChild.insertBefore(filteringOptionsContainer, pageContentContainer.firstChild.firstChild)
                 }
 
 
@@ -921,7 +992,7 @@ function main()
                                     if (status == "default")
                                     {
                                         const denyButton = document.createElement("button")
-                                        denyButton.className = "btn btn-danger"
+                                        denyButton.className = "btn btn-danger mr-4"
                                         denyButton.innerHTML = "Deny"
                                         denyButton.onclick = function() { openAllowDenyPopup(denyButton) }
 
@@ -931,7 +1002,7 @@ function main()
                                     if (status != "whitelisted")
                                     {
                                         const allowButton = document.createElement("button")
-                                        allowButton.className = "btn btn-success ml-4"
+                                        allowButton.className = "btn btn-success"
                                         allowButton.innerHTML = "Allow"
                                         allowButton.onclick = function() { openAllowDenyPopup(allowButton) }
 
@@ -1052,10 +1123,14 @@ function main()
             })
         }
 
-        function reloadLogs()
+        function reloadLogs(params)
         {
+            if (!params)  params = {}
+
+            params.clear = true
+
             cancelLoading = true
-            loadLogChunk({clear: true})
+            loadLogChunk(params)
 
             if (typeof updateRelativeTimeInterval != "undefined")
                 clearInterval(updateRelativeTimeInterval)
@@ -1099,7 +1174,7 @@ function main()
             const relativeSecs = (now - timestamp) / 1000       // Get the relative time in seconds.
             if (relativeSecs > 1800)                            // If older than 30 minutes, show the full date-time.
             {
-                dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp))
+                dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp)).replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
                 dateTimeElement.classList.remove("relativeTime")
             }
             else        // Otherwise, show the relative time
