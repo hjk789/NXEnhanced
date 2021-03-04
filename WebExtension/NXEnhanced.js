@@ -238,7 +238,12 @@ function main()
                     loadBeforeGoButton.onclick = function()
                     {
                         let date = this.previousSibling.value
-                        let datesplit = date.split(" ")[0].split("/")
+                        let datesplit
+
+                        if (date.includes(" "))
+                            datesplit = date.split(" ")[0].split("/")
+                        else
+                            datesplit = date.split("/")
 
                         // When parsing the date, only the YYYY/MM/DD and MM/DD/YYYY formats are recognized correctly,
                         // so to parse the date in DD/MM/YYYY format it's required to swap the day and month.
@@ -253,7 +258,12 @@ function main()
                         }
 
                         datesplit = datesplit.join("/")
-                        date = datesplit + " " + date.split(" ")[1]
+
+                        if (date.includes(" "))
+                            date = datesplit + " " + date.split(" ")[1]
+                        else
+                            date = datesplit
+
                         const specifiedDateTimeInUnixEpoch = Date.parse(date)
 
                         reloadLogs({before: specifiedDateTimeInUnixEpoch})
