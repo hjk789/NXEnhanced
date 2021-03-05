@@ -17,12 +17,18 @@
 You can either add the respective domain or the whole root domain, or even edit the domain if you want.   
 [Read more](https://github.com/hjk789/NXEnhanced/wiki#an-allowdeny-button-for-each-log-entry)
 
-- Option to show only queries from unnamed devices   
-![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
-
 - Ability to specify domains that should be hidden from the logs  
 ![Domain filtering](https://i.imgur.com/l8Ouzh1.png)        
 You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
+
+- Ability to load only the logs that happened before a specified date-time   
+![only logs before](https://i.imgur.com/FChYIoS.png)      
+
+- Option to show only queries from unnamed devices   
+![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
+
+- An option to show the number of entries currently loaded, visible or hidden by filters    
+![counters](https://i.imgur.com/8mTEDt1.png)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
 ![Absolute time](https://i.imgur.com/I3pGNL8.png)    
@@ -30,8 +36,18 @@ You can either manually input domains, or click on the "Hide" button, alongside 
 - A refresh button    
 ![refresh button](https://i.imgur.com/yBEo3mV.png)
 
-- An option to show the number of entries currently loaded, either visible or hidden by filters    
-![counters](https://i.imgur.com/8mTEDt1.png)
+### Allowlist/Denylist pages:
+
+- Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
+![Description input](https://i.imgur.com/TqlKWxr.png)    
+
+- Sort the allow/deny lists alphabetically, and styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
+![allow/deny options](https://i.imgur.com/DiuO5TB.png)
+
+### Settings page:
+
+- Ability to export/import all settings from/to a config. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-exportimport-all-settings-fromto-a-config)   
+![Export/import buttons](https://i.imgur.com/2oEl8t2.png)    
 
 ### Privacy page:
 
@@ -47,25 +63,12 @@ This is good for people with a long list of blocklists added.
 - Collapse the list of added TLDs
 
 - A button that allows you to add every TLD in the "Add a TLD" screen in one click. [Read more](https://github.com/hjk789/NXEnhanced/wiki#a-button-that-allows-you-to-add-every-tld-in-the-add-a-tld-screen-in-one-click)   
-![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)     
-
-### Allowlist/Denylist pages:
-
-- Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
-![Description input](https://i.imgur.com/TqlKWxr.png)    
-
-- Sort the allow/deny lists alphabetically, and styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
-![allow/deny options](https://i.imgur.com/DiuO5TB.png)
-
-### Settings page:
-
-- Ability to export/import all settings from/to a config. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-exportimport-all-settings-fromto-a-config)   
-![Export/import buttons](https://i.imgur.com/2oEl8t2.png)    
+![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)      
 
 
 ## How to use it
 
-For Firefox, just click the "Get the Addon" link above, then click the "Install" button and confirm.  
+For Firefox, just click the "Get the Addon" link above, then click the "Add to Firefox" button and confirm.  
 
 For Chrome (and other Chromium based browsers), it's not available in the Chrome Web Store, so you have to install it manually. To do so, download [the ZIP](https://github.com/hjk789/NXEnhanced/archive/master.zip), extract it, move the extracted folder to somewhere safe, in Chrome go to `chrome://extensions` (the page with the list of your installed extensions), enable the Developer Mode, click "Load Unpacked", open the extracted folder and choose the "WebExtension" folder. Done! Just remember to never disable the developer mode, or else the extension gets uninstalled and you lose all your settings.  
 To update the extension the process is almost the same, the only difference is that, after you extract the zip, you have to merge the new WebExtension folder to the old one, replacing the old files, then in `chrome://extensions` click the refresh button (the one beside the switch).
@@ -95,8 +98,8 @@ If you can't code, but still want to contribute, you can do so by making a donat
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can create or participate in discussions, give feedback and rate this project.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
-- You can modify your copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*"/favorite it instead.
+- You can modify your downloaded copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
+- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead.
 - You cannot do any other action not allowed in this license.  
 
 I have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
