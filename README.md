@@ -85,7 +85,7 @@ In case you experience any problem with NX Enhanced, or you want to make suggest
 
 If you would like to contribute with code, you just need to:
 1. [Make a fork](https://github.com/hjk789/NXEnhanced/fork) of this project's repository by clicking on the "Fork" button on the top-right corner of the repository page;
-2. Make your proposed changes in the code of the fork you created. When done, commit the changes;
+2. Make your proposed changes in the code of the fork you created. When done, push the changes;
 3. Go to the [Pull requests page](https://github.com/hjk789/NXEnhanced/pulls) and click the "New pull request" button. And finally, click the "Create pull request" button.
 
 If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation:
@@ -94,7 +94,7 @@ If you can't code, but still want to contribute, you can do so by making a donat
 
 ## License
 
-- You can view the code, download copies, install, run, use the features added to the page and uninstall this software.
+- You can view the code, download copies to your devices, install, run, use the features added to the page and uninstall this software.
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can create or participate in discussions, give feedback and rate this project.
 - You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
