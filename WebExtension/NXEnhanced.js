@@ -1383,9 +1383,50 @@ function main()
     {
         const waitForLists = setInterval(function()
         {
-            if (document.querySelectorAll(".list-group-item").length > 1)
+            const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist";
+
+            if (document.querySelector(".list-group-item") != null)
             {
                 clearInterval(waitForLists)
+
+                // option to add multiple domains
+                // ignore if already exists
+                if (!document.getElementById("txt-domains")) {
+
+                    const input = document.querySelector(".form-group input")
+                    input.style = "display: none"
+
+                    const textarea = document.createElement("textarea")
+                    textarea.className = "form-control"
+                    textarea.placeholder = "Add domain(s) one per line"
+                    textarea.id = "txt-domains"
+
+                    const AddList = document.createElement("button")
+                    AddList.className = "btn btn-primary"
+                    AddList.style = "margin-top: 10px;"
+                    AddList.innerHTML = "Add"
+                    AddList.onclick = function()
+                    {
+                        const listObj = document.getElementById("txt-domains").value.split("\n");
+
+                        for (let i=0; i < listObj.length; i++)
+                        {
+                            const item = listObj[i]
+                            const hexedId = convertToHex(item)
+
+                            makeApiRequest("PUT", list + "/hex:" + hexedId, function(response)
+                            {
+                                // done
+                            })
+                        }
+
+                        document.location.reload();
+                    }
+
+                    const form = document.querySelector(".form-group")
+                    form.appendChild(textarea);
+                    form.appendChild(AddList)
+                }
 
 
                 // Create the options menu
