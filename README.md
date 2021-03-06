@@ -105,3 +105,7 @@ If you can't code, but still want to contribute, you can do so by making a donat
 I have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
 
 Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
+
+## Privacy policy
+
+You can read the full privacy policy [here](https://github.com/hjk789/NXEnhanced/wiki/Privacy-Policy). In brief, most of what you need to know is in the first line: "NX Enhanced does not collect and does not send your data to third-parties, it also does not include any kind of tracking or analytics in the code."
