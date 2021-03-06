@@ -1383,11 +1383,11 @@ function main()
     {
         const waitForLists = setInterval(function()
         {
-            const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist";
-
-            if (document.querySelector(".list-group-item") != null)
+            if (document.querySelectorAll(".list-group-item").length > 1)
             {
                 clearInterval(waitForLists)
+
+                const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist";
 
                 // option to add multiple domains
                 // ignore if already exists

@@ -13,6 +13,7 @@
 ### Logs page:
 
 - Allow/Deny buttons in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.
+
   ![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)
 
   You can either add the respective domain or the whole root domain, or even edit the domain if you want.
