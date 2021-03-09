@@ -3,7 +3,7 @@
 <p>Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, etc. more practical. </p>
 
 <p align="center">
-<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=firefoximg"><img src="https://i.imgur.com/QFwk4Yk.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
+<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=firefoximg"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
 </p>
 
 
@@ -70,12 +70,12 @@ This is good for people with a long list of blocklists added.
 
 For Firefox, just click the "Get the Addon" link above, then click the "Add to Firefox" button and confirm.  
 
-For Chrome (and other Chromium based browsers), it's not available in the Chrome Web Store, so you have to install it manually. To do so, download [the ZIP](https://github.com/hjk789/NXEnhanced/archive/master.zip), extract it, move the extracted folder to somewhere safe, in Chrome go to `chrome://extensions` (the page with the list of your installed extensions), enable the Developer Mode, click "Load Unpacked", open the extracted folder and choose the "WebExtension" folder. Done! Just remember to never disable the developer mode, or else the extension gets uninstalled and you lose all your settings.  
-To update the extension the process is almost the same, the only difference is that, after you extract the zip, you have to merge the new WebExtension folder to the old one, replacing the old files, then in `chrome://extensions` click the refresh button (the one beside the switch).
+For Chrome (and other Chromium based browsers), just click the "Available in the Chrome Web Store" link above, then click the "Add to Chrome" button and confirm.
+
+You also have the option of using the userscript version, but it works only in Chrome, in Firefox it works partially. Also, keep in mind that the userscript is discontinued. For more information and instructions, read [here](https://github.com/hjk789/NXEnhanced/tree/master/Userscript#how-to-use-it).
 
 NX Enhanced was tested in Firefox and Chrome. It should work fine in pretty much any browser that accepts Firefox or Chrome extensions, although I didn't tested them.
 
-You also have the option of using the userscript version, but it works only in Chrome, in Firefox it works partially. Also, keep in mind that the userscript is discontinued. For more information and instructions, read [here](https://github.com/hjk789/NXEnhanced/tree/master/Userscript#how-to-use-it).
 
 ## Bug reports, suggestions and questions
 
@@ -84,22 +84,24 @@ In case you experience any problem with NX Enhanced, or you want to make suggest
 ## How to contribute
 
 If you would like to contribute with code, you just need to:
-1. [Make a fork](https://github.com/hjk789/NXEnhanced/fork) of this project's repository by clicking on the "Fork" button on the top-right corner of the repository page;
-2. Make your proposed changes in the code of the fork you created. When done, push the changes;
+1. Make a fork of this project's repository by clicking on the "Fork" button on the top-right corner of the repository page;
+2. Make your proposed changes in the code of the fork you created, and when done, push the changes;
 3. Go to the [Pull requests page](https://github.com/hjk789/NXEnhanced/pulls) and click the "New pull request" button. And finally, click the "Create pull request" button.
 
-If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation:
+If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project owner, BLBC.
 
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CK5BFYUP9TWBJ&source=url)
+
+If you don't have funds to donate, but still want to contribute, you can do so by spreading the word about NX Enhanced on the web or to your acquaintances, giving feedback, rating the extension and posting a review.
 
 ## License
 
 - You can view the code, download copies to your devices, install, run, use the features added to the page and uninstall this software.
 - You can suggest changes, either by opening issues or by doing pull requests. 
 - You can create or participate in discussions, give feedback and rate this project.
-- You can link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
+- You are free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
 - You can modify your downloaded copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead.
+- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead. Any contributed code is owned by the repository owner, hjk789. The authorship is still of the contributor.
 - You cannot do any other action not allowed in this license.  
 
 I have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
