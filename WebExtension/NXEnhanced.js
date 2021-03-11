@@ -32,11 +32,16 @@ document.head.appendChild(style)
 
 
 // Polling to check when the user switches pages, to add the features of the respective page.
-
 setIntervalOld(function()
 {
     if (currentPage == location.href)
         return
+
+    if (/\/logs/i.test(location.href) && currentPage && location.href.split("/")[3] != currentPage.split("/")[3])      // If the user switches to another config while in the Logs page, refresh the page automatically.
+    {                                                                                                                  // In the lack of a better way, this seems to be the least error prone solution.
+        location.reload()
+        return
+    }
 
     currentPage = location.href
 
