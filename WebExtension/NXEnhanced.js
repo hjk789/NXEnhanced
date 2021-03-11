@@ -231,7 +231,7 @@ function main()
 
                 // Create the "Go" button
                 {
-                    const loadBeforeGoButton = document.createElement("button")
+                    var loadBeforeGoButton = document.createElement("button")
                     loadBeforeGoButton.className = "btn btn-primary"
                     loadBeforeGoButton.style = "margin-right: 50px; padding-top: 3px; height: 34px;"
                     loadBeforeGoButton.textContent = "Go"
@@ -672,7 +672,7 @@ function main()
                     optionsContainer.firstChild.firstChild.onchange = function()
                     {
                         blockedQueriesOnly = +this.checked
-                        reloadLogs()
+                        loadBeforeGoButton.click()
                     }
                 }
 
@@ -683,7 +683,7 @@ function main()
                     optionsContainer.lastChild.firstChild.onchange = function()
                     {
                         simpleLogs = +!this.checked
-                        reloadLogs()
+                        loadBeforeGoButton.click()
                     }
                 }
 
@@ -1028,17 +1028,32 @@ function main()
                                     const rightSideContainer = document.createElement("div")
                                     rightSideContainer.style = "font-size: 0.9em; display: grid;"
 
-                                    // Create the device name element
+                                    // Create the device name row
                                     {
-                                        const deviceEll = document.createElement("span")
-                                        deviceEll.textContent = entriesData[i].deviceName
-                                        deviceEll.style = "height: 15px; margin-bottom: 10px; margin-left: auto;"
+                                        const deviceContainer = document.createElement("div")
+                                        deviceContainer.style = "height: 15px; margin-bottom: 10px; margin-left: auto;"
 
-                                        if (!isNamedDevice)     // If the query was made from an unnamed device, then show the gray empty space
+                                        const deviceNameEll = document.createElement("span")
+                                        deviceNameEll.textContent = entriesData[i].deviceName
+
+                                        deviceContainer.appendChild(deviceNameEll)
+
+                                        if (!isNamedDevice)                     // If the query was made from an unnamed device ...
                                         {
-                                            deviceEll.innerHTML = "&nbsp;"
-                                            deviceEll.style.cssText += "background-color: #eee; width: 90px; margin-bottom: 5px; margin-top: 5px;"
+                                            if (!entriesData[i].clientIp)       // ... and the log IP is disabled, then show the gray empty space.
+                                            {
+                                                deviceContainer.innerHTML = "&nbsp;"
+                                                deviceContainer.style.cssText += "background-color: #eee; width: 90px; margin-bottom: 5px; margin-top: 5px;"
+                                            }
+                                            else                                // But if the log IP is enabled, then show the IP.
+                                                deviceContainer.textContent = entriesData[i].clientIp
                                         }
+                                        else if (entriesData[i].clientIp)       // Otherwise, if it's from a named device and the IP is enabled, then show the device name and add a tooltip with the IP.
+                                        {
+                                            deviceNameEll.createStylizedTooltip(entriesData[i].clientIp)
+                                            deviceNameEll.lastChild.style.fontSize = "14px"
+                                        }
+
 
                                         if (entriesData[i].isEncryptedDNS)
                                         {
@@ -1050,7 +1065,7 @@ function main()
                                             const encryptedQueryContainer = createStylizedTooltipWithImgParent(encryptedQueryIconSrc, entriesData[i].protocol)
                                             encryptedQueryContainer.lastChild.style.fontSize = "0.9em"
 
-                                            if (isNamedDevice)
+                                            if (isNamedDevice || entriesData[i].clientIp)
                                                 encryptedQueryContainer.style.marginRight = "5px"
                                             else
                                             {
@@ -1059,13 +1074,13 @@ function main()
                                             }
 
 
-                                            deviceEll.insertBefore(encryptedQueryContainer, deviceEll.firstChild)
+                                            deviceContainer.insertBefore(encryptedQueryContainer, deviceContainer.firstChild)
                                         }
 
-                                        rightSideContainer.appendChild(deviceEll)
+                                        rightSideContainer.appendChild(deviceContainer)
                                     }
 
-                                    // Create the date-time element.
+                                    // Create the date-time element
                                     {
                                         const dateTimeEll = document.createElement("span")
                                         dateTimeEll.style = "font-size: 0.8em; color: #bbb; min-width: 250px; text-align: end;"
