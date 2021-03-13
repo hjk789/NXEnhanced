@@ -3,7 +3,7 @@
 // @description     Adds quality-of-life features to NextDNS website for a more practical experience
 // @author          BLBC (github.com/hjk789, greasyfork.org/users/679182-hjk789, reddit.com/u/dfhg89s7d89)
 // @copyright       2020+, BLBC (github.com/hjk789)
-// @version         3.7
+// @version         3.7.4
 // @homepage        https://github.com/hjk789/NXEnhanced
 // @license         https://github.com/hjk789/NXEnhanced#license
 // @supportURL      https://github.com/hjk789/NXEnhanced/issues
@@ -30,10 +30,11 @@ if (window.top == window.self)
 
     // Add some simple styles for a better UX
     const style = document.createElement("style")
-    style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important; }                                  /* Allow/Deny/Hide buttons on hover */
-                       .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }   /* Show the tooltip when hovering it's container */
-                       .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }    /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
-                        div:hover #counters { visibility: hidden !important; }                                          /* Hide the log entries counters on hover */
+    style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important; }                                      /* Allow/Deny/Hide buttons on hover */
+                       .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }       /* Show the tooltip when hovering it's container */
+                       .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }        /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
+                        div:hover #counters { visibility: hidden !important; }                                              /* Hide the log entries counters on hover */
+                       .btn-light { background-color: #eee; }                                                               /* Make the btn-light more visible without affecting the hover */
                        .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */
                       `
     document.head.appendChild(style)
@@ -929,7 +930,7 @@ if (window.top == window.self)
                                             if (status == "default")
                                             {
                                                 const denyButton = document.createElement("button")
-                                                denyButton.className = "btn btn-danger"
+                                                denyButton.className = "btn btn-danger mr-4"
                                                 denyButton.innerHTML = "Deny"
                                                 denyButton.onclick = function() { openAllowDenyPopup(denyButton) }
 
@@ -939,7 +940,7 @@ if (window.top == window.self)
                                             if (status != "whitelisted")
                                             {
                                                 const allowButton = document.createElement("button")
-                                                allowButton.className = "btn btn-success ml-4"
+                                                allowButton.className = "btn btn-success"
                                                 allowButton.innerHTML = "Allow"
                                                 allowButton.onclick = function() { openAllowDenyPopup(allowButton) }
 
@@ -1107,7 +1108,7 @@ if (window.top == window.self)
                     const relativeSecs = (now - timestamp) / 1000       // Get the relative time in seconds.
                     if (relativeSecs > 1800)        // If older than 30 minutes, show the full date-time.
                     {
-                        dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp))
+                        dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp)).replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
                         dateTimeElement.classList.remove("relativeTime")
                     }
                     else        // Otherwise, show the relative time
@@ -1475,7 +1476,7 @@ if (window.top == window.self)
 
                                         // Create the file
 
-                                        const blob = URL.createObjectURL(new Blob([JSON.stringify(config)], {type: "text/plain"}))
+                                        const blob = URL.createObjectURL(new Blob([JSON.stringify(config, null, 2)], {type: "text/plain"}))
                                         const a = document.createElement("a")
                                         a.href = blob
                                         a.download = location.href.split("/")[3] + "-Export.json"
@@ -1979,7 +1980,7 @@ if (window.top == window.self)
             const show = document.createElement("button")
             show.id = "showList"
             show.className = "btn btn-light"
-            show.style = "margin-top: 20px; background-color: #eee; border-color: #eee;"
+            show.style = "margin-top: 20px;"
             show.innerHTML = text
             show.onclick = function() {
                 for (let i = 1; i < items.length; i++)
