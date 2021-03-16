@@ -3,7 +3,7 @@
 <p>Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, etc. more practical. </p>
 
 <p align="center">
-<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=firefoximg"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
+<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=firefoximg"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
 </p>
 
 
@@ -70,7 +70,7 @@ This is good for people with a long list of blocklists added.
 
 For Firefox, just click the "Get the Addon" link above, then click the "Add to Firefox" button and confirm.  
 
-For Chrome (and other Chromium based browsers), just click the "Available in the Chrome Web Store" link above, then click the "Add to Chrome" button and confirm.
+For Chrome (and other Chromium based browsers), just click the "Available in the Chrome Web Store" link above, then click the "Add to Chrome" button and confirm. For Edge it's the same thing, just click the "Get it from Microsoft" link.
 
 You also have the option of using the userscript version, but it works only in Chrome, in Firefox it works partially. Also, keep in mind that the userscript is discontinued. For more information and instructions, read [here](https://github.com/hjk789/NXEnhanced/tree/master/Userscript#how-to-use-it).
 
