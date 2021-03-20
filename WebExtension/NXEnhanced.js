@@ -24,9 +24,8 @@ style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important;
                    .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }      /* Show the tooltip when hovering it's container */
                    .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }       /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
                     div:hover #counters { visibility: hidden !important; }                                             /* Hide the log entries counters on hover */
-                   .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; min-width: 670px; } /* Add a min-width to help the log entries and the filtering options be more responsive on narrow windows */
-                   .btn-light {	background-color: #eee; }                                                              /* Make the btn-light more visible without affecting the hover */
-                   .list-group-item div div:hover input.description, input.description:focus { visibility: visible !important; }    /* Show the allow/denylist domains description input box on hover, and when the input is focused */
+                   .btn-light { background-color: #eee; }                                                              /* Make the btn-light more visible without affecting the hover */
+                   .list-group-item:hover input.description, input.description:focus { display: initial !important;}   /* Show the allow/denylist domains description input box on hover, and when the input is focused */
                   `
 document.head.appendChild(style)
 
@@ -47,6 +46,9 @@ waitForPageSwitchings = setIntervalOld(function()
     currentPage = location.href
 
     clearAllIntervals()
+
+    if (typeof rowStyle != "undefined")     // The row style is only needed in the Logs page, so it should be removed when switching pages.
+        rowStyle.remove()
 
     main()
 
@@ -102,6 +104,12 @@ function main()
 
             logsContainer = pageContentContainer.getByClass("list-group")               // Update the "pointer" to the new instance.
 
+
+            // Add a min-width to help the log entries and the filtering options be more responsive on narrow windows
+
+            rowStyle = document.createElement("style")
+            rowStyle.innerHTML = ".row { min-width: 670px; }"
+            document.head.appendChild(rowStyle)
 
 
             // Setup the devices dropdown
@@ -1265,8 +1273,8 @@ function main()
                             clearInterval(waitForListsModal)
 
                             const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
-                            sortAZSwitch.firstChild.checked = NXsettings.PrivacyPage.SortAZ
                             sortAZSwitch.style = "position: absolute; right: 100px; bottom: 15px;"
+                            sortAZSwitch.firstChild.checked = NXsettings.PrivacyPage.SortAZ
                             sortAZSwitch.firstChild.onchange = function()
                             {
                                 sortItemsAZ(".modal-body .list-group")
@@ -1410,121 +1418,141 @@ function main()
 
 
                 // Create the options menu
-
-                const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
-                sortAZSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortAZ
-                sortAZSwitch.onchange = function()
+                if (!document.getElementById("allowDenylistOptions"))
                 {
-                    sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
-                    NXsettings.AllowDenylistPage.SortAZ = this.firstChild.checked
-                    saveSettings()
+                    const optionsContainer = document.createElement("div")
+                    optionsContainer.style = "border: 1px solid lightgray; border-radius: 15px; padding: 5px 15px 5px 0px; float: right; margin-right: 10px; display: none;"
+
+
+                    const optionsButton = document.createElement("button")
+                    optionsButton.id = "allowDenylistOptions"
+                    optionsButton.className = "btn btn-clear"
+                    optionsButton.style = "width: 30px; padding: 1px 0px 3px 3px; border: 1px solid lightgray; float: right;"
+                    optionsButton.innerHTML = "⚙️"
+                    optionsButton.onclick = function()
+                    {
+                        optionsContainer.style.display = optionsContainer.style.display == "none" ? "initial" : "none"
+                        this.blur()
+                    }
+
+
+                    const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
+                    sortAZSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortAZ
+                    sortAZSwitch.onchange = function()
+                    {
+                        sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
+                        NXsettings.AllowDenylistPage.SortAZ = this.firstChild.checked
+                        saveSettings()
+                    }
+
+                    optionsContainer.appendChild(sortAZSwitch)
+
+                    const sortTLDSwitch = createSwitchCheckbox("Sort by TLD")
+                    sortTLDSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortTLD
+                    sortTLDSwitch.onchange = function()
+                    {
+                        sortItemsAZ(".list-group:nth-child(2)", "domain", this.firstChild)
+                        NXsettings.AllowDenylistPage.SortTLD = this.firstChild.checked
+                        saveSettings()
+                    }
+
+                    optionsContainer.appendChild(sortTLDSwitch)
+
+                    const boldRootSwitch = createSwitchCheckbox("Bold root domain")
+                    boldRootSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Bold
+                    boldRootSwitch.onchange = function()
+                    {
+                        styleDomains("bold", this.firstChild.checked)
+                        NXsettings.AllowDenylistPage.Bold = this.firstChild.checked
+                        saveSettings()
+                    }
+
+                    optionsContainer.appendChild(boldRootSwitch)
+
+                    const lightenSwitch = createSwitchCheckbox("Lighten subdomains")
+                    lightenSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Lighten
+                    lightenSwitch.onchange = function()
+                    {
+                        styleDomains("lighten", this.firstChild.checked)
+                        NXsettings.AllowDenylistPage.Lighten = this.firstChild.checked
+                        saveSettings()
+                    }
+
+                    optionsContainer.appendChild(lightenSwitch)
+
+                    const rightAlignSwitch = createSwitchCheckbox("Right-aligned")
+                    rightAlignSwitch.firstChild.checked = NXsettings.AllowDenylistPage.RightAligned
+                    rightAlignSwitch.onchange = function()
+                    {
+                        NXsettings.AllowDenylistPage.RightAligned = this.firstChild.checked
+                        styleDomains("rightAlign", this.firstChild.checked)
+                        saveSettings()
+                    }
+
+                    optionsContainer.appendChild(rightAlignSwitch)
+
+
+                    const rectangleAboveInput = document.querySelector(".list-group").firstChild
+                    rectangleAboveInput.insertBefore(optionsButton, rectangleAboveInput.firstChild)
+                    rectangleAboveInput.appendChild(optionsContainer)
+                    rectangleAboveInput.onclick = () => event.stopPropagation()
+
+                    document.body.onclick = () => optionsContainer.style.display = "none"
                 }
-
-                const sortTLDSwitch = createSwitchCheckbox("Sort by TLD")
-                sortTLDSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortTLD
-                sortTLDSwitch.onchange = function()
-                {
-                    sortItemsAZ(".list-group:nth-child(2)", "domain", this.firstChild)
-                    NXsettings.AllowDenylistPage.SortTLD = this.firstChild.checked
-                    saveSettings()
-                }
-
-                const boldRootSwitch = createSwitchCheckbox("Bold root domain")
-                boldRootSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Bold
-                boldRootSwitch.onchange = function()
-                {
-                    styleDomains("bold", this.firstChild.checked)
-                    NXsettings.AllowDenylistPage.Bold = this.firstChild.checked
-                    saveSettings()
-                }
-
-                const lightenSwitch = createSwitchCheckbox("Lighten subdomains")
-                lightenSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Lighten
-                lightenSwitch.onchange = function()
-                {
-                    styleDomains("lighten", this.firstChild.checked)
-                    NXsettings.AllowDenylistPage.Lighten = this.firstChild.checked
-                    saveSettings()
-                }
-
-                const rightAlignSwitch = createSwitchCheckbox("Right-aligned")
-                rightAlignSwitch.firstChild.checked = NXsettings.AllowDenylistPage.RightAligned
-                rightAlignSwitch.onchange = function()
-                {
-                    styleDomains("rightAlign", this.firstChild.checked)
-                    NXsettings.AllowDenylistPage.RightAligned = this.firstChild.checked
-                    saveSettings()
-                }
-
-
-                const optionsContainer = document.createElement("div")
-                optionsContainer.style = "position:absolute; top: 7px; border: 1px solid lightgray; border-radius: 15px; padding: 5px 15px 5px 0px; left: 1160px; width: max-content; display: none;"
-                optionsContainer.appendChild(sortAZSwitch)
-                optionsContainer.appendChild(sortTLDSwitch)
-                optionsContainer.appendChild(boldRootSwitch)
-                optionsContainer.appendChild(lightenSwitch)
-                optionsContainer.appendChild(rightAlignSwitch)
-
-                const optionsButton = document.createElement("button")
-                optionsButton.className = "btn btn-clear"
-                optionsButton.style = "position:absolute; right: -42px; bottom: 10px; width: 30px; padding: 1px 0px 3px 3px; border: 1px solid lightgray;"
-                optionsButton.innerHTML = "⚙️"
-                optionsButton.onclick = function() {
-                    optionsContainer.style.cssText += optionsContainer.style.cssText.includes("none") ? "display: initial;" : "display: none;"
-                    this.blur()
-                }
-
-                const rectangleAboveInput = document.querySelector(".list-group")
-                rectangleAboveInput.style = "position: relative;"
-                rectangleAboveInput.appendChild(optionsContainer)
-                rectangleAboveInput.appendChild(optionsButton)
-                rectangleAboveInput.onclick = function() { event.stopPropagation() }
-
-                document.body.onclick = function() { optionsContainer.style.cssText += 'display: none;' }
 
 
                 // Create the input box for the domain descriptions
-
-                const domainsItems = document.querySelectorAll(".list-group-item")
-
-                for (let i=1; i < domainsItems.length; i++)
                 {
-                    const descriptionInput = document.createElement("input")
-                    descriptionInput.className = "description"
-                    descriptionInput.placeholder = "Add a description. Press Enter to submit"
-                    descriptionInput.style = "margin-left: 30px; border: 0; background: transparent; color: gray;"
-                    descriptionInput.onkeypress = function(event)
+                    const domainsItems = document.querySelectorAll(".list-group-item")
+
+                    const saveDescription = function(input)
                     {
-                        if (event.key == "Enter")
-                        {
-                            NXsettings.AllowDenylistPage.DomainsDescriptions[this.previousSibling.textContent.substring(2)] = this.value
-                            saveSettings()
-                            this.style.cssText += this.value != "" ? "visibility: visible;" : "visibility: hidden;"
-                            this.blur()
-                        }
+                        NXsettings.AllowDenylistPage.DomainsDescriptions[input.previousSibling.textContent.substring(2)] = input.value
+                        saveSettings()
                     }
 
-                    descriptionInput.value = NXsettings.AllowDenylistPage.DomainsDescriptions[domainsItems[i].textContent.substring(2)] || ""
+                    for (let i=1; i < domainsItems.length; i++)
+                    {
+                        const descriptionInput = document.createElement("input")
+                        descriptionInput.className = "description"
+                        descriptionInput.placeholder = "Add a description. Press Enter to save."
+                        descriptionInput.style = "border: 0; background: transparent; color: gray; width: 100%;"
+                        descriptionInput.onkeypress = function(event)
+                        {
+                            if (event.key == "Enter")
+                            {
+                                saveDescription(this)
+                                this.blur()
+                            }
+                        }
+                        descriptionInput.onblur  = function()
+                        {
+                            descriptionInput.style.display = descriptionInput.value != "" ? "initial" : "none"
+                            saveDescription(descriptionInput)
+                        }
 
-                    if (descriptionInput.value == "")
-                        descriptionInput.style.cssText += "visibility: hidden;"
+                        descriptionInput.value = NXsettings.AllowDenylistPage.DomainsDescriptions[domainsItems[i].textContent.substring(2)] || ""
 
-                    domainsItems[i].firstChild.firstChild.appendChild(descriptionInput)
+                        if (descriptionInput.value == "")
+                            descriptionInput.style.display = "none"
 
-                    descriptionInput.style.cssText += "width: " + (descriptionInput.parentElement.getBoundingClientRect().width - descriptionInput.previousSibling.getBoundingClientRect().width - 41) + "px;"  // Make the input box take all available space
+                        domainsItems[i].firstChild.firstChild.appendChild(descriptionInput)
+
+                        descriptionInput.parentElement.style.cssText += "display: grid !important;"
+                    }
                 }
 
 
-                // Apply the highlighting options
+                // Apply the options
 
-                if (sortAZSwitch.firstChild.checked)
-                    sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
+                if (NXsettings.AllowDenylistPage.SortAZ)
+                    sortItemsAZ(".list-group:nth-child(2)", "domain", NXsettings.AllowDenylistPage.SortTLD)
 
-                styleDomains("bold", boldRootSwitch.firstChild.checked)
-                styleDomains("lighten", lightenSwitch.firstChild.checked)
+                styleDomains("bold", NXsettings.AllowDenylistPage.Bold)
+                styleDomains("lighten", NXsettings.AllowDenylistPage.Lighten)
 
-                if (rightAlignSwitch.firstChild.checked)
-                    styleDomains("rightAlign", rightAlignSwitch.firstChild.checked)
+                if (NXsettings.AllowDenylistPage.RightAligned)
+                    styleDomains("rightAlign", NXsettings.AllowDenylistPage.RightAligned)
 
             }
 
@@ -1912,13 +1940,13 @@ function styleDomains(type, enable)
     else if (type == "rightAlign")
     {
         const domainContainers = document.querySelectorAll(".list-group-item > div > div:nth-child(1)")
-        for (let i=0; i < domainContainers.length; i++)
+        for (let i=1; i < domainContainers.length; i++)
         {
             const favicon = domainContainers[i].firstChild.querySelector("img")
             favicon.className = enable ? "ml-2" : "mr-2"
-            domainContainers[i].firstChild.appendChild(domainContainers[i].firstChild.firstChild)  // Swap places for the favicon and domain
-            domainContainers[i].style.cssText += enable ? "justify-content: flex-end;" : "justify-content: initial;"
-            domainContainers[i].lastChild.style.cssText += "width: 450px;"
+            domainContainers[i].firstChild.appendChild(enable ? domainContainers[i].firstChild.querySelector("img") : domainContainers[i].firstChild.querySelector("span"))        // Swap places for the favicon and domain
+            domainContainers[i].style.justifyItems = enable ? "flex-end" : "initial"
+            domainContainers[i].lastChild.style.textAlign = enable ? "right" : "left"
         }
     }
 }
@@ -2121,49 +2149,63 @@ function clearAllIntervals()
 
 function hideAllListItemsAndCreateButton(text, settingObject)
 {
+    const items = document.querySelector(".list-group").children
+
     if (settingObject.CollapseList)
     {
-        const items = document.querySelector(".list-group").children
-
         // Hide items
 
         for (let i = 1; i < items.length; i++)
             items[i].style.cssText += "display: none;"
-
-        // Create "Show" button
-
-        const show = document.createElement("button")
-        show.id = "showList"
-        show.className = "btn btn-light"
-        show.style = "margin-top: 20px;"
-        show.textContent = text
-        show.onclick = function() {
-            for (let i = 1; i < items.length; i++)
-                items[i].style.cssText += "display: block;"
-        }
-
-        items[0].style.cssText += "position: relative;"
-        items[0].appendChild(show)
     }
 
 
     // Create the "Collapse the list" switch
 
-    const collapseSwitch = createSwitchCheckbox("Collapse the list")
-    collapseSwitch.firstChild.checked = settingObject.CollapseList
-    collapseSwitch.style = "position: absolute; right: 200px; top: 13%;"
-    collapseSwitch.firstChild.onchange = function()
+    let collapseSwitch = document.getElementById("collapseSwitch")
+
+    if (!collapseSwitch)
     {
-        settingObject.CollapseList = this.checked
-        saveSettings()
+        collapseSwitch = createSwitchCheckbox("Collapse the list")
+        collapseSwitch.id = "collapseSwitch"
+        collapseSwitch.style = "padding-left: 0px; margin-top: 15px;"
+        collapseSwitch.lastChild.style = "margin-top: 5px; margin-left: 37px;"
+        collapseSwitch.firstChild.checked = settingObject.CollapseList
+        collapseSwitch.firstChild.onchange = function()
+        {
+            settingObject.CollapseList = this.checked
+            saveSettings()
 
-        const showButton = document.getElementById("showList")
+            const showButton = document.getElementById("showButton")
 
-        if (this.checked && !showButton)
-            hideAllListItemsAndCreateButton(text, settingObject)
-        else
-            showButton.click()
+            if (this.checked)
+                hideAllListItemsAndCreateButton(text, settingObject)
+            else
+                showButton.click()
+        }
     }
+
+    // Create "Show" button
+
+    let showButton = document.getElementById("showButton")
+
+    if (!showButton)
+    {
+        showButton = document.createElement("button")
+        showButton.id = "showButton"
+        showButton.className = "btn btn-light"
+        showButton.style = "margin-right: 100px; display: none;"
+        showButton.textContent = text
+        showButton.onclick = function()
+        {
+            for (let i = 1; i < items.length; i++)
+                items[i].style.cssText += "display: block;"
+        }
+
+        collapseSwitch.insertBefore(showButton, collapseSwitch.firstChild)
+    }
+
+    if (settingObject.CollapseList)  showButton.style.display = "initial"
 
     document.querySelector(".list-group-item").appendChild(collapseSwitch)
 }
