@@ -9,7 +9,7 @@
 let currentPage = ""
 const intervals = []
 
-const isChrome = typeof browser == "undefined"      // Whether it's Chrome.
+const isChrome = typeof browser == "undefined"      // Whether it's Chrome. Chrome uses the chrome object, while Firefox and Edge use the browser object.
 
 
 // Load all NX Enhanced's settings
@@ -100,7 +100,7 @@ function main()
             }
 
 
-            pageContentContainer.firstChild.outerHTML += ""                             // Override the content container code (reparse) to remove all events attached and invalidate all "pointers" to it, so it can be used statically (without interferences from other scripts).
+            pageContentContainer.firstChild.outerHTML += ""                             // Override the content container code (reparse) to remove all events attached and invalidate all references to it, so it can be used statically (without interferences from other scripts).
 
             logsContainer = pageContentContainer.getByClass("list-group")               // Update the "pointer" to the new instance.
 
@@ -1412,9 +1412,50 @@ function main()
     {
         const waitForDomains = setInterval(function()
         {
-            if (document.querySelectorAll(".list-group-item").length > 1)       // It's required to wait for at least one domain to load before adding the features, otherwise the appends fail on slower connections.
+            if (document.querySelectorAll(".list-group-item").length > 1)                       // It's required to wait for at least one domain to load before adding the features, otherwise the appends fail on slower connections.
             {
                 clearInterval(waitForDomains)
+
+                // Make the input box allow adding more than one domain at once
+                {
+                    const input = document.querySelector("input")
+                    const inputHtml = input.outerHTML.replace("<input ", "<textarea ")          // Swap the input to a textarea to make it multi-line.
+                    const container = input.parentElement.parentElement.parentElement
+
+                    container.firstChild.outerHTML = inputHtml                                  // Replace with the textarea, the form that contains the input.
+
+                    const textArea = container.firstChild
+                    textArea.style.height = "63px"
+                    textArea.placeholder = "Add one or more domains, one per line. Press Enter to submit."
+                    textArea.onkeypress = function()
+                    {
+                        if (event.key == "Enter" && !event.shiftKey)                            // Allow shift+ctrl to break line.
+                        {
+                            event.preventDefault()
+
+                            const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist"
+                            const domains = this.value.split("\n")
+
+                            if (domains.length > 2)
+                            {
+                                alert("To prevent server issues, you cannot import a list with more than 500 domains.")
+                                return
+                            }
+
+                            for (let i=0; i < domains.length; i++)
+                            {
+                                const hexedId = convertToHex(domains[i])
+
+                                makeApiRequest("PUT", list + "/hex:" + convertToHex(domains[i]), function(response)
+                                {
+                                    if (!response.includes("error"))
+                                        location.reload()
+                                })
+                            }
+
+                        }
+                    }
+                }
 
 
                 // Create the options menu
@@ -1514,9 +1555,9 @@ function main()
                     for (let i=1; i < domainsItems.length; i++)
                     {
                         const descriptionInput = document.createElement("input")
-                        descriptionInput.className = "description"
+                        descriptionInput.className = "description form-control"
                         descriptionInput.placeholder = "Add a description. Press Enter to save."
-                        descriptionInput.style = "border: 0; background: transparent; color: gray; width: 100%;"
+                        descriptionInput.style = "border: 0; background: transparent; color: gray; width: 100%; height: 27px; padding-left: 10px; padding-top: 3px; margin-top: 3px; margin-bottom: -5px;"
                         descriptionInput.onkeypress = function(event)
                         {
                             if (event.key == "Enter")
