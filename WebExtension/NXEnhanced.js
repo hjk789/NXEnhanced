@@ -1581,12 +1581,14 @@ function main()
 
                     if (!input)  return
 
-                    const inputHtml = input.outerHTML.replace("<input ", "<textarea ")          // Swap the input to a textarea to make it multi-line.
+                    const inputHtml = input.outerHTML.replace("<input ", "<textarea ")                          // Swap the input to a textarea to make it multi-line.
                     const container = input.parentElement.parentElement.parentElement
+                    container.firstChild.remove()                                                               // Replace with the textarea, the form that contains the input.
 
-                    container.firstChild.outerHTML = inputHtml                                  // Replace with the textarea, the form that contains the input.
+                    let textArea = (new DOMParser).parseFromString(inputHtml, "text/html").body.firstChild      // It's required to parseFromString the HTML in order to pass AMO's code validation.
+                    container.appendChild(textArea)
 
-                    const textArea = container.firstChild
+                    textArea = container.firstChild
                     textArea.style = "height: 63px; background-position-x: calc(100% - 20px); min-height: 38px;"
                     textArea.placeholder = "Add one or more domains, one per line. Press Enter to submit."
                     textArea.onkeypress = function()
@@ -1594,12 +1596,12 @@ function main()
                         this.classList.remove("is-invalid")
                         this.nextSibling.textContent = ""
 
-                        if (event.key == "Enter" && !event.shiftKey)                            // Allow shift+ctrl to break line.
+                        if (event.key == "Enter" && !event.shiftKey)                                            // Allow shift+ctrl to break line.
                         {
                             event.preventDefault()
 
                             const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist"
-                            const domains = this.value.split("\n").filter(d => d.trim() != "")      // Ignore empty lines.
+                            const domains = this.value.split("\n").filter(d => d.trim() != "")                  // Ignore empty lines.
                             let numFinishedRequests = numImportedDomains = 0
 
                             if (domains.length > 500)
@@ -1610,6 +1612,10 @@ function main()
 
                                 return
                             }
+
+                            if (domains.length == 0)
+                                return
+
 
                             createSpinner(this.parentElement)
 
