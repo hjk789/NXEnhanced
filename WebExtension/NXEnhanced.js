@@ -416,7 +416,7 @@ function main()
             // Create the allow/deny popup
             {
                 const elementsContainer = document.createElement("div")
-                elementsContainer.onclick = function() { event.stopPropagation() }  // Prevent the popup from being hidden when clicking inside it
+                elementsContainer.onclick = function() { event.stopPropagation() }      // Prevent the popup from being hidden when clicking inside it
                 elementsContainer.style = "background: #f7f7f7; position: absolute; right: 130px; height: max-content; width: max-content; \
                                            border: 2px solid lightgray; border-radius: 15px; z-index: 99; padding: 5px 15px 15px 15px; visibility: hidden;"
 
@@ -459,23 +459,23 @@ function main()
 
                                 // Auto dismiss the popup after 1 second
                                 setTimeout(function() {
-                                    allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is refreshed.
+                                    allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is reloaded.
                                     allowDenyPopup.errorMsg.innerHTML = ''
-                                }, 1000)
+                                }, 750)
 
                                 // Update the cached list of domains from the allow/denylist
                                 makeApiRequest("GET", allowDenyPopup.listName, function(response) {
                                     allowDenyPopup.domainsList[allowDenyPopup.listName] = response
                                 })
                             }
-                            else if (response.includes("error"))        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
+                            else if (response.includes("error"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
                             {
                                 let error = JSON.parse(response).error
 
                                 if (error.includes("exist"))
                                     error = "This domain has already been added"
                                 else if (error.includes("invalid"))
-                                    error = "Please enter a valid domain"
+                                    error = "Invalid domain"
 
                                 allowDenyPopup.errorMsg.textContent = error
                                 allowDenyPopup.errorMsg.classList.add("invalid-feedback")
@@ -489,7 +489,7 @@ function main()
                     {
                         document.getElementById("domainsToHideInput").value += "\n" + allowDenyPopup.input.value
                         updateFilters()
-                        allowDenyPopup.errorMsg.innerHTML = 'Done!'
+                        allowDenyPopup.errorMsg.textContent = '✔️'
                         refilterLogEntries()
 
                         setTimeout(function() {
@@ -1416,49 +1416,8 @@ function main()
             {
                 clearInterval(waitForDomains)
 
-                // Make the input box allow adding more than one domain at once
-                {
-                    const input = document.querySelector("input")
-                    const inputHtml = input.outerHTML.replace("<input ", "<textarea ")          // Swap the input to a textarea to make it multi-line.
-                    const container = input.parentElement.parentElement.parentElement
-
-                    container.firstChild.outerHTML = inputHtml                                  // Replace with the textarea, the form that contains the input.
-
-                    const textArea = container.firstChild
-                    textArea.style.height = "63px"
-                    textArea.placeholder = "Add one or more domains, one per line. Press Enter to submit."
-                    textArea.onkeypress = function()
-                    {
-                        if (event.key == "Enter" && !event.shiftKey)                            // Allow shift+ctrl to break line.
-                        {
-                            event.preventDefault()
-
-                            const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist"
-                            const domains = this.value.split("\n")
-
-                            if (domains.length > 2)
-                            {
-                                alert("To prevent server issues, you cannot import a list with more than 500 domains.")
-                                return
-                            }
-
-                            for (let i=0; i < domains.length; i++)
-                            {
-                                const hexedId = convertToHex(domains[i])
-
-                                makeApiRequest("PUT", list + "/hex:" + convertToHex(domains[i]), function(response)
-                                {
-                                    if (!response.includes("error"))
-                                        location.reload()
-                                })
-                            }
-
-                        }
-                    }
-                }
-
-
                 // Create the options menu
+
                 if (!document.getElementById("allowDenylistOptions"))
                 {
                     const optionsContainer = document.createElement("div")
@@ -1532,6 +1491,19 @@ function main()
 
                     optionsContainer.appendChild(rightAlignSwitch)
 
+                    const multiLineSwitch = createSwitchCheckbox("Add a list of domains")
+                    multiLineSwitch.firstChild.checked = NXsettings.AllowDenylistPage.MultilineTextBox
+                    multiLineSwitch.onchange = function()
+                    {
+                        NXsettings.AllowDenylistPage.MultilineTextBox = this.firstChild.checked
+                        saveSettings()
+
+                        if (this.firstChild.checked)
+                            createAllowDenylistTextArea()
+                    }
+
+                    optionsContainer.appendChild(multiLineSwitch)
+
 
                     const rectangleAboveInput = document.querySelector(".list-group").firstChild
                     rectangleAboveInput.insertBefore(optionsButton, rectangleAboveInput.firstChild)
@@ -1594,6 +1566,98 @@ function main()
 
                 if (NXsettings.AllowDenylistPage.RightAligned)
                     styleDomains("rightAlign", NXsettings.AllowDenylistPage.RightAligned)
+
+                if (NXsettings.AllowDenylistPage.MultilineTextBox)
+                    createAllowDenylistTextArea()
+
+
+
+
+                function createAllowDenylistTextArea()
+                {
+                    // Make the input box allow adding a list of domains
+
+                    const input = document.querySelector("form input")
+
+                    if (!input)  return
+
+                    const inputHtml = input.outerHTML.replace("<input ", "<textarea ")          // Swap the input to a textarea to make it multi-line.
+                    const container = input.parentElement.parentElement.parentElement
+
+                    container.firstChild.outerHTML = inputHtml                                  // Replace with the textarea, the form that contains the input.
+
+                    const textArea = container.firstChild
+                    textArea.style = "height: 63px; background-position-x: calc(100% - 20px); min-height: 38px;"
+                    textArea.placeholder = "Add one or more domains, one per line. Press Enter to submit."
+                    textArea.onkeypress = function()
+                    {
+                        this.classList.remove("is-invalid")
+                        this.nextSibling.textContent = ""
+
+                        if (event.key == "Enter" && !event.shiftKey)                            // Allow shift+ctrl to break line.
+                        {
+                            event.preventDefault()
+
+                            const list = (/allowlist$/.test(location.href)) ? "allowlist" : "denylist"
+                            const domains = this.value.split("\n").filter(d => d.trim() != "")      // Ignore empty lines.
+                            let numFinishedRequests = numImportedDomains = 0
+
+                            if (domains.length > 500)
+                            {
+                                this.classList.add("is-invalid")
+                                this.nextSibling.textContent = "To prevent server issues, you cannot import a list with more than 500 domains."
+                                this.nextSibling.className = "invalid-feedback"
+
+                                return
+                            }
+
+                            createSpinner(this.parentElement)
+
+                            for (let i=0; i < domains.length; i++)
+                            {
+                                const domain = domains[i].trim()
+
+                                makeApiRequest("PUT", list + "/hex:" + convertToHex(domain), function(response)
+                                {
+                                    numFinishedRequests++
+
+                                    if (!response.includes("error"))
+                                        numImportedDomains++
+                                    else
+                                    {
+                                        let error = JSON.parse(response).error
+
+                                        if (error.includes("exist"))
+                                            error = "This domain has already been added: " + domain
+                                        else if (error.includes("invalid"))
+                                            error = "Invalid domain: " + domain
+
+                                        textArea.classList.add("is-invalid")
+                                        textArea.nextSibling.textContent = error
+                                        textArea.nextSibling.className = "invalid-feedback"
+
+                                    }
+
+                                    if (numFinishedRequests == domains.length)
+                                    {
+                                        if (numImportedDomains > 0)
+                                        {
+                                            textArea.parentElement.lastChild.outerHTML = '✔️'
+                                            setTimeout(() => location.reload(), 500)
+                                        }
+                                        else textArea.parentElement.lastChild.outerHTML = ""
+                                    }
+
+                                })
+                            }
+
+                        }
+                    }
+
+                    const errorMsgSpan = document.createElement("span")
+                    errorMsgSpan.className = "invalid-feedback"
+                    container.appendChild(errorMsgSpan)
+                }
 
             }
 
@@ -1874,6 +1938,7 @@ function loadNXsettings()
                     Bold: false,
                     Lighten: false,
                     RightAligned: false,
+                    MultilineTextBox: false,
                     DomainsDescriptions: {}     // In Chrome it's required to be an object to use named items. In Firefox it works even with an array.
                 },
                 LogsPage:
