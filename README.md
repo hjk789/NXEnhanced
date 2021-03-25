@@ -39,10 +39,13 @@ You can either manually input domains, or click on the "Hide" button, alongside 
 ### Allowlist/Denylist pages:
 
 - Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
-![Description input](https://i.imgur.com/TqlKWxr.png)    
+![Description input](https://i.imgur.com/wS2kRNG.png)    
 
-- Sort the allow/deny lists alphabetically, and styling options to the domains for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
-![allow/deny options](https://i.imgur.com/DiuO5TB.png)
+- Ability to add a list of domains, instead of one by one    
+![multiline input box](https://i.imgur.com/p5Ovg11.png)    
+
+- Sort the allow/deny lists alphabetically, and styling options for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
+![allow/deny options](https://i.imgur.com/HCgekWd.png)
 
 ### Settings page:
 
