@@ -10,7 +10,7 @@
 
   "content_scripts":
   [{
-      "matches": ["https://my.nextdns.io/*"],
+      "matches": ["https://my.nextdns.io/*", "https://api.nextdns.io/*"],
       "js": ["NXEnhanced.js"]
   }],
 
