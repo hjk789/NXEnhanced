@@ -68,7 +68,7 @@ function main()
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval
         let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
-        let lastBefore, lastAfter = 1, currentDeviceId, searchString, blockedQueriesOnly, simpleLogs = 1
+        let lastBefore, lastAfter = 1, currentDeviceId, searchString, searchItems, blockedQueriesOnly, simpleLogs = 1
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -607,6 +607,9 @@ function main()
             {
                 e.stopPropagation()     // Don't let the original event listener receive this event.
 
+                if (!/\/logs/i.test(location.href))
+                    return
+
                 if (!cancelLoading && document.body.getBoundingClientRect().bottom < window.innerHeight * 3)        // Only load the next chunk if the user is three screens above the page bottom.
                     loadLogChunk({before: lastBefore})                                                              // This big distance makes scrolling the logs much more fluid, because when you
                                                                                                                     // reach the bottom, the next chunk is already loaded and you don't need to wait.
@@ -628,7 +631,8 @@ function main()
                 {
                     if (e.key == "Enter")
                     {
-                        searchString = this.value.split(" ")[0]     // Take only the part before a space character to make the request. This is in preparation for the feature of excluding entries from a search.
+                        searchItems = this.value.split(" ")
+                        searchString = searchItems.splice(0,1)     // Take only the first term to make the request. The other terms are used by NXE as filters for the results.
                         reloadLogs()
                     }
                     else clearSearchButton.style.display = this.value == "" ? "none" : "block"      // Hide the clear button when the input box is empty, and display it otherwise.
@@ -646,7 +650,7 @@ function main()
                     {
                         if (searchBar.value != "")
                         {
-                            searchString = searchBar.value = ""
+                            searchString = searchItems = searchBar.value = ""
                             this.style.display = "none"
                             reloadLogs()
                         }
@@ -888,10 +892,12 @@ function main()
                             {
                                 var domainName = entriesData[i].name
                                 var isNamedDevice = !!entriesData[i].deviceName
+
                                 if ((filtering && !domainName.includes("."))        // Chrome's random queries never have a dot.
                                     || (hideDevices && isNamedDevice)               // If enabled, named devices.
-                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d))) )   // If enabled, domains included in the list of domains to hide.
-                                {
+                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d)))    // If enabled, domains included in the list of domains to hide.
+                                    || (searchItems && searchItems.some(i => i[0] == "-" ? domainName.includes(i.replace("-","")) : !domainName.includes(i))) )     // When there's more than one search term specified, if it's an exclusion, check whether the log entry contains the term, and
+                                {                                                                                                                                   // if so, hide it, but if instead it's an inclusion, check whether the log entry does not contain the term, and if so, hide it.
                                     entriesData.splice(i,1)
                                     i--
 
@@ -1211,10 +1217,13 @@ function main()
         function processTimestamp(timestamp, now, dateTimeElement)
         {
             const relativeSecs = (now - timestamp) / 1000       // Get the relative time in seconds.
-            if (relativeSecs > 1800)                            // If older than 30 minutes, show the full date-time.
+            relativeMinutes = relativeSecs/60
+            relativeHours = relativeMinutes/60
+
+            if (relativeHours > 48)                            // If older than 2 days, show the full date-time.
             {
                 dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp)).replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
-                dateTimeElement.classList.remove("relativeTime")
+                //dateTimeElement.classList.remove("relativeTime")
             }
             else        // Otherwise, show the relative time
             {
@@ -1227,7 +1236,12 @@ function main()
                 else if (relativeSecs < 120)
                     dateTimeElement.textContent = "a minute ago"
                 else
-                    dateTimeElement.textContent = parseInt(relativeSecs/60) + " minutes ago"
+                {
+                    if (relativeMinutes < 60)
+                        dateTimeElement.textContent = parseInt(relativeMinutes) + " minutes ago"
+                    else
+                        dateTimeElement.textContent = parseInt(relativeHours) + " hours ago"
+                }
 
                 dateTimeElement.textContent += String.fromCharCode(160) + " (" + new Date(timestamp).toLocaleTimeString() + ")"     // Char code 160 is the &nbsp; character.
             }
@@ -1965,7 +1979,6 @@ function loadNXsettings()
     })
 }
 
-
 function saveSettings(object)
 {
     if (!object)  object = NXsettings
@@ -2148,6 +2161,7 @@ function exportToFile(fileContent, fileName)
     document.body.appendChild(a)
     a.click()
 }
+
 
 function sortItemsAZ(selector, type = "", element = null)
 {
