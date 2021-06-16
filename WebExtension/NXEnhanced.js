@@ -868,7 +868,8 @@ function main()
                     lastBefore = entriesData.lastItem().timestamp       // Store the timestamp of the last entry, to load the older chunk starting from this timestamp. This timestamp is in Unix time.
                     lastAfter  = entriesData[0].timestamp               // Store the timestamp of the first entry, to load the newer chunk starting from this timestamp.
 
-                    const now = Date.now()          // Get the current date-time in Unix time.
+                    const now = new Date()          // Get the current date-time in Unix time.
+                    const yesterday = (new Date(new Date().setDate(new Date().getDate() - 1))).getDate()
 
                     // Process the chunk's log entries
                     {
@@ -1105,7 +1106,7 @@ function main()
                                         const dateTimeEll = document.createElement("span")
                                         dateTimeEll.style = "font-size: 0.8em; color: #bbb; min-width: 250px; text-align: end;"
                                         dateTimeEll.setAttribute("time", entriesData[i].timestamp)
-                                        processTimestamp(entriesData[i].timestamp, now, dateTimeEll)
+                                        processTimestamp(entriesData[i].timestamp, now, yesterday, dateTimeEll)
 
                                         rightSideContainer.appendChild(dateTimeEll)
                                     }
@@ -1183,11 +1184,12 @@ function main()
             // Set an interval that updates the relative time of the log entries every 20 seconds.
             updateRelativeTimeInterval = setInterval(function()
             {
-                const now = Date.now()
+                const now = new Date()
+                const yesterday = (new Date(new Date().setDate(new Date().getDate() - 1))).getDate()
                 const logEntries = logsContainer.querySelectorAll(".relativeTime")
 
                 for (let i=0; i < logEntries.length; i++)
-                    processTimestamp(+logEntries[i].getAttribute("time"), now, logEntries[i])
+                    processTimestamp(+logEntries[i].getAttribute("time"), now, yesterday, logEntries[i])
 
             }, 20000)
         }
@@ -1214,16 +1216,24 @@ function main()
             }
         }
 
-        function processTimestamp(timestamp, now, dateTimeElement)
+        function processTimestamp(timestamp, now, yesterday, dateTimeElement)
         {
-            const relativeSecs = (now - timestamp) / 1000       // Get the relative time in seconds.
+            const relativeSecs = (now.getTime() - timestamp) / 1000       // Get the relative time in seconds.
             relativeMinutes = relativeSecs/60
             relativeHours = relativeMinutes/60
+            timestampDateObj = new Date(timestamp)
+            timestampHours = timestampDateObj.getHours()
 
-            if (relativeHours > 48)                            // If older than 2 days, show the full date-time.
+            fullDateTime = dateTimeFormatter.format(timestampDateObj)
+
+            today = now.getDate()
+            timestampDay = timestampDateObj.getDate()
+
+
+            if (relativeHours > 48 || timestampDay != today && timestampDay != yesterday)                             // If older than 2 days, show the full date-time.
             {
-                dateTimeElement.textContent = dateTimeFormatter.format(new Date(timestamp)).replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
-                //dateTimeElement.classList.remove("relativeTime")
+                dateTimeElement.textContent = fullDateTime.replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
+                dateTimeElement.classList.remove("relativeTime")
             }
             else        // Otherwise, show the relative time
             {
@@ -1237,13 +1247,20 @@ function main()
                     dateTimeElement.textContent = "a minute ago"
                 else
                 {
+                    currentHour = now.getHours()
+
                     if (relativeMinutes < 60)
                         dateTimeElement.textContent = parseInt(relativeMinutes) + " minutes ago"
-                    else
+                    else if (parseInt(relativeHours) == 1)
+                        dateTimeElement.textContent = "1 hour ago"
+                    else if (relativeHours < 24)
                         dateTimeElement.textContent = parseInt(relativeHours) + " hours ago"
+
+                    if (timestampDay == yesterday)
+                        dateTimeElement.textContent = "Yesterday, " + dateTimeElement.textContent
                 }
 
-                dateTimeElement.textContent += String.fromCharCode(160) + " (" + new Date(timestamp).toLocaleTimeString() + ")"     // Char code 160 is the &nbsp; character.
+                dateTimeElement.textContent += String.fromCharCode(160) + " (" + timestampDateObj.toLocaleTimeString() + ")"     // Char code 160 is the &nbsp; character.
             }
         }
 
