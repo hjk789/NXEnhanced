@@ -1230,9 +1230,13 @@ function main()
             timestampDay = timestampDateObj.getDate()
 
 
-            if (relativeHours > 48 || timestampDay != today && timestampDay != yesterday)                             // If older than 2 days, show the full date-time.
+            if (timestampDay != today && relativeHours > 24)
             {
-                dateTimeElement.textContent = fullDateTime.replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
+                if (timestampDay == yesterday)
+                    dateTimeElement.textContent = "Yesterday" + String.fromCharCode(160) + " (" + timestampDateObj.toLocaleTimeString() + ")"     // Char code 160 is the &nbsp; character.
+                else                   // If older than 2 days, show the full date-time.
+                    dateTimeElement.textContent = fullDateTime.replace(/(202\d) /, "$1, ")     // Add a comma after the year if there isn't one.
+
                 dateTimeElement.classList.remove("relativeTime")
             }
             else        // Otherwise, show the relative time
@@ -1256,11 +1260,11 @@ function main()
                     else if (relativeHours < 24)
                         dateTimeElement.textContent = parseInt(relativeHours) + " hours ago"
 
-                    if (timestampDay == yesterday)
+                    if (timestampDay == yesterday && relativeHours < 24)
                         dateTimeElement.textContent = "Yesterday, " + dateTimeElement.textContent
                 }
 
-                dateTimeElement.textContent += String.fromCharCode(160) + " (" + timestampDateObj.toLocaleTimeString() + ")"     // Char code 160 is the &nbsp; character.
+                dateTimeElement.textContent += String.fromCharCode(160) + " (" + timestampDateObj.toLocaleTimeString() + ")"
             }
         }
 
