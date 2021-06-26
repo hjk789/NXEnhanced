@@ -1,9 +1,9 @@
 <p align="center"><img src="https://i.imgur.com/NIORJ58.png"></p>
 <h1 align="center">NX Enhanced</h1>
-<p>Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, etc. more practical. </p>
+<p>Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, logs, etc. more practical. </p>
 
 <p align="center">
-<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=firefoximg"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
+<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
 </p>
 
 
@@ -27,11 +27,18 @@ You can either manually input domains, or click on the "Hide" button, alongside 
 - Option to show only queries from unnamed devices   
 ![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
 
+- Refine a search with multiple search terms or exclusion terms     
+![multiple terms](https://i.imgur.com/fBlxR18.png)     
+You can specify as many terms as you like.
+
 - An option to show the number of entries currently loaded, visible or hidden by filters    
 ![counters](https://i.imgur.com/8mTEDt1.png)
 
 - Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
 ![Absolute time](https://i.imgur.com/I3pGNL8.png)    
+
+- Relative time that counts minutes, then hours, and goes up to "Yesterday"       
+![more relative times](https://i.imgur.com/BhS1B6n.png)    
 
 - A refresh button    
 ![refresh button](https://i.imgur.com/yBEo3mV.png)
@@ -69,13 +76,13 @@ This is good for people with a long list of blocklists added.
 ![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)      
 
 
-## How to use it
+## How to install
 
 For Firefox, just click the "Get the Addon" link above, then click the "Add to Firefox" button and confirm.  
 
 For Chrome (and other Chromium based browsers), just click the "Available in the Chrome Web Store" link above, then click the "Add to Chrome" button and confirm. For Edge it's the same thing, just click the "Get it from Microsoft" link.
 
-You also have the option of using the userscript version, but it works only in Chrome, in Firefox it works partially. Also, keep in mind that the userscript is discontinued. For more information and instructions, read [here](https://github.com/hjk789/NXEnhanced/tree/master/Userscript#how-to-use-it).
+You also have the option of using the userscript version, but it works only in Chrome, in Firefox it works partially. Also, keep in mind that the userscript is discontinued, so it won't receive any updates. For more information and instructions, read [here](https://github.com/hjk789/NXEnhanced/tree/master/Userscript#how-to-use-it).
 
 NX Enhanced was tested in Firefox and Chrome. It should work fine in pretty much any browser that accepts Firefox or Chrome extensions, although I didn't tested them.
 
@@ -86,12 +93,9 @@ In case you experience any problem with NX Enhanced, or you want to make suggest
 
 ## How to contribute
 
-If you would like to contribute with code, you just need to:
-1. Make a fork of this project's repository by clicking on the "Fork" button on the top-right corner of the repository page;
-2. Make your proposed changes in the code of the fork you created, and when done, push the changes;
-3. Go to the [Pull requests page](https://github.com/hjk789/NXEnhanced/pulls) and click the "New pull request" button. And finally, click the "Create pull request" button.
+If you would like to contribute with code, you just need to make a fork of this project's repository, make your proposed changes, then create a pull request.
 
-If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project owner, BLBC.
+If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project owner, [BLBC](https://github.com/hjk789).
 
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CK5BFYUP9TWBJ&source=url)
 
@@ -100,17 +104,17 @@ If you don't have funds to donate, but still want to contribute, you can do so b
 ## License
 
 - You can view the code, download copies to your devices, install, run, use the features added to the page and uninstall this software.
-- You can suggest changes, either by opening issues or by doing pull requests. 
-- You can create or participate in discussions, give feedback and rate this project.
-- You are free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
 - You can modify your downloaded copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
-- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead. Any contributed code is owned by the repository owner, hjk789. The credits of the contributed code goes to the contributor.
+- You can suggest changes, new features or fixes, either by opening issues or by doing pull requests. 
+- You can create or participate in issues and discussions, give feedback and rate this project.
+- You are free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
+- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button or the "Edit this file" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead. Any contributed code is owned by the repository owner, [BLBC](https://github.com/hjk789). The credits for the contributed code goes to the contributor.
 - You cannot do any other action not allowed in this license.  
 
-I have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary work. I am not responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
+I, [BLBC](https://github.com/hjk789), have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary and unnoficial work. Neither I, nor NextDNS Inc., are responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
 
 Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
 
 ## Privacy policy
 
-You can read the full privacy policy [here](https://github.com/hjk789/NXEnhanced/wiki/Privacy-Policy). In brief, most of what you need to know is in the first line: "NX Enhanced does not collect and does not send your data to third-parties, it also does not include any kind of tracking or analytics in the code."
+You can read the full privacy policy [here](https://github.com/hjk789/NXEnhanced/wiki/Privacy-Policy). In brief, most of what you need to know is in the first line: "NX Enhanced does not collect and does not send your data to third-parties, it also does not include any kind of tracking or analytics in the code. It also does not and will not have access to your email or password."
