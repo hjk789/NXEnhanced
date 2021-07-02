@@ -12,68 +12,84 @@
 
 ### Logs page:
 
-- Allow/Deny buttons in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.   
-![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)    
+- Allow/Deny buttons in the logs that make it possible to add an exception or block a domain without needing to copy, switch pages, and paste.
+
+    ![Allow and Deny butttons](https://i.imgur.com/3XNMUi1.png)    
 You can either add the respective domain or the whole root domain, or even edit the domain if you want.   
 [Read more](https://github.com/hjk789/NXEnhanced/wiki#an-allowdeny-button-for-each-log-entry)
 
-- Ability to specify domains that should be hidden from the logs  
-![Domain filtering](https://i.imgur.com/l8Ouzh1.png)        
-You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
+- Ability to specify domains that should be hidden from the logs
 
-- Ability to load only the logs that happened before a specified date-time   
-![only logs before](https://i.imgur.com/FChYIoS.png)      
+    ![Domain filtering](https://i.imgur.com/l8Ouzh1.png)    
+    You can either manually input domains, or click on the "Hide" button, alongside the Allow/Deny buttons, which lets you hide domains with few clicks.  [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-specify-domains-that-should-be-hidden-from-the-logs)
 
-- Option to show only queries from unnamed devices   
-![Other Devices button](https://i.imgur.com/V7HFiJL.png)      
+- Ability to load only the logs that happened before a specified date-time
 
-- Refine a search with multiple search terms or exclusion terms     
-![multiple terms](https://i.imgur.com/fBlxR18.png)     
-You can specify as many terms as you like.
+    ![only logs before](https://i.imgur.com/FChYIoS.png)
 
-- An option to show the number of entries currently loaded, visible or hidden by filters    
-![counters](https://i.imgur.com/8mTEDt1.png)
+- Option to show only queries from unnamed devices
 
-- Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")   
-![Absolute time](https://i.imgur.com/I3pGNL8.png)    
+    ![Other Devices button](https://i.imgur.com/V7HFiJL.png)
 
-- Relative time that counts minutes, then hours, and goes up to "Yesterday"       
-![more relative times](https://i.imgur.com/BhS1B6n.png)    
+- Refine a search with multiple search terms or exclusion terms
 
-- A refresh button    
-![refresh button](https://i.imgur.com/yBEo3mV.png)
+    ![multiple terms](https://i.imgur.com/fBlxR18.png)    
+    You can specify as many terms as you like. [Read more](https://github.com/hjk789/NXEnhanced/wiki#refine-a-search-with-multiple-search-terms-or-exclusion-terms)
+
+- An option to show the number of entries currently loaded, visible or hidden by filters
+
+    ![counters](https://i.imgur.com/8mTEDt1.png)
+
+- Show the query's absolute time (HH:MM:SS) along with the relative time ("a minute ago", "few seconds ago")
+
+    ![Absolute time](https://i.imgur.com/I3pGNL8.png)
+
+- Relative time that counts minutes, then hours, and goes up to "Yesterday"
+
+    ![more relative times](https://i.imgur.com/BhS1B6n.png)
+
+- A refresh button
+
+    ![refresh button](https://i.imgur.com/yBEo3mV.png)
 
 ### Allowlist/Denylist pages:
 
-- Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)   
-![Description input](https://i.imgur.com/wS2kRNG.png)    
+- Ability to add a description to each domain in the allow/denylists. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-add-a-description-to-each-domain-in-the-denyallow-lists)
 
-- Ability to add a list of domains, instead of one by one    
-![multiline input box](https://i.imgur.com/p5Ovg11.png)    
+    ![Description input](https://i.imgur.com/wS2kRNG.png)
 
-- Sort the allow/deny lists alphabetically, and styling options for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.   
-![allow/deny options](https://i.imgur.com/HCgekWd.png)
+- Ability to add a list of domains, instead of one by one
+
+    ![multiline input box](https://i.imgur.com/p5Ovg11.png)
+
+- Sort the allow/deny lists alphabetically, and styling options for an easier quick reading, such as: lighten subdomains, bold root domain and right-align.
+    
+    ![allow/deny options](https://i.imgur.com/HCgekWd.png)
 
 ### Settings page:
 
-- Ability to export/import all settings from/to a config. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-exportimport-all-settings-fromto-a-config)   
-![Export/import buttons](https://i.imgur.com/2oEl8t2.png)    
+- Ability to export/import all settings from/to a config. [Read more](https://github.com/hjk789/NXEnhanced/wiki#ability-to-exportimport-all-settings-fromto-a-config)
+
+    ![Export/import buttons](https://i.imgur.com/2oEl8t2.png)    
 
 ### Privacy page:
 
-- Collapse the list of blocklists enabled and adds a button to unhide them if needed    
-![Hidden lists](https://i.imgur.com/ifnmNiv.png)    
-This is good for people with a long list of blocklists added.
+- Collapse the list of blocklists enabled and adds a button to unhide them if needed
 
-- Sort alphabetically the list of blocklists in the "Add a blocklist" screen  
-![Sort a-z blocklists](https://i.imgur.com/rFXduAY.png)  
+    ![Hidden lists](https://i.imgur.com/ifnmNiv.png)    
+    This is good for people with a long list of blocklists added.
+
+- Sort alphabetically the list of blocklists in the "Add a blocklist" screen
+
+    ![Sort a-z blocklists](https://i.imgur.com/rFXduAY.png)
 
 ### Security page:
 
 - Collapse the list of added TLDs
 
-- A button that allows you to add every TLD in the "Add a TLD" screen in one click. [Read more](https://github.com/hjk789/NXEnhanced/wiki#a-button-that-allows-you-to-add-every-tld-in-the-add-a-tld-screen-in-one-click)   
-![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)      
+- A button that allows you to add every TLD in the "Add a TLD" screen in one click. [Read more](https://github.com/hjk789/NXEnhanced/wiki#a-button-that-allows-you-to-add-every-tld-in-the-add-a-tld-screen-in-one-click)
+
+    ![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)      
 
 
 ## How to install
