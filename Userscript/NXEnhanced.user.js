@@ -59,6 +59,10 @@ if (window.top == window.self)
     document.body.appendChild(ApiFrame)
     ApiFrame.style.display = "none"     // The frame needs to be hidden *after* the append, otherwise Chrome won't load it. In Firefox it works fine.
 
+    function sleep(ms)
+    {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     function main()
     {
@@ -1264,21 +1268,20 @@ if (window.top == window.self)
 
                                                     if (buttons[i].classList.contains("btn-primary"))
                                                     {
+                                                        sleep(800)
+                                                        
                                                         if (!/[^\w]/.test(TLD))  // If there isn't a character in the TLD which is not a-z, then make the request normally.
                                                         {
                                                             makeApiRequestAndAddEvent("PUT", "security/blocked_tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
                                                         }
                                                         else    // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
                                                         {       // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
-                                                            setTimeout(function(i)
-                                                            {
-                                                                buttons[i].click();
-                                                                buttonsClicked.push(i)  // Store in an array the index of all buttons that were clicked, then check whether they finished adding
-                                                                numTLDsAdded++
+                                                            
+                                                            buttons[i].click();
+                                                            buttonsClicked.push(i)  // Store in an array the index of all buttons that were clicked, then check whether they finished adding
+                                                            numTLDsAdded++
 
-                                                                checkIfFinished()
-
-                                                            }, 500, i)
+                                                            checkIfFinished()
                                                         }
                                                     }
                                                 }
@@ -1502,7 +1505,7 @@ if (window.top == window.self)
                         fileInput.onchange = function()
                         {
                             const file = new FileReader()
-                            file.onload = function()
+                            file.onload = async function()
                             {
                                 const config = JSON.parse(this.result);
                                 delete config.settings.name             // Don't import the config name
@@ -1528,7 +1531,7 @@ if (window.top == window.self)
                                     "parentalcontrol/categories": 0
                                 }
 
-                                const importAllAndSwitchDisabledItems = function(listName, idPropName)
+                                const importAllAndSwitchDisabledItems = async function(listName, idPropName)
                                 {
                                     let listObj = config[listName]
 
@@ -1545,6 +1548,7 @@ if (window.top == window.self)
                                         const item = listObj[i]
                                         const hexedId = convertToHex(item[idPropName])
 
+                                        await sleep(1000)
                                         makeApiRequestAndAddEvent("PUT", listName + "/hex:" + hexedId, function(e)
                                         {
                                             numItemsImported[listName]++
@@ -1567,7 +1571,10 @@ if (window.top == window.self)
                                 if (importTLDs)
                                 {
                                     for (let i=0; i < config.security.blocked_tlds.length; i++)  // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added individually
+                                    {
+                                        await sleep(1000)
                                         makeApiRequestAndAddEvent("PUT", "security/blocked_tlds/hex:" + convertToHex(config.security.blocked_tlds[i]), ()=> numItemsImported.blocked_tlds++)
+                                    }
                                 }
 
                                 // Import Privacy page
@@ -1575,10 +1582,16 @@ if (window.top == window.self)
                                 makeApiRequest("PATCH", "privacy", config.privacy)
 
                                 for (let i=0; i < config.privacy.blocklists.length; i++)
+                                {
+                                    await sleep(1000)
                                     makeApiRequestAndAddEvent("PUT", "privacy/blocklists/hex:" + convertToHex(config.privacy.blocklists[i]), ()=> numItemsImported.blocklists++)
+                                }
 
                                 for (let i=0; i < config.privacy.natives.length; i++)
+                                {
+                                    await sleep(1000)
                                     makeApiRequest("PUT", "privacy/natives/hex:" + convertToHex(config.privacy.natives[i].id))
+                                }
 
                                 // Import Parental Control page
 
@@ -1597,7 +1610,10 @@ if (window.top == window.self)
                                 makeApiRequest("PATCH", "settings", config.settings)
 
                                 for (let i=0; i < config.settings.rewrites.length; i++)
+                                {
+                                    await sleep(1000)
                                     makeApiRequest("POST", "settings/rewrites", config.settings.rewrites[i])
+                                }
 
                                 // Check if the longest settings finished importing. The shorter ones most likely already finished
 
