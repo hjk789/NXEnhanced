@@ -1268,21 +1268,20 @@ if (window.top == window.self)
 
                                                     if (buttons[i].classList.contains("btn-primary"))
                                                     {
+                                                        sleep(800)
+                                                        
                                                         if (!/[^\w]/.test(TLD))  // If there isn't a character in the TLD which is not a-z, then make the request normally.
                                                         {
                                                             makeApiRequestAndAddEvent("PUT", "security/blocked_tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
                                                         }
                                                         else    // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
                                                         {       // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
-                                                            setTimeout(function(i)
-                                                            {
-                                                                buttons[i].click();
-                                                                buttonsClicked.push(i)  // Store in an array the index of all buttons that were clicked, then check whether they finished adding
-                                                                numTLDsAdded++
+                                                            
+                                                            buttons[i].click();
+                                                            buttonsClicked.push(i)  // Store in an array the index of all buttons that were clicked, then check whether they finished adding
+                                                            numTLDsAdded++
 
-                                                                checkIfFinished()
-
-                                                            }, 500, i)
+                                                            checkIfFinished()
                                                         }
                                                     }
                                                 }
@@ -1506,7 +1505,7 @@ if (window.top == window.self)
                         fileInput.onchange = function()
                         {
                             const file = new FileReader()
-                            file.onload = function()
+                            file.onload = async function()
                             {
                                 const config = JSON.parse(this.result);
                                 delete config.settings.name             // Don't import the config name
