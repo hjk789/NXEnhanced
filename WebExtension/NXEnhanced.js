@@ -66,7 +66,7 @@ function main()
     {
         let hideDevices = false, filtering = true
         let loadingChunk = false, cancelLoading = false
-        let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval
+        let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval, loadBeforeInputChanged = false
         let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
         let lastBefore, lastAfter = 1, currentDeviceId, searchString, searchItems, blockedQueriesOnly, simpleLogs = 1
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
@@ -229,8 +229,10 @@ function main()
                 {
                     const loadBeforeInput = document.createElement("input")
                     loadBeforeInput.className = "form-control form-control-sm mx-3"
+                    loadBeforeInput.type = "datetime-local"
                     loadBeforeInput.style = "border-radius: 16px; width: initial;"
-                    loadBeforeInput.value = new Date().toLocaleString().replace(/(202\d),/,"$1")        // Set the input's value as the current date-time in the user's locale, without the comma after the year.
+                    loadBeforeInput.value = new Date().toISOString().replace(/:\d+\.\d+Z$/,"")        // Set the input's value as the current date-time in the user's locale, without the comma after the year.
+                    loadBeforeInput.onchange = function() { loadBeforeInputChanged = true }
                     loadBeforeInput.onkeyup = function()
                     {
                         if (event.key == "Enter")
@@ -241,8 +243,6 @@ function main()
                 }
 
 
-                const isDDMM = new Date(new Date().setDate(25)).toLocaleString().split("/").indexOf("25") == 0     // Get whether the user's locale date format has the day in the first position, to use it below.
-
                 // Create the "Go" button
                 {
                     var loadBeforeGoButton = document.createElement("button")
@@ -251,36 +251,11 @@ function main()
                     loadBeforeGoButton.textContent = "Go"
                     loadBeforeGoButton.onclick = function()
                     {
-                        let date = this.previousSibling.value
-                        let datesplit
-
-                        if (date.includes(" "))
-                            datesplit = date.split(" ")[0].split("/")
+                        if (this.previousSibling.type == "datetime-local")
+                            reloadLogs({before: this.previousSibling.valueAsNumber})
                         else
-                            datesplit = date.split("/")
+                            reloadLogs({before: Date.parse(this.previousSibling.value)})
 
-                        // When parsing the date, only the YYYY/MM/DD and MM/DD/YYYY formats are recognized correctly,
-                        // so to parse the date in DD/MM/YYYY format it's required to swap the day and month.
-
-                        if (isDDMM)
-                        {
-                            const day = datesplit[0]
-                            const month = datesplit[1]
-
-                            datesplit[0] = month
-                            datesplit[1] = day
-                        }
-
-                        datesplit = datesplit.join("/")
-
-                        if (date.includes(" "))
-                            date = datesplit + " " + date.split(" ")[1]
-                        else
-                            date = datesplit
-
-                        const specifiedDateTimeInUnixEpoch = Date.parse(date)
-
-                        reloadLogs({before: specifiedDateTimeInUnixEpoch})
                     }
 
                     loadBeforeContainer.appendChild(loadBeforeGoButton)
@@ -690,7 +665,11 @@ function main()
                     optionsContainer.firstChild.firstChild.onchange = function()
                     {
                         blockedQueriesOnly = +this.checked
-                        loadBeforeGoButton.click()
+
+                        if (loadBeforeInputChanged)
+                            loadBeforeGoButton.click()
+                        else
+                            reloadLogs()
                     }
                 }
 
@@ -701,7 +680,11 @@ function main()
                     optionsContainer.lastChild.firstChild.onchange = function()
                     {
                         simpleLogs = +!this.checked
-                        loadBeforeGoButton.click()
+
+                        if (loadBeforeInputChanged)
+                            loadBeforeGoButton.click()
+                        else
+                            reloadLogs()
                     }
                 }
 
@@ -1362,7 +1345,7 @@ function main()
                             addAll.className = "btn btn-primary"
                             addAll.style = "position: absolute; right: 100px; bottom: 10px;"
                             addAll.innerHTML = "Add all TLDs"
-                            addAll.onclick = function()
+                            addAll.onclick = async function()
                             {
                                 const modal = document.getByClass("modal-body")
                                 const numTLDsToBeAdded = modal.getElementsByClassName("btn-primary").length
@@ -1383,16 +1366,19 @@ function main()
                                         {
                                             if (numTLDsAdded == numTLDsToBeAdded)
                                             {
-                                                setInterval(function()
+                                                waitForButtonsClicked = setInterval(function()
                                                 {
                                                     for (let j=0; j < buttonsClicked.length; j++)
-                                                    {                                                                           // If the "Add" button changed to the "Remove" button, this means that the TLD was successfully added.
+                                                    {                                                                           // If the "Add" button changed to the "Remove" button, this usually means that the TLD was successfully added.
                                                         if (buttons[buttonsClicked[j]].classList.contains("btn-danger"))        // It wouldn't be possible to get an updated classList if querySelectorAll was used.
                                                             buttonsClicked.splice(j,1)
                                                     }
 
                                                     if (buttonsClicked.length == 0)
+                                                    {
                                                         location.reload()
+                                                        clearInterval(waitForButtonsClicked)
+                                                    }
 
                                                 }, 500)
                                             }
@@ -1404,21 +1390,20 @@ function main()
 
                                             if (buttons[i].classList.contains("btn-primary"))
                                             {
-                                                if (!/[^\w]/.test(TLD))             // If there isn't a character in the TLD which is not a-z, then make the request normally.
+                                                await sleep(1000)                   // Wait one second between requests. This is because of the API server's rate limit. One second is
+                                                                                    // the lowest value before the server starts responding with "Too Many Requests" for 30 seconds.
+
+                                                if (!/[^\w]/.test(TLD))             // If there's no character in the TLD which is not a-z, then make the request normally.
                                                 {
                                                     makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
                                                 }
                                                 else                                // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
                                                 {                                   // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
-                                                    setTimeout(function(i)
-                                                    {
-                                                        buttons[i].click();
-                                                        buttonsClicked.push(i)      // Store in an array the index of all buttons that were clicked, then check whether they finished adding.
-                                                        numTLDsAdded++
+                                                    buttons[i].click()
+                                                    buttonsClicked.push(i)          // Store in an array the index of all buttons that were clicked, then check whether they finished adding.
+                                                    numTLDsAdded++
 
-                                                        checkIfFinished()
-
-                                                    }, 500, i)
+                                                    checkIfFinished()
                                                 }
                                             }
                                         }
@@ -1626,7 +1611,7 @@ function main()
                     textArea = container.firstChild
                     textArea.style = "height: 63px; background-position-x: calc(100% - 20px); min-height: 38px;"
                     textArea.placeholder = "Add one or more domains, one per line. Press Enter to submit."
-                    textArea.onkeypress = function()
+                    textArea.onkeypress = async function()
                     {
                         this.classList.remove("is-invalid")
                         this.nextSibling.textContent = ""
@@ -1639,16 +1624,19 @@ function main()
                             const domains = this.value.split("\n").filter(d => d.trim() != "")                  // Ignore empty lines.
                             let numFinishedRequests = numImportedDomains = 0
 
-                            if (domains.length > 500)
+                            if (domains.length > 60)
                             {
-                                this.classList.add("is-invalid")
-                                this.nextSibling.textContent = "To prevent server issues, you cannot import a list with more than 500 domains."
-                                this.nextSibling.className = "invalid-feedback"
+                                let estimatedTime = ((domains.length + domains.length * 0.2)/60).toFixed(2)     // Get the gross time estimate and then add a rough estimate of the time it would take to actually finish each request, which would be around 200 ms each.
+                                const estimatedTimeSplit = estimatedTime.split(".")
+                                estimatedTime = estimatedTimeSplit[0] + ":" + estimatedTimeSplit[1] * 0.6       // Convert minutes in decimal to MM:SS.
 
-                                return
+                                if (!confirm("It seems you are trying to import a long list of domains. Keep in mind that the server limits importing one " +
+                                             "domain per second. This means that the list you are trying to import would take around "+ estimatedTime +
+                                             " minutes to finish adding all the "+domains.length+" domains.\n\nIf this is a publicly available list you can instead suggest this list being included " +
+                                             "among the blocklists at github.com/nextdns/metadata\n\nAre you sure you want to continue?"))
+                                    return
                             }
-
-                            if (domains.length == 0)
+                            else if (domains.length == 0)
                                 return
 
 
@@ -1657,6 +1645,8 @@ function main()
                             for (let i=0; i < domains.length; i++)
                             {
                                 const domain = domains[i].trim()
+
+                                await sleep(1000)
 
                                 makeApiRequest("PUT", list + "/hex:" + convertToHex(domain), function(response)
                                 {
@@ -1777,7 +1767,7 @@ function main()
                                 config.settings.rewrites = config.settings.rewrites.map((r) => {return {name: r.name, answer: r.answer}})
                                 config.parentalcontrol.services = config.parentalcontrol.services.map((s) => {return {id: s.id, active: s.active}})
 
-                                const fileName = location.href.split("/")[3] + "-Export.json"       // <Current config ID>-Export.json
+                                const fileName = config.settings.name + "-" + location.href.split("/")[3] + "-Export.json"       // <Current config name>-<Current config ID>-Export.json
 
                                 exportToFile(config, fileName)
 
@@ -1799,22 +1789,10 @@ function main()
                 fileConfigInput.onchange = function()
                 {
                     const file = new FileReader()
-                    file.onload = function()
+                    file.onload = async function()
                     {
                         const config = JSON.parse(this.result)
                         delete config.settings.name             // Don't import the config name.
-
-                        let importTLDs = true                               // Most likely the server has a DOS attack prevention system, and this makes the API reject every PATCH request when a certain limit
-                                                                            // of connections is reached. Because every added TLD is a new connection, cutting down the number of TLDs solves the problem. But if the
-                        if (config.security.blocked_tlds.length > 500)      // user added more than 500 TLDs, then most likely almost every TLD was added, so it's better to just use the "Add all TLDs" button for that.
-                        {
-                            alert("WARNING: It seems that you are attempting to import a configuration file that contains a very long list of TLDs. \n"+
-                                  "Importing long lists overwhelms the server and it starts rejecting connections. \n"+
-                                  "Because of that, all settings will be imported, except the TLDs. \n"+
-                                  "If you want to import the TLDs, go to the Security page and use the \"Add all TLDs\" button, then remove the TLDs that you want to allow.")
-
-                            importTLDs = false
-                        }
 
                         const numItemsImported = {
                             security: false,
@@ -1831,7 +1809,7 @@ function main()
                             rewrites: 0
                         }
 
-                        const importAllAndSwitchDisabledItems = function(listName, idPropName)
+                        const importAllAndSwitchDisabledItems = async function(listName, idPropName)
                         {
                             let listObj = config[listName]
 
@@ -1845,10 +1823,12 @@ function main()
 
                             for (let i=0; i < listObj.length; i++)
                             {
+                                await sleep(1000)
+
                                 const item = listObj[i]
                                 const hexedId = convertToHex(item[idPropName])
 
-                                makeApiRequest("PUT", listName + "/hex:" + hexedId, function(response)
+                                makeApiRequest("PUT", listName + "/hex:" + hexedId, async function(response)
                                 {
                                     numItemsImported[listName]++
                                     if (numItemsImported[listName] == listObj.length)
@@ -1856,41 +1836,63 @@ function main()
                                         const disabledItems = listObj.filter(d => !d.active).map(d => convertToHex(d[idPropName]))  // Store in an array the hex of each disabled item id
 
                                         for (let i=0; i < disabledItems.length; i++)
+                                        {
+                                            await sleep(1000)
+
                                             makeApiRequest("PATCH", listName+"/hex:" + disabledItems[i], false, {"active":false})
+                                        }
                                     }
                                 })
                             }
                         }
 
 
+                        /* Import the PATCHes before the PUTs and make sure that the lightest settings are imported first */
+
                         // Import Security page
+                        await makeApiRequest("PATCH", "security", ()=> numItemsImported.security = true, config.security)
 
-                        makeApiRequest("PATCH", "security", ()=> numItemsImported.security = true, config.security)
+                        // Import Privacy page
+                        await makeApiRequest("PATCH", "privacy", ()=> numItemsImported.privacy = true, config.privacy)
 
-                        if (importTLDs)
+                        // Import Parental Control page
+                        await makeApiRequest("PATCH", "parentalcontrol", ()=> numItemsImported.parentalcontrol = true, config.parentalcontrol)
+
+                        // Import Settings page
+                        await makeApiRequest("PATCH", "settings", ()=> numItemsImported.settings = true, config.settings)
+
+                        /* Import individual settings */
+
+                        for (let i=0; i < config.settings.rewrites.length; i++)
                         {
-                            for (let i=0; i < config.security.blocked_tlds.length; i++)     // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added one by one.
-                                makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(config.security.blocked_tlds[i]), ()=> numItemsImported.blocked_tlds++)
+                            await sleep(1000)
+                            makeApiRequest("POST", "settings/rewrites", ()=> numItemsImported.rewrites++, config.settings.rewrites[i])
                         }
 
 
-                        // Import Privacy page
-
-                        makeApiRequest("PATCH", "privacy", ()=> numItemsImported.privacy = true, config.privacy)
-
-                        for (let i=0; i < config.privacy.blocklists.length; i++)
-                            makeApiRequest("PUT", "privacy/blocklists/hex:" + convertToHex(config.privacy.blocklists[i]), ()=> numItemsImported.blocklists++)
-
                         for (let i=0; i < config.privacy.natives.length; i++)
+                        {
+                            await sleep(1000)
                             makeApiRequest("PUT", "privacy/natives/hex:" + convertToHex(config.privacy.natives[i].id), ()=> numItemsImported.natives++)
+                        }
 
-
-                        // Import Parental Control page
-
-                        makeApiRequest("PATCH", "parentalcontrol", ()=> numItemsImported.parentalcontrol = true, config.parentalcontrol)
 
                         importAllAndSwitchDisabledItems("parentalcontrol/services", "id")
                         importAllAndSwitchDisabledItems("parentalcontrol/categories", "id")
+
+
+                        for (let i=0; i < config.privacy.blocklists.length; i++)
+                        {
+                            await sleep(1000)
+                            makeApiRequest("PUT", "privacy/blocklists/hex:" + convertToHex(config.privacy.blocklists[i]), ()=> numItemsImported.blocklists++)
+                        }
+
+
+                        for (let i=0; i < config.security.blocked_tlds.length; i++)     // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added one by one.
+                        {
+                            await sleep(1000)
+                            makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(config.security.blocked_tlds[i]), ()=> numItemsImported.blocked_tlds++)
+                        }
 
 
                         // Import Allow/Denylists
@@ -1899,20 +1901,13 @@ function main()
                         importAllAndSwitchDisabledItems("allowlist", "domain")
 
 
-                        // Import Settings page
-
-                        makeApiRequest("PATCH", "settings", ()=> numItemsImported.settings = true, config.settings)
-
-                        for (let i=0; i < config.settings.rewrites.length; i++)
-                            makeApiRequest("POST", "settings/rewrites", ()=> numItemsImported.rewrites++, config.settings.rewrites[i])
-
 
                         // Check if all settings finished importing
 
                         setInterval(function()
                         {
                             if (numItemsImported.security
-                             && (!importTLDs || config.security.blocked_tlds.length == numItemsImported.blocked_tlds)
+                             && config.security.blocked_tlds.length == numItemsImported.blocked_tlds
                              && numItemsImported.privacy
                              && config.privacy.blocklists.length == numItemsImported.blocklists
                              && config.privacy.natives.length == numItemsImported.natives
@@ -2369,26 +2364,50 @@ function convertToHex(string)
 }
 
 
+function sleep(ms)
+{
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
 function makeApiRequest(HTTPmethod, requestString, callback, requestBody = null)
 {
-    const requestURL = "https://api.nextdns.io/configurations/" + location.href.split("/")[3] + "/" + requestString     // Update the URL for each request. This ensures that the request will be made to the correct config.
-
-    if (HTTPmethod == "PATCH" || HTTPmethod == "POST")
-        requestBody = JSON.stringify(requestBody)
-
-    const xhr = isChrome ? new XMLHttpRequest() : XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest())         // For Firefox, it's required to call XMLHttpRequest inside this wrapper, otherwise the call is ignored. In Chrome it works fine.
-    xhr.open(HTTPmethod, requestURL)
-    xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")          // This is required when sending data in the request body to the server, otherwise it returns an internal server error (500). In other cases, it's optional.
-    xhr.onload = function() { if (callback)   callback(xhr.response) }
-    xhr.onerror = function()
+    return new Promise(resolve =>
     {
-        // When there's a network problem while making a request, try again after 5 seconds
+        const requestURL = "https://api.nextdns.io/configurations/" + location.href.split("/")[3] + "/" + requestString     // Update the URL for each request. This ensures that the request will be made to the correct config.
 
-        setTimeout(function() {
-            makeApiRequest(HTTPmethod, requestString, callback, requestBody)
-        }, 5000)
-    }
-    xhr.withCredentials = true                                                      // Include the session cookie in the request, otherwise it responds with "Forbidden".
-    xhr.send(requestBody)
+        if (HTTPmethod == "PATCH" || HTTPmethod == "POST")
+            requestBody = JSON.stringify(requestBody)
 
+        const xhr = isChrome ? new XMLHttpRequest() : XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest())         // For Firefox, it's required to call XMLHttpRequest inside this wrapper, otherwise the call is ignored. In Chrome it works fine.
+        xhr.open(HTTPmethod, requestURL)
+        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")          // This is required when sending data in the request body to the server, otherwise it returns an internal server error (500). In other cases, it's optional.
+        xhr.onload = function()
+        {
+            if (xhr.response == "Too Many Requests")
+                waitAndRetryRequest(5000)
+            else if (callback)
+            {
+                callback(xhr.response)
+                resolve()
+            }
+        }
+        xhr.onerror = function()
+        {
+            // When there's a network problem while making a request, try again after 5 seconds
+
+            waitAndRetryRequest(5000)
+            resolve()
+        }
+        xhr.withCredentials = true                                                      // Include the session cookie in the request, otherwise it responds with "Forbidden".
+        xhr.send(requestBody)
+
+
+        function waitAndRetryRequest(timeToWait)
+        {
+            setTimeout(function() {
+                makeApiRequest(HTTPmethod, requestString, callback, requestBody)
+            }, timeToWait)
+        }
+    })
 }
