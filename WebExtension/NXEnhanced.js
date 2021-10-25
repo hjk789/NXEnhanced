@@ -1642,6 +1642,8 @@ function main()
 
                             createSpinner(this.parentElement)
 
+                            domains.reverse()                       // Reverse the list so that the first item is the last one to be added, appearing at the top in NextDNS, this way preserving
+                                                                    // the original order (unless the requests take more than a second to finish, in this case some of the items would get swapped).
                             for (let i=0; i < domains.length; i++)
                             {
                                 const domain = domains[i].trim()
@@ -1861,7 +1863,10 @@ function main()
                         // Import Settings page
                         await makeApiRequest("PATCH", "settings", ()=> numItemsImported.settings = true, config.settings)
 
+
                         /* Import individual settings */
+
+                        config.settings.rewrites.reverse()
 
                         for (let i=0; i < config.settings.rewrites.length; i++)
                         {
@@ -1880,6 +1885,7 @@ function main()
                         importAllAndSwitchDisabledItems("parentalcontrol/services", "id")
                         importAllAndSwitchDisabledItems("parentalcontrol/categories", "id")
 
+                        config.privacy.blocklists.reverse()
 
                         for (let i=0; i < config.privacy.blocklists.length; i++)
                         {
@@ -1896,6 +1902,9 @@ function main()
 
 
                         // Import Allow/Denylists
+
+                        config.denylist.reverse()
+                        config.allowlist.reverse()
 
                         importAllAndSwitchDisabledItems("denylist", "domain")
                         importAllAndSwitchDisabledItems("allowlist", "domain")
