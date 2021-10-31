@@ -12,10 +12,6 @@
   [{
       "matches": ["https://my.nextdns.io/*", "https://api.nextdns.io/*"],
       "js": ["NXEnhanced.js"]
-  }],
-
-  "background": {
-      "scripts": ["backgroundNX.js"]
-  }
+  }]
 
 }
