@@ -75,7 +75,7 @@ function main()
         {
             // Wait for some elements to finish loading
             {
-                var pageContentContainer = document.getElementById("root").secondChild()
+                var pageContentContainer = document.getElementById("root")?.querySelector(".Logs")
 
                 if (!pageContentContainer)
                     return
@@ -90,9 +90,7 @@ function main()
                 if (svgs.length < 2)                                                        // Wait for the SVGs to finish loading before overriding, otherwise they fail to load and leave a blank space.
                     return
 
-                let searchBarForm = logsContainer.querySelector("form")
-
-                if (!searchBarForm || !logsContainer.querySelector("div.text-center"))      // Wait for the search bar and the first log row to finish loading before overriding.
+                if (!logsContainer.querySelector("form") || !logsContainer.querySelector("div.text-center") && !logsContainer.querySelector(".log"))      // Wait for the search bar and the spinner row to finish loading before overriding, but only if the log entries didn't load yet.
                     return
 
 
@@ -720,7 +718,7 @@ function main()
 
 
             // Remove leftover of the original logs container
-            logsContainer.querySelector("div.text-center").remove()
+            logsContainer.querySelector("div.text-center")?.remove()
 
 
 
@@ -1458,10 +1456,10 @@ function main()
 
                     const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
                     sortAZSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortAZ
-                    sortAZSwitch.onchange = function()
+                    sortAZSwitch.firstChild.onchange = function()
                     {
-                        sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild)
-                        NXsettings.AllowDenylistPage.SortAZ = this.firstChild.checked
+                        sortItemsAZ(".list-group:nth-child(2)", "domain", sortTLDSwitch.firstChild.checked)
+                        NXsettings.AllowDenylistPage.SortAZ = this.checked
                         saveSettings()
                     }
 
@@ -1469,10 +1467,10 @@ function main()
 
                     const sortTLDSwitch = createSwitchCheckbox("Sort by TLD")
                     sortTLDSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortTLD
-                    sortTLDSwitch.onchange = function()
+                    sortTLDSwitch.firstChild.onchange = function()
                     {
-                        sortItemsAZ(".list-group:nth-child(2)", "domain", this.firstChild)
-                        NXsettings.AllowDenylistPage.SortTLD = this.firstChild.checked
+                        sortItemsAZ(".list-group:nth-child(2)", "domain", this.checked)
+                        NXsettings.AllowDenylistPage.SortTLD = this.checked
                         saveSettings()
                     }
 
@@ -1480,10 +1478,10 @@ function main()
 
                     const boldRootSwitch = createSwitchCheckbox("Bold root domain")
                     boldRootSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Bold
-                    boldRootSwitch.onchange = function()
+                    boldRootSwitch.firstChild.onchange = function()
                     {
-                        styleDomains("bold", this.firstChild.checked)
-                        NXsettings.AllowDenylistPage.Bold = this.firstChild.checked
+                        styleDomains("bold", this.checked)
+                        NXsettings.AllowDenylistPage.Bold = this.checked
                         saveSettings()
                     }
 
@@ -1491,10 +1489,10 @@ function main()
 
                     const lightenSwitch = createSwitchCheckbox("Lighten subdomains")
                     lightenSwitch.firstChild.checked = NXsettings.AllowDenylistPage.Lighten
-                    lightenSwitch.onchange = function()
+                    lightenSwitch.firstChild.onchange = function()
                     {
-                        styleDomains("lighten", this.firstChild.checked)
-                        NXsettings.AllowDenylistPage.Lighten = this.firstChild.checked
+                        styleDomains("lighten", this.checked)
+                        NXsettings.AllowDenylistPage.Lighten = this.checked
                         saveSettings()
                     }
 
@@ -1502,10 +1500,10 @@ function main()
 
                     const rightAlignSwitch = createSwitchCheckbox("Right-aligned")
                     rightAlignSwitch.firstChild.checked = NXsettings.AllowDenylistPage.RightAligned
-                    rightAlignSwitch.onchange = function()
+                    rightAlignSwitch.firstChild.onchange = function()
                     {
-                        NXsettings.AllowDenylistPage.RightAligned = this.firstChild.checked
-                        styleDomains("rightAlign", this.firstChild.checked)
+                        NXsettings.AllowDenylistPage.RightAligned = this.checked
+                        styleDomains("rightAlign", this.checked)
                         saveSettings()
                     }
 
@@ -1513,12 +1511,12 @@ function main()
 
                     const multiLineSwitch = createSwitchCheckbox("Add a list of domains")
                     multiLineSwitch.firstChild.checked = NXsettings.AllowDenylistPage.MultilineTextBox
-                    multiLineSwitch.onchange = function()
+                    multiLineSwitch.firstChild.onchange = function()
                     {
-                        NXsettings.AllowDenylistPage.MultilineTextBox = this.firstChild.checked
+                        NXsettings.AllowDenylistPage.MultilineTextBox = this.checked
                         saveSettings()
 
-                        if (this.firstChild.checked)
+                        if (this.checked)
                             createAllowDenylistTextArea()
                     }
 
@@ -1578,7 +1576,7 @@ function main()
 
                 // Apply the options
 
-                if (NXsettings.AllowDenylistPage.SortAZ)
+                if (NXsettings.AllowDenylistPage.SortAZ || NXsettings.AllowDenylistPage.SortTLD)
                     sortItemsAZ(".list-group:nth-child(2)", "domain", NXsettings.AllowDenylistPage.SortTLD)
 
                 styleDomains("bold", NXsettings.AllowDenylistPage.Bold)
@@ -1968,7 +1966,7 @@ function loadNXsettings()
     {
         if (!obj.NXsettings)        // If it's running for the first time, store the following default settings.
         {
-            saveSettings(
+            NXsettings =
             {
                 SecurityPage: { CollapseList: true },
                 PrivacyPage:
@@ -1984,23 +1982,47 @@ function loadNXsettings()
                     Lighten: false,
                     RightAligned: false,
                     MultilineTextBox: false,
-                    DomainsDescriptions: {}     // In Chrome it's required to be an object to use named items. In Firefox it works even with an array.
+                    DomainsDescriptions: {}     // In Chrome it's required to be an object to use named items. In Firefox it works even with an array, but with some bugs.
                 },
                 LogsPage:
                 {
                     ShowCounters: false,
                     DomainsToHide: ["nextdns.io", ".in-addr.arpa", ".ip6.arpa"]
                 }
-            })
+            }
 
+            saveSettings(NXsettings)
         }
-
-        readSetting("NXsettings", function(obj)
+        else
         {
             NXsettings = obj.NXsettings
 
-            main()
-        })
+            /*
+                Temporary fix to normalize the settings object for users who started using NXE since version 4.0, which included a bug in the default
+                value for the DomainsDescriptions that caused this property to be exported empty, even though all values are still there in some way.
+                This needs to be done only once. After all users update to the most recent version, this fix will be removed.
+            */
+
+            const domDescArray = NXsettings.AllowDenylistPage.DomainsDescriptions
+
+            if (typeof domDescArray.length == "number")         // Only arrays have the "length" property, and if it's an array, it shoud be converted to an object instead.
+            {
+                const domDescObj = {}
+
+                Object.getOwnPropertyNames(domDescArray).forEach(function(domain)           // Get all the domains incorrectly stored in the array.
+                {
+                    if (domain != "length")                                                 // Ignore the "length" property.
+                        domDescObj[domain] = domDescArray[domain]                           // Copy the domains and descriptions to the new object.
+                })
+
+                NXsettings.AllowDenylistPage.DomainsDescriptions = domDescObj               // Replace the array with the object and save.
+                saveSettings()
+            }
+
+        }
+
+        main()
+
     })
 }
 
@@ -2188,7 +2210,7 @@ function exportToFile(fileContent, fileName)
 }
 
 
-function sortItemsAZ(selector, type = "", element = null)
+function sortItemsAZ(selector, type = "", option = false)
 {
     const container = document.querySelector(selector)
     const items = Array.from(container.children)
@@ -2197,7 +2219,7 @@ function sortItemsAZ(selector, type = "", element = null)
     {
         let startingLevel = 1       // From last to first.
 
-        if (!element.checked)       // If "Sort by TLDs" is disabled, skip the TLD.
+        if (!option)            // If "Sort by TLDs" is disabled, skip the TLD.
             startingLevel++
 
         items.sort(function(a, b)
