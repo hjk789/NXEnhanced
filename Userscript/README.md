@@ -1,7 +1,7 @@
 # NX Enhanced
 A userscript that adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, etc. more practical.
 
-**Note:** This userscript is discontinued. It still works fine in Chrome, and partially in Firefox (see the "How to use it" note below). If you want to continue receiving updates, please use the browser extension instead (instructions [here](https://github.com/hjk789/NXEnhanced)).
+**NOTE:** This userscript is **DISCONTINUED** and **OUTDATED**, please use the browser extension version instead if you want to continue receiving updates (instructions [here](https://github.com/hjk789/NXEnhanced)). The last time it was tested, the userscript was still working fine in Chrome, and partially in Firefox (see the "How to use it" note below). 
 
 ## Features
 
@@ -66,7 +66,7 @@ A window will pop asking if you want to install the script, just confirm it, and
 
 If you use uMatrix, you have to allow **media** to `api.nextdns.io` to use the allow/deny buttons, Add all TLDs and export/import features.
 
-**Note:** Although almost all features should work fine with it, Greasemonkey is not supported. NX Enhanced userscript was tested in Firefox and Chrome, in Tampermonkey, Greasemonkey and Violentmonkey. It used to work in Firefox, but it's working partially now. You have to use the [Firefox extension](https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=userscript) instead. If you really have to use this userscript in Firefox, you have to disable the `security.csp.enable` setting in about:config (not recommended for security reasons). In Chrome, to this date, it still works fine. To this date, it should work fine in pretty much any other browsers in which you can install any of these three script-managers, although I didn't tested them.
+**Note:** Although almost all features should work fine with it, Greasemonkey is not supported. NX Enhanced userscript was tested in Firefox and Chrome, in Tampermonkey, Greasemonkey and Violentmonkey. It used to work in Firefox, but it's working partially now. You have to use the [Firefox extension](https://addons.mozilla.org/addon/nx-enhanced?utm_source=github&utm_content=userscript) instead. If you really have to use this userscript in Firefox, you have to disable the `security.csp.enable` setting in about:config (not recommended for security reasons). In Chrome, the last time it was tested it still worked fine. It should work fine in pretty much any other browsers in which you can install any of these three script-managers, although I didn't tested them.
 
 ## License
 
