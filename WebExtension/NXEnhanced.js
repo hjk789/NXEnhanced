@@ -415,6 +415,7 @@ function main()
                 fullDomainButton.onclick = function()
                 {
                     allowDenyPopup.errorMsg.classList.remove("invalid-feedback")
+                    allowDenyPopup.errorMsg.textContent = ""
 
                     if (allowDenyPopup.listName != "Hide")
                     {
