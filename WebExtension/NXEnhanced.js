@@ -2211,7 +2211,7 @@ function exportToFile(fileContent, fileName)
 }
 
 
-function sortItemsAZ(selector, type = "", option = false)
+function sortItemsAZ(selector, type = "", sortByTLD = false)
 {
     const container = document.querySelector(selector)
     const items = Array.from(container.children)
@@ -2220,13 +2220,16 @@ function sortItemsAZ(selector, type = "", option = false)
     {
         let startingLevel = 1       // From last to first.
 
-        if (!option)            // If "Sort by TLDs" is disabled, skip the TLD.
+        if (!sortByTLD)            // If "Sort by TLDs" is disabled, skip the TLD.
             startingLevel++
 
         items.sort(function(a, b)
         {
             const tempA = a.textContent.toLowerCase().substring(2).split(".")
             const tempB = b.textContent.toLowerCase().substring(2).split(".")
+
+            if (tempA.length == 1)  return -1       // If it's an entire TLD, bring it to the top, to make it easier to find.
+            if (tempB.length == 1)  return  1
 
             let levelA = tempA.length - startingLevel
             let levelB = tempB.length - startingLevel
