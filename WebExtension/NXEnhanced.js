@@ -1937,7 +1937,7 @@ function main()
 
                     file.readAsText(this.files[0])
 
-                    createPleaseWaitModal("Importing settings")
+                    createPleaseWaitModal("Importing configuration")
                 }
 
                 const container = document.createElement("div")
@@ -2157,7 +2157,7 @@ function createPleaseWaitModal(whatIsDoing)
     hourGlass.innerText = "⏳"
 
     const message = document.createElement("div")
-    message.innerText = whatIsDoing + ". This will take some seconds, please wait...\n The page will be reloaded when finished."
+    message.innerText = whatIsDoing + ". This may take several minutes, please wait...\n The page will be reloaded when finished."
 
     const elementsContainer = document.createElement("div")
     elementsContainer.style = "background: white; z-index: 9999; position: fixed; top: 38vh; left: 33.3vw; padding: 20px; border-radius: 10px; display: flex; font-size: large; user-select: none;"
