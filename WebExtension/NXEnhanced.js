@@ -390,7 +390,7 @@ function main()
             {
                 const elementsContainer = document.createElement("div")
                 elementsContainer.onclick = function() { event.stopPropagation() }      // Prevent the popup from being hidden when clicking inside it
-                elementsContainer.style = "background: #f7f7f7; position: absolute; right: 130px; height: max-content; width: max-content; \
+                elementsContainer.style = "background: #f7f7f7; position: absolute; right: 130px; height: max-content; width: min-content; \
                                            border: 2px solid lightgray; border-radius: 15px; z-index: 99; padding: 5px 15px 15px 15px; visibility: hidden;"
 
                 const errorMsgSpan = document.createElement("span")
@@ -427,7 +427,7 @@ function main()
 
                         makeApiRequest("PUT", requestString, function(response)     // Make an asynchronous HTTP request and run this callback when finished.
                         {
-                            if (response.includes(allowDenyPopup.input.value))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
+                            if (response.includes(allowDenyPopup.input.value.replace("*.","")))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
                             {                                                           // This checks if it was successful.
                                 allowDenyPopup.errorMsg.textContent = '✔️'
 
@@ -450,6 +450,8 @@ function main()
                                     error = "This domain has already been added"
                                 else if (error.includes("invalid"))
                                     error = "Invalid domain"
+                                else if (error.includes("tld"))
+                                    error = "To block an entire TLD, please use the Block TLDs feature in the Security section."
 
                                 allowDenyPopup.errorMsg.textContent = error
                                 allowDenyPopup.errorMsg.classList.add("invalid-feedback")
