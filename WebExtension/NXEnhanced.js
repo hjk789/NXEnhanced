@@ -230,7 +230,13 @@ function main()
                     loadBeforeInput.type = "datetime-local"
                     loadBeforeInput.style = "border-radius: 16px; width: initial;"
                     loadBeforeInput.value = new Date().toISOString().replace(/:\d+\.\d+Z$/,"")        // Set the input's value as the current date-time in the user's locale, without the comma after the year.
-                    loadBeforeInput.onchange = function() { loadBeforeInputChanged = true }
+                    loadBeforeInput.onchange = function()
+                    {
+                        loadBeforeInputChanged = this.value != ""       // Only treat the input as changed when it's not cleared.
+
+                        if (!loadBeforeInputChanged)
+                            reloadLogs()
+                    }
                     loadBeforeInput.onkeyup = function()
                     {
                         if (event.key == "Enter")
@@ -245,6 +251,7 @@ function main()
                 {
                     var loadBeforeGoButton = document.createElement("button")
                     loadBeforeGoButton.className = "btn btn-primary"
+                    loadBeforeGoButton.id = "loadBeforeGoButton"
                     loadBeforeGoButton.style = "margin-right: 50px; padding-top: 3px; height: 34px;"
                     loadBeforeGoButton.textContent = "Go"
                     loadBeforeGoButton.onclick = function()
@@ -383,6 +390,142 @@ function main()
 
                 const inputContainer = logsContainer.firstChild.firstChild
                 inputContainer.insertBefore(refreshButton, inputContainer.firstChild)
+            }
+
+
+            // Make the search bar use NXE's code
+            {
+                const searchBarForm = logsContainer.querySelector("form")
+                var searchBar = searchBarForm.firstChild.cloneNode(true)        // Take out the search bar from inside the form ...
+                const container = searchBarForm.parentElement
+
+                searchBarForm.remove()                                          // ... remove the form element ...
+                container.appendChild(searchBar)                                // ... then add back the search bar. This is so that when hitting Enter, it doesn't reload the page.
+
+                searchBar = container.lastChild
+
+                searchBar.onkeyup = function(e)
+                {
+                    if (e.key == "Enter")
+                    {
+                        searchItems = this.value.split(" ")
+                        searchString = searchItems.splice(0,1)     // Take only the first term to make the request. The other terms are used by NXE as filters for the results.
+
+                        if (loadBeforeInputChanged)
+                            document.getElementById("loadBeforeGoButton").click()
+                        else
+                            reloadLogs()
+                    }
+                    else clearSearchButton.style.display = this.value == "" ? "none" : "block"      // Hide the clear button when the input box is empty, and display it otherwise.
+                }
+
+
+
+                // Recreate the clear button for the search bar, as it's created and deleted in the original code, instead of just hidden
+                {
+                    var clearSearchButton = document.createElement("div")
+                    clearSearchButton.innerHTML = "X"
+                    clearSearchButton.style = "position: absolute; right: 10px; top: 8px; width: 15px; height: 15px; text-align: center; line-height: 13px; color: white; \
+                                               border-radius: 15px; font-size: 10px; user-select: none; cursor: pointer; background: #bbb; font-weight: bold; display: none;"
+                    clearSearchButton.onclick = function()
+                    {
+                        if (searchBar.value != "")
+                        {
+                            searchString = searchItems = searchBar.value = ""
+                            this.style.display = "none"
+
+                            if (loadBeforeInputChanged)
+                                document.getElementById("loadBeforeGoButton").click()
+                            else
+                                reloadLogs()
+                        }
+                    }
+                    searchBar.parentElement.appendChild(clearSearchButton)
+                }
+            }
+
+
+            // Adapt the options button
+            {
+                const settingsButton = logsContainer.getByClass("settings-button")
+                settingsButton.onclick = function()
+                {
+                    if (optionsContainer.style.display == "none")
+                    {
+                        optionsContainer.style.cssText += "display: flex !important;"
+                        settingsButton.classList.add("active")
+                    }
+                    else
+                    {
+                        optionsContainer.style.cssText += "display: none !important;"
+                        settingsButton.classList.remove("active")
+                    }
+
+                }
+
+                const optionsContainer = document.createElement("div")
+                optionsContainer.className = "d-md-flex mt-3"
+                optionsContainer.style = "display: none !important; color: #777;"
+
+                // Adapt the "Blocked Queries Only" switch
+                {
+                    optionsContainer.appendChild(createSwitchCheckbox("Blocked Queries Only"))
+                    optionsContainer.firstChild.classList.add("mr-5")
+                    optionsContainer.firstChild.lastChild.style.fontSize = "80%"
+                    optionsContainer.firstChild.firstChild.onchange = function()
+                    {
+                        blockedQueriesOnly = +this.checked
+
+                        if (loadBeforeInputChanged)
+                            loadBeforeGoButton.click()
+                        else
+                            reloadLogs()
+                    }
+                }
+
+                // Adapt the "Raw DNS logs" switch
+                {
+                    optionsContainer.appendChild(createSwitchCheckbox("Raw DNS logs"))
+                    optionsContainer.lastChild.lastChild.style.fontSize = "80%"
+                    optionsContainer.lastChild.firstChild.onchange = function()
+                    {
+                        simpleLogs = +!this.checked
+
+                        if (loadBeforeInputChanged)
+                            loadBeforeGoButton.click()
+                        else
+                            reloadLogs()
+                    }
+                }
+
+
+                settingsButton.parentElement.parentElement.parentElement.appendChild(optionsContainer)
+            }
+
+
+            // Adapt the "Stream" button (real-time log)
+            {
+                const streamButton = logsContainer.getByClass("stream-button")
+                streamButton.onclick = function()
+                {
+                    if (streamButton.classList.contains("streaming"))
+                    {
+                        streamButton.classList.remove("streaming")
+
+                        clearInterval(realTimeLogsPolling)
+                    }
+                    else
+                    {
+                        streamButton.classList.add("streaming")
+
+                        realTimeLogsPolling = setInterval(function()        // Poll for new log entries each 2 seconds.
+                        {
+                            if (!loadingChunk)
+                                loadLogChunk({after: lastAfter})
+
+                        }, 2000)
+                    }
+                }
             }
 
 
@@ -590,134 +733,6 @@ function main()
                     loadLogChunk({before: lastBefore})                                                              // This big distance makes scrolling the logs much more fluid, because when you
                                                                                                                     // reach the bottom, the next chunk is already loaded and you don't need to wait.
             }, true)
-
-
-            // Make the search bar use NXE's code
-            {
-                const searchBarForm = logsContainer.querySelector("form")
-                var searchBar = searchBarForm.firstChild.cloneNode(true)        // Take out the search bar from inside the form ...
-                const container = searchBarForm.parentElement
-
-                searchBarForm.remove()                                          // ... remove the form element ...
-                container.appendChild(searchBar)                                // ... then add back the search bar. This is so that when hitting Enter, it doesn't reload the page.
-
-                searchBar = container.lastChild
-
-                searchBar.onkeyup = function(e)
-                {
-                    if (e.key == "Enter")
-                    {
-                        searchItems = this.value.split(" ")
-                        searchString = searchItems.splice(0,1)     // Take only the first term to make the request. The other terms are used by NXE as filters for the results.
-                        reloadLogs()
-                    }
-                    else clearSearchButton.style.display = this.value == "" ? "none" : "block"      // Hide the clear button when the input box is empty, and display it otherwise.
-                }
-
-
-
-                // Recreate the clear button for the search bar, as it's created and deleted in the original code, instead of just hidden
-                {
-                    var clearSearchButton = document.createElement("div")
-                    clearSearchButton.innerHTML = "X"
-                    clearSearchButton.style = "position: absolute; right: 10px; top: 8px; width: 15px; height: 15px; text-align: center; line-height: 13px; color: white; \
-                                               border-radius: 15px; font-size: 10px; user-select: none; cursor: pointer; background: #bbb; font-weight: bold; display: none;"
-                    clearSearchButton.onclick = function()
-                    {
-                        if (searchBar.value != "")
-                        {
-                            searchString = searchItems = searchBar.value = ""
-                            this.style.display = "none"
-                            reloadLogs()
-                        }
-                    }
-                    searchBar.parentElement.appendChild(clearSearchButton)
-                }
-            }
-
-
-            // Adapt the options button
-            {
-                const settingsButton = logsContainer.getByClass("settings-button")
-                settingsButton.onclick = function()
-                {
-                    if (optionsContainer.style.display == "none")
-                    {
-                        optionsContainer.style.cssText += "display: flex !important;"
-                        settingsButton.classList.add("active")
-                    }
-                    else
-                    {
-                        optionsContainer.style.cssText += "display: none !important;"
-                        settingsButton.classList.remove("active")
-                    }
-
-                }
-
-                const optionsContainer = document.createElement("div")
-                optionsContainer.className = "d-md-flex mt-3"
-                optionsContainer.style = "display: none !important; color: #777;"
-
-                // Adapt the "Blocked Queries Only" switch
-                {
-                    optionsContainer.appendChild(createSwitchCheckbox("Blocked Queries Only"))
-                    optionsContainer.firstChild.classList.add("mr-5")
-                    optionsContainer.firstChild.lastChild.style.fontSize = "80%"
-                    optionsContainer.firstChild.firstChild.onchange = function()
-                    {
-                        blockedQueriesOnly = +this.checked
-
-                        if (loadBeforeInputChanged)
-                            loadBeforeGoButton.click()
-                        else
-                            reloadLogs()
-                    }
-                }
-
-                // Adapt the "Raw DNS logs" switch
-                {
-                    optionsContainer.appendChild(createSwitchCheckbox("Raw DNS logs"))
-                    optionsContainer.lastChild.lastChild.style.fontSize = "80%"
-                    optionsContainer.lastChild.firstChild.onchange = function()
-                    {
-                        simpleLogs = +!this.checked
-
-                        if (loadBeforeInputChanged)
-                            loadBeforeGoButton.click()
-                        else
-                            reloadLogs()
-                    }
-                }
-
-
-                settingsButton.parentElement.parentElement.parentElement.appendChild(optionsContainer)
-            }
-
-
-            // Adapt the "Stream" button (real-time log)
-            {
-                const streamButton = logsContainer.getByClass("stream-button")
-                streamButton.onclick = function()
-                {
-                    if (streamButton.classList.contains("streaming"))
-                    {
-                        streamButton.classList.remove("streaming")
-
-                        clearInterval(realTimeLogsPolling)
-                    }
-                    else
-                    {
-                        streamButton.classList.add("streaming")
-
-                        realTimeLogsPolling = setInterval(function()        // Poll for new log entries each 2 seconds.
-                        {
-                            if (!loadingChunk)
-                                loadLogChunk({after: lastAfter})
-
-                        }, 2000)
-                    }
-                }
-            }
 
 
             // Remove leftover of the original logs container
@@ -978,10 +993,24 @@ function main()
                                                                      font-weight: bold; font-family: serif; font-size: 11px; user-select: none; line-height: 13px; margin-left: 10px;"
                                             blockReasonIcon.style.background = entryContainer.style.borderLeftColor
 
-                                            // matchedName is the CNAME that got blocked. lists is an array containing the name of each list that includes this domain
-                                            const blockReasonText = (entriesData[i].matchedName ? "<b style='font-size: 13px; display: block; margin: 5px 3px 8px 3px;'>→ " + entriesData[i].matchedName + "</b>": "")
-                                                                  + (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].lists.join(", ")
-                                            blockReasonIcon.createStylizedTooltip(blockReasonText)
+                                            const blockReasonTooltipElements = []       // Create the two elements below and put them in this array, instead of parsing the HTML with parseFromString,
+                                                                                        // as the parser is kinda unreliable. This is only required for Mozilla's code validation.
+
+                                            if (entriesData[i].matchedName)          // matchedName is the CNAME that got blocked.
+                                            {
+                                                const matchedName = document.createElement("b")
+                                                matchedName.style = "font-size: 13px; display: block; margin: 5px 3px 8px 3px;"
+                                                matchedName.textContent = "→ " + entriesData[i].matchedName
+
+                                                blockReasonTooltipElements.push(matchedName)
+                                            }
+
+                                            const blockReason = document.createElement("span")
+                                            blockReason.textContent = (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].lists.join(", ")      // lists is an array containing the name of each list that includes this domain.
+
+                                            blockReasonTooltipElements.push(blockReason)
+
+                                            blockReasonIcon.createStylizedTooltip(blockReasonTooltipElements)
 
                                             leftSideContainer.appendChild(blockReasonIcon)
                                         }
@@ -2298,10 +2327,10 @@ function extendFunctions()
     setIntervalOld = setInterval
     setInterval = function(f,t) { intervals.push(setIntervalOld(f,t));  return intervals.lastItem() }
 
-    Node.prototype.createStylizedTooltip = function(innerHTML)
+    Node.prototype.createStylizedTooltip = function(innerHTMLOrElementArray)
     {
         const tooltipDiv = document.createElement("div")
-        const innerNodes = (new DOMParser).parseFromString(innerHTML, "text/html").body.childNodes       // It's required to parseFromString the HTML in order to pass AMO's code validation.
+        const innerNodes = typeof innerHTMLOrElementArray == "string" ? (new DOMParser).parseFromString(innerHTMLOrElementArray, "text/html").body.childNodes : innerHTMLOrElementArray      // It's required to parseFromString the HTML in order to pass AMO's code validation.
 
         for (let i=0; i < innerNodes.length; i++)
             tooltipDiv.appendChild(innerNodes[i])
