@@ -3,7 +3,7 @@
 <p>Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, logs, etc. more practical. </p>
 
 <p align="center">
-<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span>
+<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span><br><br><span align="center"><a href="#how-to-contribute" align="center"><img src="https://i.imgur.com/7suNQ4m.png"></a></span>    
 </p>
 
 
@@ -102,7 +102,6 @@ You also have the option of using the userscript version, but it works only in C
 
 NX Enhanced was tested in Firefox and Chrome. It should work fine in pretty much any browser that accepts Firefox or Chrome extensions, although I didn't tested them.
 
-
 ## Bug reports, suggestions and questions
 
 In case you experience any problem with NX Enhanced, or you want to make suggestions, you are encouraged to post a new issue on the [Issues section](https://github.com/hjk789/NXEnhanced/issues). Any feedback is welcome, appreciated and encouraged. If you have any questions you can start a new discussion in the [Discussions section](https://github.com/hjk789/NXEnhanced/discussions).
@@ -111,9 +110,11 @@ In case you experience any problem with NX Enhanced, or you want to make suggest
 
 If you would like to contribute with code, you just need to make a fork of this project's repository, make your proposed changes, then create a pull request.
 
-If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project owner, [BLBC](https://github.com/hjk789).
+If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project creator, [BLBC](https://github.com/hjk789).
 
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CK5BFYUP9TWBJ&source=url)
+Donate through Ko-Fi with PayPal    
+[![ko-fi](https://i.imgur.com/vkUKrrX.png)](https://ko-fi.com/hjk789)    
+or [donate directly](https://buy.stripe.com/00gg2LdqX8UD9zO4gg).
 
 If you don't have funds to donate, but still want to contribute, you can do so by spreading the word about NX Enhanced on the web or to your acquaintances, giving feedback, rating the extension and posting a review.
 
@@ -122,8 +123,8 @@ If you don't have funds to donate, but still want to contribute, you can do so b
 - You can view the code, download copies to your devices, install, run, use the features added to the page and uninstall this software.
 - You can modify your downloaded copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
 - You can suggest changes, new features or fixes, either by opening issues or by doing pull requests. 
-- You can create or participate in issues and discussions, give feedback and rate this project.
-- You are free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
+- You can open or participate in issues and discussions, give feedback and rate this project.
+- Feel free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
 - You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button or the "Edit this file" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead. Any contributed code is owned by the repository owner, [BLBC](https://github.com/hjk789). The credits for the contributed code goes to the contributor.
 - You cannot do any other action not allowed in this license.  
 
