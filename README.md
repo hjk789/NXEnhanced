@@ -114,7 +114,7 @@ If you can't code, but still want to contribute, you can do so by making a donat
 
 Donate through Ko-Fi with PayPal    
 [![ko-fi](https://i.imgur.com/vkUKrrX.png)](https://ko-fi.com/hjk789)    
-or [donate directly](https://bit.ly/donationn).
+or [donate directly](https://bit.ly/donationn) with other methods.
 
 If you don't have funds to donate, but still want to contribute, you can do so by spreading the word about NX Enhanced on the web or to your acquaintances, giving feedback, rating the extension and posting a review.
 
