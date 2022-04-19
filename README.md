@@ -112,9 +112,8 @@ If you would like to contribute with code, you just need to make a fork of this 
 
 If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project creator, [BLBC](https://github.com/hjk789).
 
-Donate through Ko-Fi with PayPal    
+Donate through Ko-Fi with PayPal or card   
 [![ko-fi](https://i.imgur.com/vkUKrrX.png)](https://ko-fi.com/hjk789)    
-or [donate directly](https://bit.ly/donationn) with other methods.
 
 If you don't have funds to donate, but still want to contribute, you can do so by spreading the word about NX Enhanced on the web or to your acquaintances, giving feedback, rating the extension and posting a review.
 
