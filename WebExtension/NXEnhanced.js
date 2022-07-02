@@ -68,7 +68,7 @@ function main()
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval, loadBeforeInputChanged = false
         let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
-        let lastBefore, lastAfter = 1, currentDeviceId, searchString, searchItems, blockedQueriesOnly, simpleLogs = 1
+        let lastBefore, lastAfter = 1, currentDeviceId, searchString, searchItems, blockedQueriesOnly, rawLogs = 0
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -489,7 +489,7 @@ function main()
                     optionsContainer.lastChild.lastChild.style.fontSize = "80%"
                     optionsContainer.lastChild.firstChild.onchange = function()
                     {
-                        simpleLogs = +!this.checked
+                        rawLogs = +this.checked
 
                         if (loadBeforeInputChanged)
                             loadBeforeGoButton.click()
@@ -837,7 +837,7 @@ function main()
                 buildLogsRequestString("before", params.before)         // NextDNS' logs always responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
                 buildLogsRequestString("after", params.after)           // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
                 buildLogsRequestString("search", searchString)          // The search string. Used by the search bar.
-                buildLogsRequestString("simple", simpleLogs)            // Used by the "Raw DNS logs" switch.
+                buildLogsRequestString("raw", rawLogs)            // Used by the "Raw DNS logs" switch.
                 buildLogsRequestString("blockedQueriesOnly", blockedQueriesOnly)    // Used by the "Blocked Queries Only" switch.
             }
 
@@ -860,7 +860,7 @@ function main()
             makeApiRequest("GET", logsRequestString, function(pResponse)
             {
                 const response = JSON.parse(pResponse)
-                const entriesData = response.logs
+                const entriesData = response.data
 
                 if (entriesData.length > 0)
                 {
@@ -890,8 +890,9 @@ function main()
 
                             // Check if the entry matches any filter, and if so, remove it from the list
                             {
-                                var domainName = entriesData[i].name
-                                var isNamedDevice = !!entriesData[i].deviceName
+                                var domainName = entriesData[i].domain
+                                var rootDomain = entriesData[i].root
+                                var isNamedDevice = !!entriesData[i].device
 
                                 if ((filtering && !domainName.includes("."))        // Chrome's random queries never have a dot.
                                     || (hideDevices && isNamedDevice)               // If enabled, named devices.
@@ -945,9 +946,8 @@ function main()
                                     {
                                         const domainEll = document.createElement("span")
                                         domainEll.className = "domainName"
-
-                                        const innerHTML = "<span style='opacity: 0.6;'>" + domainName.substring(0, entriesData[i].rootDomainStartIndex) + "</span>"     // NextDNS stores at which character starts the root domain name,
-                                                          + domainName.substring(entriesData[i].rootDomainStartIndex)                                                   // so everything before rootDomainStartIndex is a subdomain.
+                                                                                                                                                       // NextDNS stores at which character starts the root domain name,
+                                        const innerHTML = "<span style='opacity: 0.6;'>" + domainName.split(rootDomain)[0] + "</span>" + rootDomain    // so everything before rootDomainStartIndex is a subdomain.
 
                                         const innerNode = (new DOMParser).parseFromString(innerHTML, "text/html").body      // It's required to parseFromString the HTML in order to pass AMO's code validation.
 
@@ -1068,7 +1068,7 @@ function main()
                                         deviceContainer.style = "height: 15px; margin-bottom: 10px; margin-left: auto;"
 
                                         const deviceNameEll = document.createElement("span")
-                                        deviceNameEll.textContent = entriesData[i].deviceName
+                                        deviceNameEll.textContent = entriesData[i].device.name
 
                                         deviceContainer.appendChild(deviceNameEll)
 
@@ -1089,7 +1089,7 @@ function main()
                                         }
 
 
-                                        if (entriesData[i].isEncryptedDNS)
+                                        if (entriesData[i].encrypted)
                                         {
                                             // Create the DoH/DoT padlock icon
 
@@ -1178,7 +1178,6 @@ function main()
                         scrollTo(0, document.body.scrollHeight)     // Automatically scroll to bottom when less than 7 entries of the chunk are listed.
                 }
 
-
             })
         }
 
@@ -1231,6 +1230,8 @@ function main()
 
         function processTimestamp(timestamp, now, yesterday, dateTimeElement)
         {
+            timestamp = Date.parse(timestamp)                       // Convert the timestamp from ISO to Unix time
+
             const relativeSecs = (now.getTime() - timestamp) / 1000       // Get the relative time in seconds.
             relativeMinutes = relativeSecs/60
             relativeHours = relativeMinutes/60
@@ -2440,7 +2441,7 @@ function makeApiRequest(HTTPmethod, requestString, callback, requestBody = null)
 {
     return new Promise(resolve =>
     {
-        const requestURL = "https://api.nextdns.io/configurations/" + location.href.split("/")[3] + "/" + requestString     // Update the URL for each request. This ensures that the request will be made to the correct config.
+        const requestURL = "https://api.nextdns.io/profiles/" + location.href.split("/")[3] + "/" + requestString     // Update the URL for each request. This ensures that the request will be made to the correct config.
 
         if (HTTPmethod == "PATCH" || HTTPmethod == "POST")
             requestBody = JSON.stringify(requestBody)
@@ -2477,3 +2478,4 @@ function makeApiRequest(HTTPmethod, requestString, callback, requestBody = null)
         }
     })
 }
+
