@@ -68,7 +68,7 @@ function main()
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval, loadBeforeInputChanged = false
         let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
-        let lastBefore, lastAfter = 1, currentDeviceId, searchString, searchItems, blockedQueriesOnly, rawLogs = 0
+        let lastBefore, lastAfter = 1, searchString, searchItems, blockedQueriesOnly, rawLogs = 0
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -146,16 +146,18 @@ function main()
                     // NX Enhanced loads the log entries by itself instead of letting the site load them, because this way NX Enhanced has access to the log entries' raw data instead of having to depend on what the page
                     // actually shows, which can change anytime and require constant adaptations for every layout or code change. Also, this makes it possible to implement other features to the logs that require such access.
 
-                    const requestString = "analytics/top_devices?selector=true"
-                    makeApiRequest("GET", requestString, function(response)
+                    makeApiRequest("GET", "analytics/devices", function(response)
                     {
-                        const devicesData = JSON.parse(response)
+                        const devicesData = JSON.parse(response).data
 
                         for (let i=0; i < devicesData.length + 1; i++)
                         {
+                            if (i > 0 && devicesData[i-1].id == "__UNIDENTIFIED__")
+                                continue
+
                             const deviceCustom = document.createElement("button")
                             deviceCustom.className = i == 0 ? "dropdown-item active" : "dropdown-item"
-                            deviceCustom.textContent = i == 0 ? "All devices" : devicesData[i-1].name
+                            deviceCustom.textContent = i == 0 ? "All devices" : decodeURI(devicesData[i-1].name)
                             deviceCustom.onclick = function()       // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
                             {
                                 const index = Array.from(this.parentElement.children).indexOf(this)     // Get the index of this dropdown item.
@@ -163,15 +165,9 @@ function main()
                                 cancelLoading = true                // Indicates that the chunk currently being loaded should be interrupted.
 
                                 if (index == 0)                     // If it's the "All devices" item.
-                                {
-                                    currentDeviceId = ""
                                     reloadLogs()
-                                }
                                 else                                // If instead it's a specific device.
-                                {
-                                    currentDeviceId = devicesData[index-1].id
-                                    loadLogChunk({device: currentDeviceId, clear: true})
-                                }
+                                    loadLogChunk({device: devicesData[index-1].id, clear: true})
 
 
                                 // Update the current device selected
@@ -197,13 +193,17 @@ function main()
                         otherDevicesBtn.innerHTML = "Other devices"
                         otherDevicesBtn.onclick = function()
                         {
-                            this.parentElement.firstChild.click()       // Click the "All devices" button. Use the full log to filter the devices
+                            //this.parentElement.firstChild.click()       // Click the "All devices" button. Use the full log to filter the devices
+
+                            loadLogChunk({device: "__UNIDENTIFIED__", clear: true})
 
                             customDevicesDropdown.firstChild.innerHTML = "Other devices"
                             this.parentElement.querySelector(".active").classList.remove("active")
                             this.classList.add("active")
-                            hideDevices = true
+                            //hideDevices = true
                             allHiddenEntriesCountEll.parentElement.style.display = "initial"
+
+
                         }
 
                         devicesDropdownMenu.appendChild(otherDevicesBtn)
@@ -566,11 +566,26 @@ function main()
 
                         // In NextDNS site, domains, TLDs, blocklists, and pretty much anything added by clicking an "Add" button, are added by sending these items' id with
                         // each character converted to hexadecimal, instead of plain text (ASCII). This converts the specified domain to hex then sends it to the respective list.
-                        const requestString = allowDenyPopup.listName + "/hex:" + convertToHex(allowDenyPopup.input.value)
+                        const requestString = allowDenyPopup.listName //+ "/hex:" + convertToHex(allowDenyPopup.input.value)
 
-                        makeApiRequest("PUT", requestString, function(response)     // Make an asynchronous HTTP request and run this callback when finished.
+                        makeApiRequest("POST", requestString, function(response)     // Make an asynchronous HTTP request and run this callback when finished.
                         {
-                            if (response.includes(allowDenyPopup.input.value.replace("*.","")))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
+                            if (response.includes("errors"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
+                            {
+                                //let error = JSON.parse(response).error
+
+                                if (response.includes("exist"))
+                                    error = "This domain has already been added"
+                                else if (response.includes("invalid"))
+                                    error = "Invalid domain"
+                                else if (response.includes("tld"))
+                                    error = "To block an entire TLD, please use the Block TLDs feature in the Security section."
+
+                                allowDenyPopup.errorMsg.textContent = error
+                                allowDenyPopup.errorMsg.classList.add("invalid-feedback")
+                                allowDenyPopup.input.classList.add("is-invalid")
+                            }
+                            else //if (response.includes(allowDenyPopup.input.value.replace("*.","")))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
                             {                                                           // This checks if it was successful.
                                 allowDenyPopup.errorMsg.textContent = '✔️'
 
@@ -585,23 +600,8 @@ function main()
                                     allowDenyPopup.domainsList[allowDenyPopup.listName] = response
                                 })
                             }
-                            else if (response.includes("error"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
-                            {
-                                let error = JSON.parse(response).error
 
-                                if (error.includes("exist"))
-                                    error = "This domain has already been added"
-                                else if (error.includes("invalid"))
-                                    error = "Invalid domain"
-                                else if (error.includes("tld"))
-                                    error = "To block an entire TLD, please use the Block TLDs feature in the Security section."
-
-                                allowDenyPopup.errorMsg.textContent = error
-                                allowDenyPopup.errorMsg.classList.add("invalid-feedback")
-                                allowDenyPopup.input.classList.add("is-invalid")
-                            }
-
-                        })
+                        }, {id: allowDenyPopup.input.value, active: true})
 
                     }
                     else
@@ -808,6 +808,31 @@ function main()
         }
 
 
+        function reloadLogs(params)
+        {
+            if (!params)  params = {}
+
+            params.clear = true
+
+            cancelLoading = true
+            loadLogChunk(params)
+
+            if (typeof updateRelativeTimeInterval != "undefined")
+                clearInterval(updateRelativeTimeInterval)
+
+            // Set an interval that updates the relative time of the log entries every 20 seconds.
+            updateRelativeTimeInterval = setInterval(function()
+            {
+                const now = new Date()
+                const yesterday = (new Date(new Date().setDate(new Date().getDate() - 1))).getDate()
+                const logEntries = logsContainer.querySelectorAll(".relativeTime")
+
+                for (let i=0; i < logEntries.length; i++)
+                    processTimestamp(logEntries[i].getAttribute("time"), now, yesterday, logEntries[i])
+
+            }, 20000)
+        }
+
         function loadLogChunk(params)
         {
             if (loadingChunk && !cancelLoading)     // Load only one chunk at a time.
@@ -833,9 +858,9 @@ function main()
             {
                 logsRequestString = "logs?"
 
-                buildLogsRequestString("device", currentDeviceId)       // The device id when loading the logs of specific devices.
-                buildLogsRequestString("before", params.before)         // NextDNS' logs always responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
-                buildLogsRequestString("after", params.after)           // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
+                buildLogsRequestString("device", params.device)       // The device id when loading the logs of specific devices.
+                buildLogsRequestString("to", params.before)         // NextDNS' logs always responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
+                buildLogsRequestString("from", params.after)           // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
                 buildLogsRequestString("search", searchString)          // The search string. Used by the search bar.
                 buildLogsRequestString("raw", rawLogs)            // Used by the "Raw DNS logs" switch.
                 buildLogsRequestString("blockedQueriesOnly", blockedQueriesOnly)    // Used by the "Blocked Queries Only" switch.
@@ -946,8 +971,8 @@ function main()
                                     {
                                         const domainEll = document.createElement("span")
                                         domainEll.className = "domainName"
-                                                                                                                                                       // NextDNS stores at which character starts the root domain name,
-                                        const innerHTML = "<span style='opacity: 0.6;'>" + domainName.split(rootDomain)[0] + "</span>" + rootDomain    // so everything before rootDomainStartIndex is a subdomain.
+
+                                        const innerHTML = "<span style='opacity: 0.6;'>" + domainName.split(rootDomain)[0] + "</span>" + rootDomain
 
                                         const innerNode = (new DOMParser).parseFromString(innerHTML, "text/html").body      // It's required to parseFromString the HTML in order to pass AMO's code validation.
 
@@ -1068,7 +1093,9 @@ function main()
                                         deviceContainer.style = "height: 15px; margin-bottom: 10px; margin-left: auto;"
 
                                         const deviceNameEll = document.createElement("span")
-                                        deviceNameEll.textContent = entriesData[i].device.name
+
+                                        if (isNamedDevice)
+                                            deviceNameEll.textContent = decodeURI(entriesData[i].device.name)
 
                                         deviceContainer.appendChild(deviceNameEll)
 
@@ -1167,7 +1194,7 @@ function main()
 
                 loadingChunk = false
 
-                if (!response.hasMore && !params.after)      // For every chunk, NextDNS sets a property called hasMore, which indicates whether there are more log entries to load.
+                if (!response.meta.pagination.cursor && !params.after)      // For every chunk, NextDNS sets a property called hasMore, which indicates whether there are more log entries to load.
                     cancelLoading = true
 
                 if (!cancelLoading && entriesData.length < 25 && document.body.getBoundingClientRect().bottom < window.innerHeight * 5 && !params.after)     // Automatically load the next chunk when less than 25 entries of the chunk are listed.
@@ -1181,29 +1208,15 @@ function main()
             })
         }
 
-        function reloadLogs(params)
+        function buildLogsRequestString(paramName, paramValue)
         {
-            if (!params)  params = {}
-
-            params.clear = true
-
-            cancelLoading = true
-            loadLogChunk(params)
-
-            if (typeof updateRelativeTimeInterval != "undefined")
-                clearInterval(updateRelativeTimeInterval)
-
-            // Set an interval that updates the relative time of the log entries every 20 seconds.
-            updateRelativeTimeInterval = setInterval(function()
+            if (paramValue)
             {
-                const now = new Date()
-                const yesterday = (new Date(new Date().setDate(new Date().getDate() - 1))).getDate()
-                const logEntries = logsContainer.querySelectorAll(".relativeTime")
+                if (logsRequestString.includes("="))
+                    logsRequestString += "&"
 
-                for (let i=0; i < logEntries.length; i++)
-                    processTimestamp(+logEntries[i].getAttribute("time"), now, yesterday, logEntries[i])
-
-            }, 20000)
+                logsRequestString += paramName + "=" + paramValue
+            }
         }
 
         function refilterLogEntries()
@@ -1282,16 +1295,7 @@ function main()
             }
         }
 
-        function buildLogsRequestString(paramName, paramValue)
-        {
-            if (paramValue)
-            {
-                if (logsRequestString.includes("="))
-                    logsRequestString += "&"
 
-                logsRequestString += paramName + "=" + paramValue
-            }
-        }
 
 
 
