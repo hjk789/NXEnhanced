@@ -1430,7 +1430,7 @@ function main()
 
                                                 if (!/[^\w]/.test(TLD))             // If there's no character in the TLD which is not a-z, then make the request normally.
                                                 {
-                                                    makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
+                                                    makeApiRequest("PUT", "security/tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
                                                 }
                                                 else                                // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
                                                 {                                   // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
@@ -1491,7 +1491,7 @@ function main()
                     }
 
 
-                    const sortAZSwitch = createSwitchCheckbox("Sort A-Z")
+                    const sortAZSwitch = createSwitchCheckbox("Sort A-Z by root domain")
                     sortAZSwitch.firstChild.checked = NXsettings.AllowDenylistPage.SortAZ
                     sortAZSwitch.firstChild.onchange = function()
                     {
@@ -1685,7 +1685,7 @@ function main()
 
                                 await sleep(1000)
 
-                                makeApiRequest("PUT", list + "/hex:" + convertToHex(domain), function(response)
+                                makeApiRequest("POST", list, function(response)
                                 {
                                     numFinishedRequests++
 
@@ -1693,11 +1693,11 @@ function main()
                                         numImportedDomains++
                                     else
                                     {
-                                        let error = JSON.parse(response).error
+                                        //let error = JSON.parse(response).error
 
-                                        if (error.includes("exist"))
+                                        if (response.includes("exist"))
                                             error = "This domain has already been added: " + domain
-                                        else if (error.includes("invalid"))
+                                        else if (response.includes("invalid"))
                                             error = "Invalid domain: " + domain
 
                                         textArea.classList.add("is-invalid")
@@ -1716,7 +1716,7 @@ function main()
                                         else textArea.parentElement.lastChild.outerHTML = ""
                                     }
 
-                                })
+                                }, {id: domain, active: true})
                             }
 
                         }
@@ -1784,6 +1784,7 @@ function main()
                 {
                     const config = {}
                     const pages = ["security", "privacy", "parentalcontrol", "denylist", "allowlist", "settings"]
+                    const configName = this.parentElement.previousSibling.querySelector("input").value
                     let numPagesExported = 0
 
                     createSpinner(this) // Add a spinning circle beside the button to indicate that something is happening
@@ -1793,7 +1794,7 @@ function main()
                     {
                         makeApiRequest("GET", pages[i], function(response)  // Get the settings from each page
                         {
-                            config[pages[i]] = JSON.parse(response)
+                            config[pages[i]] = JSON.parse(response).data
                             numPagesExported++
 
                             if (numPagesExported == pages.length)
@@ -1801,10 +1802,15 @@ function main()
                                 // Export only the relevant data from these settings
 
                                 config.privacy.blocklists = config.privacy.blocklists.map(b => b.id)
-                                config.settings.rewrites = config.settings.rewrites.map((r) => {return {name: r.name, answer: r.answer}})
+
+                                if (!config.settings.rewrites)
+                                    config.settings.rewrites = []
+                                else
+                                    config.settings.rewrites = config.settings.rewrites.map((r) => {return {name: r.name, answer: r.answer}})
+
                                 config.parentalcontrol.services = config.parentalcontrol.services.map((s) => {return {id: s.id, active: s.active}})
 
-                                const fileName = config.settings.name + "-" + location.href.split("/")[3] + "-Export.json"       // <Current config name>-<Current config ID>-Export.json
+                                const fileName = configName + "-" + location.href.split("/")[3] + "-Export.json"       // <Current config name>-<Current config ID>-Export.json
 
                                 exportToFile(config, fileName)
 
@@ -1829,11 +1835,10 @@ function main()
                     file.onload = async function()
                     {
                         const config = JSON.parse(this.result)
-                        delete config.settings.name             // Don't import the config name.
 
                         const numItemsImported = {
                             security: false,
-                            blocked_tlds: 0,
+                            tlds: 0,
                             privacy: false,
                             blocklists: 0,
                             natives: 0,
@@ -1846,7 +1851,7 @@ function main()
                             rewrites: 0
                         }
 
-                        const importAllAndSwitchDisabledItems = async function(listName, idPropName)
+                        const importAllAndSwitchDisabledItems = async function(listName)
                         {
                             let listObj = config[listName]
 
@@ -1863,12 +1868,11 @@ function main()
                                 await sleep(1000)
 
                                 const item = listObj[i]
-                                const hexedId = convertToHex(item[idPropName])
 
-                                makeApiRequest("PUT", listName + "/hex:" + hexedId, async function(response)
+                                makeApiRequest("POST", listName, async function(response)
                                 {
                                     numItemsImported[listName]++
-                                    if (numItemsImported[listName] == listObj.length)
+                                    /*if (numItemsImported[listName] == listObj.length)
                                     {
                                         const disabledItems = listObj.filter(d => !d.active).map(d => convertToHex(d[idPropName]))  // Store in an array the hex of each disabled item id
 
@@ -1878,8 +1882,8 @@ function main()
 
                                             makeApiRequest("PATCH", listName+"/hex:" + disabledItems[i], false, {"active":false})
                                         }
-                                    }
-                                })
+                                    }*/
+                                }, {id: item["id"], active: item["active"]})
                             }
                         }
 
@@ -1888,6 +1892,9 @@ function main()
 
                         // Import Security page
                         await makeApiRequest("PATCH", "security", ()=> numItemsImported.security = true, config.security)
+
+                        const blocklists = Array.from(config.privacy.blocklists)
+                        //delete config.privacy.blocklists
 
                         // Import Privacy page
                         await makeApiRequest("PATCH", "privacy", ()=> numItemsImported.privacy = true, config.privacy)
@@ -1901,39 +1908,39 @@ function main()
 
                         /* Import individual settings */
 
-                        config.settings.rewrites.reverse()
+                        //config.settings.rewrites.reverse()
 
-                        for (let i=0; i < config.settings.rewrites.length; i++)
+                        /*for (let i=0; i < config.settings.rewrites.length; i++)
                         {
                             await sleep(1000)
                             makeApiRequest("POST", "settings/rewrites", ()=> numItemsImported.rewrites++, config.settings.rewrites[i])
-                        }
+                        }*/
 
 
-                        for (let i=0; i < config.privacy.natives.length; i++)
+                        /*for (let i=0; i < config.privacy.natives.length; i++)
                         {
                             await sleep(1000)
-                            makeApiRequest("PUT", "privacy/natives/hex:" + convertToHex(config.privacy.natives[i].id), ()=> numItemsImported.natives++)
-                        }
+                            makeApiRequest("POST", "privacy/natives", ()=> numItemsImported.natives++, {id: config.privacy.natives[i].id})
+                        }*/
 
 
-                        importAllAndSwitchDisabledItems("parentalcontrol/services", "id")
-                        importAllAndSwitchDisabledItems("parentalcontrol/categories", "id")
+                        importAllAndSwitchDisabledItems("parentalcontrol/services")
+                        importAllAndSwitchDisabledItems("parentalcontrol/categories")
 
-                        config.privacy.blocklists.reverse()
+                        /*blocklists.reverse()
 
-                        for (let i=0; i < config.privacy.blocklists.length; i++)
+                        for (let i=0; i < blocklists.length; i++)
                         {
                             await sleep(1000)
-                            makeApiRequest("PUT", "privacy/blocklists/hex:" + convertToHex(config.privacy.blocklists[i]), ()=> numItemsImported.blocklists++)
-                        }
+                            makeApiRequest("POST", "privacy/blocklists", ()=> numItemsImported.blocklists++, {id: blocklists[i]})
+                        }*/
 
 
-                        for (let i=0; i < config.security.blocked_tlds.length; i++)     // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added one by one.
+                        /*for (let i=0; i < config.security.tlds.length; i++)     // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added one by one.
                         {
                             await sleep(1000)
-                            makeApiRequest("PUT", "security/blocked_tlds/hex:" + convertToHex(config.security.blocked_tlds[i]), ()=> numItemsImported.blocked_tlds++)
-                        }
+                            makeApiRequest("POST", "security/tlds", ()=> numItemsImported.tlds++, {id: config.security.tlds[i].id})
+                        }*/
 
 
                         // Import Allow/Denylists
@@ -1941,8 +1948,8 @@ function main()
                         config.denylist.reverse()
                         config.allowlist.reverse()
 
-                        importAllAndSwitchDisabledItems("denylist", "domain")
-                        importAllAndSwitchDisabledItems("allowlist", "domain")
+                        importAllAndSwitchDisabledItems("denylist")
+                        importAllAndSwitchDisabledItems("allowlist")
 
 
 
@@ -1951,17 +1958,17 @@ function main()
                         setInterval(function()
                         {
                             if (numItemsImported.security
-                             && config.security.blocked_tlds.length == numItemsImported.blocked_tlds
+                             //&& config.security.tlds.length == numItemsImported.tlds
                              && numItemsImported.privacy
-                             && config.privacy.blocklists.length == numItemsImported.blocklists
-                             && config.privacy.natives.length == numItemsImported.natives
+                             //&& blocklists.length == numItemsImported.blocklists
+                             //&& config.privacy.natives.length == numItemsImported.natives
                              && numItemsImported.parentalcontrol
                              && config.parentalcontrol.services.length == numItemsImported["parentalcontrol/services"]
                              && config.parentalcontrol.categories.length == numItemsImported["parentalcontrol/categories"]
                              && config.denylist.length == numItemsImported.denylist
                              && config.allowlist.length == numItemsImported.allowlist
                              && numItemsImported.settings
-                             && config.settings.rewrites.length == numItemsImported.rewrites)
+                             && (config.settings.rewrites ? config.settings.rewrites.length == numItemsImported.rewrites : true))
                             {
                                 setTimeout(()=> location.reload(), 1000)
                             }
