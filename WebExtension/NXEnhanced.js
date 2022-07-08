@@ -939,7 +939,7 @@ function main()
 
                             // Otherwise, create all the entry's elements
                             {
-                                const status = entriesData[i].status == 3 ? "whitelisted" : entriesData[i].status == 2 ? "blocked" : "default"
+                                const status = entriesData[i].status // == 3 ? "whitelisted" : entriesData[i].status == 2 ? "blocked" : "default"
 
                                 const entryContainer = document.createElement("div")
                                 entryContainer.className = "log list-group-item"
@@ -1031,7 +1031,7 @@ function main()
                                             }
 
                                             const blockReason = document.createElement("span")
-                                            blockReason.textContent = (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].lists.join(", ")      // lists is an array containing the name of each list that includes this domain.
+                                            blockReason.textContent = (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].reasons.map(r => r.name).join(", ")      // lists is an array containing the name of each list that includes this domain.
 
                                             blockReasonTooltipElements.push(blockReason)
 
