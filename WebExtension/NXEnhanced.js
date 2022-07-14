@@ -64,11 +64,11 @@ function main()
 
     if (/\/logs/i.test(location.href))
     {
-        let hideDevices = false, filtering = true
+        let filtering = true //, hideDevices = false
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval, loadBeforeInputChanged = false
-        let visibleEntriesCountEll, filteredEntriesCountEll, allHiddenEntriesCountEll, loadedEntriesCountEll
-        let lastBefore, lastAfter = 1, searchString, searchItems, blockedQueriesOnly, rawLogs = 0
+        let visibleEntriesCountEll, filteredEntriesCountEll, loadedEntriesCountEll //, allHiddenEntriesCountEll
+        let currentDevice, lastBefore, lastAfter = 1, searchString, searchItems, blockedQueriesOnly, rawLogs = 0
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -161,13 +161,14 @@ function main()
                             deviceCustom.onclick = function()       // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
                             {
                                 const index = Array.from(this.parentElement.children).indexOf(this)     // Get the index of this dropdown item.
+                                currentDevice = i == 0 ? "" : devicesData[index-1].id
 
                                 cancelLoading = true                // Indicates that the chunk currently being loaded should be interrupted.
 
                                 if (index == 0)                     // If it's the "All devices" item.
                                     reloadLogs()
                                 else                                // If instead it's a specific device.
-                                    loadLogChunk({device: devicesData[index-1].id, clear: true})
+                                    loadLogChunk({device: currentDevice, clear: true})
 
 
                                 // Update the current device selected
@@ -177,8 +178,8 @@ function main()
 
                                 this.parentElement.previousSibling.textContent = this.textContent
 
-                                hideDevices = false
-                                allHiddenEntriesCountEll.parentElement.style.display = "none"
+                                //hideDevices = false
+                                //allHiddenEntriesCountEll.parentElement.style.display = "none"
                             }
 
                             devicesDropdownMenu.appendChild(deviceCustom)
@@ -195,13 +196,15 @@ function main()
                         {
                             //this.parentElement.firstChild.click()       // Click the "All devices" button. Use the full log to filter the devices
 
-                            loadLogChunk({device: "__UNIDENTIFIED__", clear: true})
+                            currentDevice = "__UNIDENTIFIED__"
+
+                            loadLogChunk({device: currentDevice, clear: true})
 
                             customDevicesDropdown.firstChild.innerHTML = "Other devices"
                             this.parentElement.querySelector(".active").classList.remove("active")
                             this.classList.add("active")
                             //hideDevices = true
-                            allHiddenEntriesCountEll.parentElement.style.display = "initial"
+                            //allHiddenEntriesCountEll.parentElement.style.display = "initial"
 
 
                         }
@@ -572,9 +575,9 @@ function main()
                         {
                             if (response.includes("errors"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
                             {
-                                //let error = JSON.parse(response).error
+                                let error //= JSON.parse(response).error
 
-                                if (response.includes("exist"))
+                                if (response.includes("duplicate"))
                                     error = "This domain has already been added"
                                 else if (response.includes("invalid"))
                                     error = "Invalid domain"
@@ -624,8 +627,8 @@ function main()
                     let input = allowDenyPopup.input
                     input.value = this.title.substring(this.title.indexOf("*") + 2)     // Instead of parsing the root domain again, get it from the title set by the Allow/Deny/Hide buttons.
 
-                    if (allowDenyPopup.listName == "Hide")
-                        input.value = "." + input.value     // Add a dot before the root domain to prevent false positives.
+                    //if (allowDenyPopup.listName == "Hide")
+                        //input.value = "." + input.value     // Add a dot before the root domain to prevent false positives.
 
                     allowDenyPopup.fullDomainButton.click()
                 }
@@ -687,7 +690,7 @@ function main()
 
                     visibleEntriesCountEll   = document.getElementById("visibleEntriesCount")
                     filteredEntriesCountEll  = document.getElementById("filteredEntriesCount")   // Entries filtered by the domains filters.
-                    allHiddenEntriesCountEll = document.getElementById("allHiddenEntriesCount")  // Entries from named devices.
+                    //allHiddenEntriesCountEll = document.getElementById("allHiddenEntriesCount")  // Entries from named devices.
                     loadedEntriesCountEll    = document.getElementById("loadedEntriesCount")     // All the entries of the loaded chunks.
                 }
             }
@@ -773,7 +776,7 @@ function main()
 
                     if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))      // If there's an entry which is included in this upper domain, set
                     {                                                                                               // a message to warn the user. Otherwise, check the next upper domain.
-                        allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry!"
+                        allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry: "+upperDomain
                         allowDenyPopup.input.classList.add("is-invalid")
                         allowDenyPopup.errorMsg.classList.add("invalid-feedback")
 
@@ -850,7 +853,7 @@ function main()
                     for (let i = 0; i < existingEntries.length; i++)
                         existingEntries[i].remove()                                 // If clear is true, then remove all the loaded log entries to load again.
 
-                    visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = allHiddenEntriesCountEll.textContent = loadedEntriesCountEll.textContent = 0
+                    visibleEntriesCountEll.textContent = filteredEntriesCountEll.textContent = loadedEntriesCountEll.textContent = 0 // = allHiddenEntriesCountEll.textContent
                 }
             }
 
@@ -858,11 +861,11 @@ function main()
             {
                 logsRequestString = "logs?"
 
-                buildLogsRequestString("device", params.device)       // The device id when loading the logs of specific devices.
-                buildLogsRequestString("to", params.before)         // NextDNS' logs always responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
-                buildLogsRequestString("from", params.after)           // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
-                buildLogsRequestString("search", searchString)          // The search string. Used by the search bar.
-                buildLogsRequestString("raw", rawLogs)            // Used by the "Raw DNS logs" switch.
+                buildLogsRequestString("device", params.device ? params.device : currentDevice)     // The device id when loading the logs of specific devices.
+                buildLogsRequestString("to", params.before)         // NextDNS' logs by default responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
+                buildLogsRequestString("from", params.after)        // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
+                buildLogsRequestString("search", searchString)      // The search string. Used by the search bar.
+                buildLogsRequestString("raw", rawLogs)              // Used by the "Raw DNS logs" switch.
                 buildLogsRequestString("blockedQueriesOnly", blockedQueriesOnly)    // Used by the "Blocked Queries Only" switch.
             }
 
@@ -920,17 +923,17 @@ function main()
                                 var isNamedDevice = !!entriesData[i].device
 
                                 if ((filtering && !domainName.includes("."))        // Chrome's random queries never have a dot.
-                                    || (hideDevices && isNamedDevice)               // If enabled, named devices.
-                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d)))    // If enabled, domains included in the list of domains to hide.
+                                  //|| (hideDevices && isNamedDevice)               // If enabled, named devices.
+                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName == d || domainName.includes("."+d)))    // If enabled, domains included in the list of domains to hide.
                                     || (searchItems && searchItems.some(i => i[0] == "-" ? domainName.includes(i.replace("-","")) : !domainName.includes(i))) )     // When there's more than one search term specified, if it's an exclusion, check whether the log entry contains the term, and
                                 {                                                                                                                                   // if so, hide it, but if instead it's an inclusion, check whether the log entry does not contain the term, and if so, hide it.
                                     entriesData.splice(i,1)
                                     i--
 
-                                    if (!hideDevices || hideDevices && !isNamedDevice)
+                                    //if (!hideDevices || hideDevices && !isNamedDevice)
                                         filteredEntriesCountEll.textContent++
 
-                                    allHiddenEntriesCountEll.textContent++
+                                    //allHiddenEntriesCountEll.textContent++
                                     continue
                                 }
                             }
@@ -944,7 +947,7 @@ function main()
                                 const entryContainer = document.createElement("div")
                                 entryContainer.className = "log list-group-item"
                                 entryContainer.style = "display: flex; justify-content: space-between; align-items: center; border-left: 4px solid;"
-                                entryContainer.style.borderLeftColor = status == "whitelisted" ? "limegreen" : status == "blocked" ? "orangered" : "transparent"
+                                entryContainer.style.borderLeftColor = status == "allowed" ? "limegreen" : status == "blocked" ? "orangered" : "transparent"
 
 
                                 // Create the elements of the left side of the log entry
@@ -956,7 +959,7 @@ function main()
                                         const imgEll = document.createElement("img")
                                         imgEll.src = "https://favicons.nextdns.io/hex:" + convertToHex(domainName) + "@1x.png"  // NextDNS stores in their server every domain's favicon, and the image files are named after
                                         imgEll.className = "mr-2"                                                               // the domain's hex and the favicon's size, being 1x the smallest size and 3x the biggest.
-                                        imgEll.style.marginTop = "-2px"
+                                        imgEll.style = "margin-top: -2px; display: inline;"
                                         imgEll.onerror = function()
                                         {
                                             // Gray globe icon. This happens when either NextDNS doesn't have the domain's favicon, then responding with a 404 "Not found" error, or the domain itself doesn't have a favicon at all.
@@ -1031,7 +1034,7 @@ function main()
                                             }
 
                                             const blockReason = document.createElement("span")
-                                            blockReason.textContent = (status == "whitelisted" ? "Allowed" : "Blocked") + " by " + entriesData[i].reasons.map(r => r.name).join(", ")      // lists is an array containing the name of each list that includes this domain.
+                                            blockReason.textContent = (status == "allowed" ? "Allowed" : "Blocked") + " by " + entriesData[i].reasons.map(r => r.name).join(", ")      // lists is an array containing the name of each list that includes this domain.
 
                                             blockReasonTooltipElements.push(blockReason)
 
@@ -1068,7 +1071,7 @@ function main()
                                         buttonsContainer.appendChild(denyButton)
                                     }
 
-                                    if (status != "whitelisted")
+                                    if (status != "allowed")
                                     {
                                         const allowButton = document.createElement("button")
                                         allowButton.className = "btn btn-success"
@@ -1223,7 +1226,7 @@ function main()
         {
             const entries = logsContainer.querySelectorAll(".log")
 
-            allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
+            //allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
             visibleEntriesCountEll.textContent = 0
 
             for (let i=0; i < entries.length; i++)
@@ -1235,10 +1238,13 @@ function main()
                 {
                     entries[i].remove()
                     filteredEntriesCountEll.textContent++
-                    allHiddenEntriesCountEll.textContent++
+                    //allHiddenEntriesCountEll.textContent++
                 }
                 else visibleEntriesCountEll.textContent++
             }
+
+            if (!cancelLoading && visibleEntriesCountEll.textContent < 15)
+                loadLogChunk({before: lastBefore})
         }
 
         function processTimestamp(timestamp, now, yesterday, dateTimeElement)
@@ -1693,9 +1699,9 @@ function main()
                                         numImportedDomains++
                                     else
                                     {
-                                        //let error = JSON.parse(response).error
+                                        let error //= JSON.parse(response).error
 
-                                        if (response.includes("exist"))
+                                        if (response.includes("duplicate"))
                                             error = "This domain has already been added: " + domain
                                         else if (response.includes("invalid"))
                                             error = "Invalid domain: " + domain
