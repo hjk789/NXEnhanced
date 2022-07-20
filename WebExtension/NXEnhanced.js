@@ -68,7 +68,7 @@ function main()
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval, loadBeforeInputChanged = false
         let visibleEntriesCountEll, filteredEntriesCountEll, loadedEntriesCountEll //, allHiddenEntriesCountEll
-        let currentDevice, lastBefore, lastAfter = 1, searchString, searchItems, blockedQueriesOnly, rawLogs = 0
+        let currentDevice, lastBefore, lastAfter = 1, searchString, searchItems, statusLogs, rawLogs = 0
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
         const waitForItems = setInterval(function()
@@ -477,7 +477,7 @@ function main()
                     optionsContainer.firstChild.lastChild.style.fontSize = "80%"
                     optionsContainer.firstChild.firstChild.onchange = function()
                     {
-                        blockedQueriesOnly = +this.checked
+                        statusLogs = this.checked ? "blocked" : ""
 
                         if (loadBeforeInputChanged)
                             loadBeforeGoButton.click()
@@ -592,7 +592,7 @@ function main()
                             {                                                           // This checks if it was successful.
                                 allowDenyPopup.errorMsg.textContent = '✔️'
 
-                                // Auto dismiss the popup after 1 second
+                                // Auto dismiss the popup after 750ms
                                 setTimeout(function() {
                                     allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is reloaded.
                                     allowDenyPopup.errorMsg.innerHTML = ''
@@ -616,7 +616,7 @@ function main()
 
                         setTimeout(function() {
                             allowDenyPopup.container.style.cssText += 'visibility: hidden;'
-                        }, 1000)
+                        }, 500)
                     }
                 }
 
@@ -866,7 +866,7 @@ function main()
                 buildLogsRequestString("from", params.after)        // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
                 buildLogsRequestString("search", searchString)      // The search string. Used by the search bar.
                 buildLogsRequestString("raw", rawLogs)              // Used by the "Raw DNS logs" switch.
-                buildLogsRequestString("blockedQueriesOnly", blockedQueriesOnly)    // Used by the "Blocked Queries Only" switch.
+                buildLogsRequestString("status", statusLogs)        // Used by the "Blocked Queries Only" switch.
             }
 
             // Recreate the spinner when loading. It has a different color than the original to indicate that it's being loaded by NXE.
@@ -923,17 +923,14 @@ function main()
                                 var isNamedDevice = !!entriesData[i].device
 
                                 if ((filtering && !domainName.includes("."))        // Chrome's random queries never have a dot.
-                                  //|| (hideDevices && isNamedDevice)               // If enabled, named devices.
                                     || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName == d || domainName.includes("."+d)))    // If enabled, domains included in the list of domains to hide.
                                     || (searchItems && searchItems.some(i => i[0] == "-" ? domainName.includes(i.replace("-","")) : !domainName.includes(i))) )     // When there's more than one search term specified, if it's an exclusion, check whether the log entry contains the term, and
                                 {                                                                                                                                   // if so, hide it, but if instead it's an inclusion, check whether the log entry does not contain the term, and if so, hide it.
                                     entriesData.splice(i,1)
                                     i--
 
-                                    //if (!hideDevices || hideDevices && !isNamedDevice)
-                                        filteredEntriesCountEll.textContent++
+                                    filteredEntriesCountEll.textContent++
 
-                                    //allHiddenEntriesCountEll.textContent++
                                     continue
                                 }
                             }
@@ -1188,7 +1185,9 @@ function main()
                 {
                     // Remove the "No logs" message
                     const noLogsSpan = document.getElementById("noLogsSpan")
-                    if (noLogsSpan)  noLogsSpan.remove()
+
+                    if (noLogsSpan)
+                        noLogsSpan.remove()
                 }
 
                 // Now that all entries were processed, the spinner can be removed.
@@ -1395,59 +1394,64 @@ function main()
                                 {
                                     if (confirm("This will add all TLDs to the block list. Are you sure?"))
                                     {
-                                        createPleaseWaitModal("Adding all TLDs")
-
                                         // Process the TLDs
 
-                                        const buttons = modal.getElementsByClassName("btn")     // Here a getElementsByClassName is required instead of a querySelectorAll, as the former returns a list of
-                                        const buttonsClicked = []                               // references, while the latter returns a list of static copies that are applied to the original when set.
-                                        let numTLDsAdded = 0
+                                        createPleaseWaitModal("Adding all TLDs")
 
-                                        const checkIfFinished = function()
+                                        let securityPageSettings
+
+                                        await makeApiRequest("GET", "security", (response)=> securityPageSettings = JSON.parse(response).data)
+
+                                        securityPageSettings.tlds = []
+
+                                        const nonAsciiTLDsPunycodes =
+                                        [
+                                            "xn--11b4c3d","xn--1ck2e1b","xn--1qqw23a","xn--2scrj9c","xn--30rr7y","xn--3bst00m","xn--3ds443g","xn--3e0b707e","xn--3hcrj9c","xn--3oq18vl8pn36a","xn--3pxu8k","xn--42c2d9a","xn--45br5cyl","xn--45brj9c","xn--45q11c",
+                                            "xn--4dbrk0ce","xn--4gbrim","xn--54b7fta0cc","xn--55qw42g","xn--55qx5d","xn--5su34j936bgsg","xn--5tzm5g","xn--6frz82g","xn--6qq986b3xl","xn--80adxhks","xn--80ao21a","xn--80aqecdr1a","xn--80asehdb","xn--80aswg",
+                                            "xn--8y0a063a","xn--90a3ac","xn--90ae","xn--90ais","xn--9dbq2a","xn--9et52u","xn--9krt00a","xn--b4w605ferd","xn--bck1b9a5dre4c","xn--c1avg","xn--c2br7g","xn--cck2b3b","xn--cckwcxetd","xn--cg4bki","xn--ygbi2ammx",
+                                            "xn--clchc0ea0b2g2a9gcd","xn--czr694b","xn--czrs0t","xn--czru2d","xn--d1acj3b","xn--d1alf","xn--e1a4c","xn--eckvdtc9d","xn--efvy88h","xn--fct429k","xn--fhbei","xn--fiq228c5hs","xn--fiq64b","xn--fiqs8s","xn--fiqz9s",
+                                            "xn--fjq720a","xn--flw351e","xn--fpcrj9c3d","xn--fzc2c9e2c","xn--fzys8d69uvgm","xn--g2xx48c","xn--gckr3f0f","xn--gecrj9c","xn--gk3at1e","xn--h2breg3eve","xn--h2brj9c","xn--h2brj9c8c","xn--hxt814e","xn--i1b6b1a6a2e",
+                                            "xn--imr513n","xn--io0a7i","xn--j1aef","xn--j1amh","xn--j6w193g","xn--jlq480n2rg","xn--jlq61u9w7b","xn--jvr189m","xn--kcrx77d1x4a","xn--kprw13d","xn--kpry57d","xn--kput3i","xn--l1acc","xn--lgbbat1ad8j","xn--mgb9awbf",
+                                            "xn--mgba3a3ejt","xn--mgba3a4f16a","xn--mgba7c0bbn0a","xn--mgbaakc7dvf","xn--mgbaam7a8h","xn--mgbab2bd","xn--mgbah1a3hjkrd","xn--mgbai9azgqp6j","xn--mgbayh7gpa","xn--mgbbh1a","xn--mgbbh1a71e","xn--mgbc0a9azcg",
+                                            "xn--mgbca7dzdo","xn--mgbcpq6gpa1a","xn--mgberp4a5d4ar","xn--mgbgu82a","xn--mgbi4ecexp","xn--mgbpl2fh","xn--mgbt3dhd","xn--mgbtx2b","xn--mgbx4cd0ab","xn--mix891f","xn--mk1bu44c","xn--mxtq1m","xn--ngbc5azd","xn--qxam",
+                                            "xn--ngbe9e0a","xn--ngbrx","xn--node","xn--nqv7f","xn--nqv7fs00ema","xn--nyqy26a","xn--o3cw4h","xn--ogbpf8fl","xn--otu796d","xn--p1acf","xn--p1ai","xn--pgbs0dh","xn--pssy2u","xn--q7ce6a","xn--q9jyb4c","xn--yfro4i67o",
+                                            "xn--qcka1pmc","xn--qxa6a","xn--rhqv96g","xn--rovu88b","xn--rvc1e0am3e","xn--s9brj9c","xn--ses554g","xn--t60b56a","xn--tckwe","xn--tiq49xqyj","xn--unup4y","xn--vermgensberater-ctb","xn--y9a3aq","xn--zfr164b",
+                                            "xn--vermgensberatung-pwb","xn--vhquv","xn--vuq861b","xn--w4r85el8fhu5dnra","xn--w4rs40l","xn--wgbh1c","xn--wgbl6a","xn--xhq521b","xn--xkc2al3hye2a","xn--xkc2dl3a5ee0h"
+                                        ]
+
+                                        for (let i=0; i < nonAsciiTLDsPunycodes.length; i++)
+                                            securityPageSettings.tlds.push({id: nonAsciiTLDsPunycodes[i]})
+
+
+                                        const buttons = modal.getElementsByClassName("btn")
+
+                                        for (let i=10; i < buttons.length; i++)
                                         {
-                                            if (numTLDsAdded == numTLDsToBeAdded)
+                                            const TLD = buttons[i].parentElement.previousSibling.textContent.split(".")[1]
+
+                                            if (!/[^\w]/.test(TLD)) //buttons[i].classList.contains("btn-primary") && )
                                             {
-                                                waitForButtonsClicked = setInterval(function()
-                                                {
-                                                    for (let j=0; j < buttonsClicked.length; j++)
-                                                    {                                                                           // If the "Add" button changed to the "Remove" button, this usually means that the TLD was successfully added.
-                                                        if (buttons[buttonsClicked[j]].classList.contains("btn-danger"))        // It wouldn't be possible to get an updated classList if querySelectorAll was used.
-                                                            buttonsClicked.splice(j,1)
-                                                    }
+                                                //if ()             // If there's no character in the TLD which is not a-z, then make the request normally.
+                                                //{
+                                                    securityPageSettings.tlds.push({id: TLD})
+                                                    //numTLDsAdded++
+                                                    //makeApiRequest("POST", "security/tlds", function() { numTLDsAdded++; checkIfFinished() }, {id: TLD})
+                                                //}
+                                                /*else                                // Otherwise, click on the button instead. This is because the string to be used in requests for non-english TLDs is in punycode (xn--abcde),
+                                                {                                   // instead of simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
 
-                                                    if (buttonsClicked.length == 0)
-                                                    {
-                                                        location.reload()
-                                                        clearInterval(waitForButtonsClicked)
-                                                    }
-
-                                                }, 500)
-                                            }
-                                        }
-
-                                        for (let i=0; i < buttons.length; i++)
-                                        {
-                                            const TLD = buttons[i].parentElement.previousSibling.textContent.replace(".","")
-
-                                            if (buttons[i].classList.contains("btn-primary"))
-                                            {
-                                                await sleep(1000)                   // Wait one second between requests. This is because of the API server's rate limit. One second is
+                                                    await sleep(1000)               // Wait one second between requests. This is because of the API server's rate limit. One second is
                                                                                     // the lowest value before the server starts responding with "Too Many Requests" for 30 seconds.
-
-                                                if (!/[^\w]/.test(TLD))             // If there's no character in the TLD which is not a-z, then make the request normally.
-                                                {
-                                                    makeApiRequest("PUT", "security/tlds/hex:" + convertToHex(TLD), function() { numTLDsAdded++; checkIfFinished() })
-                                                }
-                                                else                                // Otherwise, click on the button instead. This is because the hexed string in NextDNS for non-english characters comes from punycode (xn--abcde),
-                                                {                                   // instead of from simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
                                                     buttons[i].click()
                                                     buttonsClicked.push(i)          // Store in an array the index of all buttons that were clicked, then check whether they finished adding.
-                                                    numTLDsAdded++
+                                                    //numTLDsAdded++
 
-                                                    checkIfFinished()
-                                                }
+                                                    //checkIfFinished()
+                                                }*/
                                             }
                                         }
+
+                                        makeApiRequest("PATCH", "security", ()=> location.reload(), securityPageSettings)
                                     }
                                 }
                                 else alert("All TLDs are already added.")
@@ -1681,25 +1685,31 @@ function main()
                                 return
 
 
-                            createSpinner(this.parentElement)
+                            createSpinner(spinnerContainer)
+                            currentDomainSpan.style.marginLeft = "10px"
 
-                            domains.reverse()                       // Reverse the list so that the first item is the last one to be added, appearing at the top in NextDNS, this way preserving
-                                                                    // the original order (unless the requests take more than a second to finish, in this case some of the items would get swapped).
+                            domains.reverse()                       // Reverse the list so that the first item is the last one to be added,
+                                                                    // appearing at the top in NextDNS, this way preserving the original order.
                             for (let i=0; i < domains.length; i++)
                             {
                                 const domain = domains[i].trim()
 
                                 await sleep(1000)
 
+                                currentDomainSpan.textContent = domain
+
                                 makeApiRequest("POST", list, function(response)
                                 {
                                     numFinishedRequests++
 
                                     if (!response.includes("error"))
+                                    {
                                         numImportedDomains++
+                                        errorMsgSpan.textContent = ""
+                                    }
                                     else
                                     {
-                                        let error //= JSON.parse(response).error
+                                        let error
 
                                         if (response.includes("duplicate"))
                                             error = "This domain has already been added: " + domain
@@ -1707,19 +1717,24 @@ function main()
                                             error = "Invalid domain: " + domain
 
                                         textArea.classList.add("is-invalid")
-                                        textArea.nextSibling.textContent = error
-                                        textArea.nextSibling.className = "invalid-feedback"
-
+                                        errorMsgSpan.textContent = error
+                                        errorMsgSpan.className = "invalid-feedback"
                                     }
 
                                     if (numFinishedRequests == domains.length)
                                     {
                                         if (numImportedDomains > 0)
                                         {
-                                            textArea.parentElement.lastChild.outerHTML = '✔️'
+                                            currentDomainSpan.remove()
+                                            spinnerContainer.outerHTML = '✔️'
                                             setTimeout(() => location.reload(), 500)
                                         }
-                                        else textArea.parentElement.lastChild.outerHTML = ""
+                                        else
+                                        {
+                                            spinnerContainer.firstChild.outerHTML = ""
+                                            currentDomainSpan.textContent = ""
+                                            currentDomainSpan.style.marginLeft = ""
+                                        }
                                     }
 
                                 }, {id: domain, active: true})
@@ -1731,6 +1746,12 @@ function main()
                     const errorMsgSpan = document.createElement("span")
                     errorMsgSpan.className = "invalid-feedback"
                     container.appendChild(errorMsgSpan)
+
+                    const spinnerContainer = document.createElement("span")
+                    container.appendChild(spinnerContainer)
+
+                    const currentDomainSpan = document.createElement("span")
+                    container.appendChild(currentDomainSpan)
                 }
 
             }
@@ -2227,7 +2248,7 @@ function createSpinner(container)
 {
     const spinner = document.createElement("span")
     spinner.className = "ml-2 spinner-border spinner-border-sm"
-    spinner.style = "vertical-align: middle;"
+    spinner.style = "vertical-align: middle; margin-right: 5px;"
     container.appendChild(spinner)
 }
 
