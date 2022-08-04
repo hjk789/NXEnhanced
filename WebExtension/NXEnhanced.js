@@ -893,7 +893,7 @@ function main()
                 if (entriesData.length > 0)
                 {
                     lastBefore = entriesData.lastItem().timestamp       // Store the timestamp of the last entry, to load the older chunk starting from this timestamp. This timestamp is in Unix time.
-                    lastAfter  = entriesData[0].timestamp               // Store the timestamp of the first entry, to load the newer chunk starting from this timestamp.
+                    lastAfter  = Date.parse(entriesData[0].timestamp)+1               // Store the timestamp of the first entry, to load the newer chunk starting from this timestamp.
 
                     const now = new Date()          // Get the current date-time in Unix time.
                     const yesterday = (new Date(new Date().setDate(new Date().getDate() - 1))).getDate()
@@ -2064,33 +2064,7 @@ function loadNXsettings()
 
             saveSettings(NXsettings)
         }
-        else
-        {
-            NXsettings = obj.NXsettings
-
-            /*
-                Temporary fix to normalize the settings object for users who started using NXE since version 4.0, which included a bug in the default
-                value for the DomainsDescriptions that caused this property to be exported empty, even though all values are still there in some way.
-                This needs to be done only once. After all users update to the most recent version, this fix will be removed.
-            */
-
-            const domDescArray = NXsettings.AllowDenylistPage.DomainsDescriptions
-
-            if (typeof domDescArray.length == "number")         // Only arrays have the "length" property, and if it's an array, it shoud be converted to an object instead.
-            {
-                const domDescObj = {}
-
-                Object.getOwnPropertyNames(domDescArray).forEach(function(domain)           // Get all the domains incorrectly stored in the array.
-                {
-                    if (domain != "length")                                                 // Ignore the "length" property.
-                        domDescObj[domain] = domDescArray[domain]                           // Copy the domains and descriptions to the new object.
-                })
-
-                NXsettings.AllowDenylistPage.DomainsDescriptions = domDescObj               // Replace the array with the object and save.
-                saveSettings()
-            }
-
-        }
+        else NXsettings = obj.NXsettings
 
         main()
 
