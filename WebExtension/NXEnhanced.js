@@ -146,7 +146,7 @@ function main()
                     // NX Enhanced loads the log entries by itself instead of letting the site load them, because this way NX Enhanced has access to the log entries' raw data instead of having to depend on what the page
                     // actually shows, which can change anytime and require constant adaptations for every layout or code change. Also, this makes it possible to implement other features to the logs that require such access.
 
-                    makeApiRequest("GET", "analytics/devices", function(response)
+                    makeApiRequest("GET", "analytics/devices").then(function(response)
                     {
                         const devicesData = JSON.parse(response).data
 
@@ -571,11 +571,26 @@ function main()
                         // each character converted to hexadecimal, instead of plain text (ASCII). This converts the specified domain to hex then sends it to the respective list.
                         const requestString = allowDenyPopup.listName //+ "/hex:" + convertToHex(allowDenyPopup.input.value)
 
-                        makeApiRequest("POST", requestString, function(response)     // Make an asynchronous HTTP request and run this callback when finished.
+                        makeApiRequest("POST", requestString, {id: allowDenyPopup.input.value, active: true}).then(function(response)     // Make an asynchronous HTTP request and run this callback when finished.
                         {
-                            if (response.includes("errors"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
+                            allowDenyPopup.errorMsg.textContent = '✔️'
+
+                            // Auto dismiss the popup after 750ms
+                            setTimeout(function() {
+                                allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is reloaded.
+                                allowDenyPopup.errorMsg.innerHTML = ''
+                            }, 750)
+
+                            // Update the cached list of domains from the allow/denylist
+                            makeApiRequest("GET", allowDenyPopup.listName).then(function(response) {
+                                allowDenyPopup.domainsList[allowDenyPopup.listName] = response
+                            })
+
+                        }).catch(function(response)
+                        {
+                            //if (response.includes("errors"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
                             {
-                                let error //= JSON.parse(response).error
+                                let error
 
                                 if (response.includes("duplicate"))
                                     error = "This domain has already been added"
@@ -588,23 +603,7 @@ function main()
                                 allowDenyPopup.errorMsg.classList.add("invalid-feedback")
                                 allowDenyPopup.input.classList.add("is-invalid")
                             }
-                            else //if (response.includes(allowDenyPopup.input.value.replace("*.","")))          // After successfully adding the domain to the allow/denylist, NextDNS responds with the domain added and it's active status.
-                            {                                                           // This checks if it was successful.
-                                allowDenyPopup.errorMsg.textContent = '✔️'
-
-                                // Auto dismiss the popup after 750ms
-                                setTimeout(function() {
-                                    allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is reloaded.
-                                    allowDenyPopup.errorMsg.innerHTML = ''
-                                }, 750)
-
-                                // Update the cached list of domains from the allow/denylist
-                                makeApiRequest("GET", allowDenyPopup.listName, function(response) {
-                                    allowDenyPopup.domainsList[allowDenyPopup.listName] = response
-                                })
-                            }
-
-                        }, {id: allowDenyPopup.input.value, active: true})
+                        })
 
                     }
                     else
@@ -658,10 +657,10 @@ function main()
 
                 // Cache the list of domains in the allowlist, then cache the list of domains in the denylist
 
-                makeApiRequest("GET", "allowlist", function(response)
+                makeApiRequest("GET", "allowlist").then(function(response)
                 {
                     allowDenyPopup.domainsList.allowlist = response;
-                    makeApiRequest("GET", "denylist", function(response) { allowDenyPopup.domainsList.denylist = response })
+                    makeApiRequest("GET", "denylist").then((response) => { allowDenyPopup.domainsList.denylist = response })
                 })
 
             }
@@ -885,7 +884,7 @@ function main()
             }
 
             // Load the log entries data
-            makeApiRequest("GET", logsRequestString, function(pResponse)
+            makeApiRequest("GET", logsRequestString).then(function(pResponse)
             {
                 const response = JSON.parse(pResponse)
                 const entriesData = response.data
@@ -1400,7 +1399,7 @@ function main()
 
                                         let securityPageSettings
 
-                                        await makeApiRequest("GET", "security", (response)=> securityPageSettings = JSON.parse(response).data)
+                                        securityPageSettings = JSON.parse(await makeApiRequest("GET", "security")).data
 
                                         securityPageSettings.tlds = []
 
@@ -1451,7 +1450,7 @@ function main()
                                             }
                                         }
 
-                                        makeApiRequest("PATCH", "security", ()=> location.reload(), securityPageSettings)
+                                        makeApiRequest("PATCH", "security", securityPageSettings).then(()=> location.reload())
                                     }
                                 }
                                 else alert("All TLDs are already added.")
@@ -1698,28 +1697,30 @@ function main()
 
                                 currentDomainSpan.textContent = domain
 
-                                makeApiRequest("POST", list, function(response)
+                                makeApiRequest("POST", list, {id: domain, active: true}).then(function(response)
                                 {
-                                    numFinishedRequests++
-
-                                    if (!response.includes("error"))
+                                    //if (!response.includes("error"))
                                     {
                                         numImportedDomains++
                                         errorMsgSpan.textContent = ""
                                     }
-                                    else
-                                    {
-                                        let error
 
-                                        if (response.includes("duplicate"))
-                                            error = "This domain has already been added: " + domain
-                                        else if (response.includes("invalid"))
-                                            error = "Invalid domain: " + domain
+                                }).catch(function(response)
+                                {
+                                    let error
 
-                                        textArea.classList.add("is-invalid")
-                                        errorMsgSpan.textContent = error
-                                        errorMsgSpan.className = "invalid-feedback"
-                                    }
+                                    if (response.includes("duplicate"))
+                                        error = "This domain has already been added: " + domain
+                                    else if (response.includes("invalid"))
+                                        error = "Invalid domain: " + domain
+
+                                    textArea.classList.add("is-invalid")
+                                    errorMsgSpan.textContent = error
+                                    errorMsgSpan.className = "invalid-feedback"
+
+                                }).finally(function()
+                                {
+                                    numFinishedRequests++
 
                                     if (numFinishedRequests == domains.length)
                                     {
@@ -1736,10 +1737,8 @@ function main()
                                             currentDomainSpan.style.marginLeft = ""
                                         }
                                     }
-
-                                }, {id: domain, active: true})
+                                })
                             }
-
                         }
                     }
 
@@ -1810,16 +1809,16 @@ function main()
                 exportConfigButton.onclick = function()
                 {
                     const config = {}
-                    const pages = ["security", "privacy", "parentalcontrol", "denylist", "allowlist", "settings"]
+                    const pages = ["security", "privacy", "parentalcontrol", "denylist", "allowlist", "settings", "rewrites"]
                     const configName = this.parentElement.previousSibling.querySelector("input").value
                     let numPagesExported = 0
 
-                    createSpinner(this) // Add a spinning circle beside the button to indicate that something is happening
+                    createSpinner(this)                             // Add a spinning circle beside the button to indicate that something is happening.
 
 
                     for (let i=0; i < pages.length; i++)
                     {
-                        makeApiRequest("GET", pages[i], function(response)  // Get the settings from each page
+                        makeApiRequest("GET", pages[i]).then(function(response)                 // Get the settings from each page.
                         {
                             config[pages[i]] = JSON.parse(response).data
                             numPagesExported++
@@ -1828,20 +1827,17 @@ function main()
                             {
                                 // Export only the relevant data from these settings
 
-                                config.privacy.blocklists = config.privacy.blocklists.map(b => b.id)
+                                config.privacy.blocklists = config.privacy.blocklists.map(b => { return {id: b.id} })
 
-                                if (!config.settings.rewrites)
-                                    config.settings.rewrites = []
-                                else
-                                    config.settings.rewrites = config.settings.rewrites.map((r) => {return {name: r.name, answer: r.answer}})
+                                config.rewrites = config.rewrites.map((r) => { return {name: r.name, content: r.content} })
 
-                                config.parentalcontrol.services = config.parentalcontrol.services.map((s) => {return {id: s.id, active: s.active}})
+                                config.parentalcontrol.services = config.parentalcontrol.services.map((s) => { return {id: s.id, active: s.active, recreation: s.recreation} })
 
                                 const fileName = configName + "-" + location.href.split("/")[3] + "-Export.json"       // <Current config name>-<Current config ID>-Export.json
 
                                 exportToFile(config, fileName)
 
-                                exportConfigButton.lastChild.remove() // Remove the spinner when done
+                                exportConfigButton.lastChild.remove()                           // Remove the spinner when done.
                             }
                         })
                     }
@@ -1851,7 +1847,7 @@ function main()
                 const importConfigButton = document.createElement("button")
                 importConfigButton.className = "btn btn-primary"
                 importConfigButton.innerHTML = "Import a config"
-                importConfigButton.onclick = function() { this.nextSibling.click() }      // Click the file input button.
+                importConfigButton.onclick = function() { this.nextSibling.click() }                // Click the file input button.
 
                 const fileConfigInput = document.createElement("input")
                 fileConfigInput.type = "file"
@@ -1863,32 +1859,18 @@ function main()
                     {
                         const config = JSON.parse(this.result)
 
-                        const numItemsImported = {
-                            security: false,
-                            tlds: 0,
-                            privacy: false,
-                            blocklists: 0,
-                            natives: 0,
-                            parentalcontrol: false,
-                            "parentalcontrol/services": 0,
-                            "parentalcontrol/categories": 0,
+                        const numItemsImported =
+                        {
                             denylist: 0,
                             allowlist: 0,
-                            settings: false,
                             rewrites: 0
                         }
 
-                        const importAllAndSwitchDisabledItems = async function(listName)
+                        const importIndividualItems = async function(listName)
                         {
                             let listObj = config[listName]
 
-                            if (listName.includes("/"))
-                            {
-                                const listSplit = listName.split("/")
-                                listObj = config[listSplit[0]]
-                                if (listSplit.length == 2)
-                                    listObj = listObj[listSplit[1]]
-                            }
+                            listObj.reverse()
 
                             for (let i=0; i < listObj.length; i++)
                             {
@@ -1896,87 +1878,38 @@ function main()
 
                                 const item = listObj[i]
 
-                                makeApiRequest("POST", listName, async function(response)
+                                makeApiRequest("POST", listName, item).finally((response)=>
                                 {
-                                    numItemsImported[listName]++
-                                    /*if (numItemsImported[listName] == listObj.length)
-                                    {
-                                        const disabledItems = listObj.filter(d => !d.active).map(d => convertToHex(d[idPropName]))  // Store in an array the hex of each disabled item id
-
-                                        for (let i=0; i < disabledItems.length; i++)
-                                        {
-                                            await sleep(1000)
-
-                                            makeApiRequest("PATCH", listName+"/hex:" + disabledItems[i], false, {"active":false})
-                                        }
-                                    }*/
-                                }, {id: item["id"], active: item["active"]})
+                                    if (!response.includes("error") || response.includes("duplicate") || response.includes("conflict"))
+                                        numItemsImported[listName]++
+                                })
                             }
                         }
 
 
-                        /* Import the PATCHes before the PUTs and make sure that the lightest settings are imported first */
+                        /* Import the PATCHes before the POSTs and make sure that the lightest settings are imported first */
 
                         // Import Security page
-                        await makeApiRequest("PATCH", "security", ()=> numItemsImported.security = true, config.security)
-
-                        const blocklists = Array.from(config.privacy.blocklists)
-                        //delete config.privacy.blocklists
+                        await makeApiRequest("PATCH", "security", config.security)
 
                         // Import Privacy page
-                        await makeApiRequest("PATCH", "privacy", ()=> numItemsImported.privacy = true, config.privacy)
+                        await makeApiRequest("PATCH", "privacy", config.privacy)
 
-                        // Import Parental Control page
-                        await makeApiRequest("PATCH", "parentalcontrol", ()=> numItemsImported.parentalcontrol = true, config.parentalcontrol)
+                        // Import Parental Controls page
+                        await makeApiRequest("PATCH", "parentalcontrol", config.parentalcontrol)
 
                         // Import Settings page
-                        await makeApiRequest("PATCH", "settings", ()=> numItemsImported.settings = true, config.settings)
+                        await makeApiRequest("PATCH", "settings", config.settings)
 
 
                         /* Import individual settings */
 
-                        //config.settings.rewrites.reverse()
+                        // Import all the Rewrites in the Settings page.
+                        importIndividualItems("rewrites")
 
-                        /*for (let i=0; i < config.settings.rewrites.length; i++)
-                        {
-                            await sleep(1000)
-                            makeApiRequest("POST", "settings/rewrites", ()=> numItemsImported.rewrites++, config.settings.rewrites[i])
-                        }*/
-
-
-                        /*for (let i=0; i < config.privacy.natives.length; i++)
-                        {
-                            await sleep(1000)
-                            makeApiRequest("POST", "privacy/natives", ()=> numItemsImported.natives++, {id: config.privacy.natives[i].id})
-                        }*/
-
-
-                        importAllAndSwitchDisabledItems("parentalcontrol/services")
-                        importAllAndSwitchDisabledItems("parentalcontrol/categories")
-
-                        /*blocklists.reverse()
-
-                        for (let i=0; i < blocklists.length; i++)
-                        {
-                            await sleep(1000)
-                            makeApiRequest("POST", "privacy/blocklists", ()=> numItemsImported.blocklists++, {id: blocklists[i]})
-                        }*/
-
-
-                        /*for (let i=0; i < config.security.tlds.length; i++)     // NextDNS doesn't accept multiple TLDs or domains in one go, so every entry need to be added one by one.
-                        {
-                            await sleep(1000)
-                            makeApiRequest("POST", "security/tlds", ()=> numItemsImported.tlds++, {id: config.security.tlds[i].id})
-                        }*/
-
-
-                        // Import Allow/Denylists
-
-                        config.denylist.reverse()
-                        config.allowlist.reverse()
-
-                        importAllAndSwitchDisabledItems("denylist")
-                        importAllAndSwitchDisabledItems("allowlist")
+                        // Import all the domains in the Allowlist/Denylist pages.
+                        importIndividualItems("denylist")
+                        importIndividualItems("allowlist")
 
 
 
@@ -1984,18 +1917,9 @@ function main()
 
                         setInterval(function()
                         {
-                            if (numItemsImported.security
-                             //&& config.security.tlds.length == numItemsImported.tlds
-                             && numItemsImported.privacy
-                             //&& blocklists.length == numItemsImported.blocklists
-                             //&& config.privacy.natives.length == numItemsImported.natives
-                             && numItemsImported.parentalcontrol
-                             && config.parentalcontrol.services.length == numItemsImported["parentalcontrol/services"]
-                             && config.parentalcontrol.categories.length == numItemsImported["parentalcontrol/categories"]
-                             && config.denylist.length == numItemsImported.denylist
+                            if (config.denylist.length == numItemsImported.denylist
                              && config.allowlist.length == numItemsImported.allowlist
-                             && numItemsImported.settings
-                             && (config.settings.rewrites ? config.settings.rewrites.length == numItemsImported.rewrites : true))
+                             && config.rewrites.length == numItemsImported.rewrites)
                             {
                                 setTimeout(()=> location.reload(), 1000)
                             }
@@ -2449,45 +2373,56 @@ function sleep(ms)
 }
 
 
-function makeApiRequest(HTTPmethod, requestString, callback, requestBody = null)
+function makeApiRequest(HTTPmethod, requestString, requestBody = null)
 {
-    return new Promise(resolve =>
-    {
-        const requestURL = "https://api.nextdns.io/profiles/" + location.href.split("/")[3] + "/" + requestString     // Update the URL for each request. This ensures that the request will be made to the correct config.
-
-        if (HTTPmethod == "PATCH" || HTTPmethod == "POST")
-            requestBody = JSON.stringify(requestBody)
-
-        const xhr = isChrome ? new XMLHttpRequest() : XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest())         // For Firefox, it's required to call XMLHttpRequest inside this wrapper, otherwise the call is ignored. In Chrome it works fine.
-        xhr.open(HTTPmethod, requestURL)
-        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")          // This is required when sending data in the request body to the server, otherwise it returns an internal server error (500). In other cases, it's optional.
-        xhr.onload = function()
-        {
-            if (xhr.response == "Too Many Requests")
-                waitAndRetryRequest(5000)
-            else if (callback)
-            {
-                callback(xhr.response)
-                resolve()
-            }
-        }
-        xhr.onerror = function()
-        {
-            // When there's a network problem while making a request, try again after 5 seconds
-
-            waitAndRetryRequest(5000)
-            resolve()
-        }
-        xhr.withCredentials = true                                                      // Include the session cookie in the request, otherwise it responds with "Forbidden".
-        xhr.send(requestBody)
-
-
-        function waitAndRetryRequest(timeToWait)
-        {
-            setTimeout(function() {
-                makeApiRequest(HTTPmethod, requestString, callback, requestBody)
-            }, timeToWait)
-        }
-    })
+    return new Promise((resolve, reject) => makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, reject))
 }
 
+function makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, reject, attemptsMade = 0)
+{
+    const requestURL = "https://api.nextdns.io/profiles/" + location.href.split("/")[3] + "/" + requestString               // Update the URL for each request. This ensures that the request will be made to the correct config.
+
+    if (HTTPmethod == "PATCH" || HTTPmethod == "POST")
+        requestBody = JSON.stringify(requestBody)
+
+    const xhr = isChrome ? new XMLHttpRequest() : XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest())             // For Firefox, it's required to call XMLHttpRequest inside this wrapper, otherwise the call is ignored. In Chrome it works fine.
+    xhr.open(HTTPmethod, requestURL)
+    xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")                      // This is required when sending JSON data in the request body to the server, otherwise it returns an internal server error (500).
+    xhr.onload = function()
+    {
+        if (xhr.responseText.includes("Too Many Requests")) {
+            waitAndRetryRequest(5000)
+        }
+        else if (xhr.responseText.includes('"error'))
+            reject(xhr.response)
+        else
+            resolve(xhr.response)
+    }
+    xhr.onerror = function()
+    {
+        if (xhr.responseText.includes('"error'))
+            reject(xhr.response)
+        else
+            waitAndRetryRequest(5000)                       // When there's a network problem while making a request, try again after 5 seconds.
+    }
+    xhr.withCredentials = true                          // Include the session cookie in the request, otherwise it responds with "Forbidden".
+    xhr.send(requestBody)
+
+
+    function waitAndRetryRequest(timeToWait)
+    {
+        if (attemptsMade >= 3)
+        {
+            alert("Too many failed attempts to reach the server. Operation canceled.")
+            reject("fatigue")
+        }
+
+        setTimeout(function()
+        {
+            attemptsMade++
+
+            makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, reject, attemptsMade)
+
+        }, timeToWait)
+    }
+}
