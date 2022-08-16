@@ -9,7 +9,7 @@
 let currentPage = ""
 const intervals = []
 
-const isChrome = typeof browser == "undefined"      // Whether it's Chrome. Chrome uses the chrome object, while Firefox and Edge use the browser object.
+const isChrome = typeof browser == "undefined"              // Whether it's Chrome. Chrome uses the chrome object, while Firefox and Edge use the browser object.
 
 
 // Load all NX Enhanced's settings
@@ -20,12 +20,12 @@ extendFunctions()
 
 // Add some simple styles for a better UX
 const style = document.createElement("style")
-style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important; }                                     /* Allow/Deny/Hide buttons on hover */
-                   .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }      /* Show the tooltip when hovering it's container */
-                   .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }       /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
-                    div:hover #counters { visibility: hidden !important; }                                             /* Hide the log entries counters on hover */
-                   .btn-light { background-color: #eee; }                                                              /* Make the btn-light more visible without affecting the hover */
-                   .list-group-item:hover input.description, input.description:focus { display: initial !important;}   /* Show the allow/denylist domains description input box on hover, and when the input is focused */
+style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important; }                                              /* Allow/Deny/Hide buttons on hover */
+                   .tooltipParent:hover .customTooltip { opacity: 1 !important; visibility: visible !important; }               /* Show the tooltip when hovering it's container */
+                   .tooltipParent .customTooltip:hover { opacity: 0 !important; visibility: hidden !important; }                /* Hide the tooltip when it's hovered, as it should stay visible only when hovering the parent */
+                    div:hover #counters { visibility: hidden !important; }                                                      /* Hide the log entries counters on hover */
+                   .btn-light { background-color: #eee; }                                                                       /* Make the btn-light more visible without affecting the hover */
+                   .list-group-item:hover input.description, input.description:focus { display: initial !important;}            /* Show the allow/denylist domains description input box on hover, and when the input is focused */
                   `
 document.head.appendChild(style)
 
@@ -36,8 +36,8 @@ waitForPageSwitchings = setIntervalOld(function()
     if (currentPage == location.href)
         return
 
-    if (/\/logs/i.test(location.href) && currentPage && location.href.split("/")[3] != currentPage.split("/")[3])      // If the user switches to another config while in the Logs page, refresh the page automatically.
-    {                                                                                                                  // In the lack of a better way, this seems to be the least error prone solution.
+    if (/\/logs/i.test(location.href) && currentPage && location.href.split("/")[3] != currentPage.split("/")[3])               // If the user switches to another config while in the Logs page, refresh the page automatically.
+    {                                                                                                                           // In the lack of a better way, this seems to be the least error prone solution.
         clearInterval(waitForPageSwitchings)
         location.reload()
         return
@@ -47,7 +47,7 @@ waitForPageSwitchings = setIntervalOld(function()
 
     clearAllIntervals()
 
-    if (typeof rowStyle != "undefined")     // The row style is only needed in the Logs page, so it should be removed when switching pages.
+    if (typeof rowStyle != "undefined")             // The row style is only needed in the Logs page, so it should be removed when switching pages.
         rowStyle.remove()
 
     main()
@@ -64,10 +64,10 @@ function main()
 
     if (/\/logs/i.test(location.href))
     {
-        let filtering = true //, hideDevices = false
+        let filtering = true
         let loadingChunk = false, cancelLoading = false
         let logsContainer, allowDenyPopup, existingEntries, updateRelativeTimeInterval, loadBeforeInputChanged = false
-        let visibleEntriesCountEll, filteredEntriesCountEll, loadedEntriesCountEll //, allHiddenEntriesCountEll
+        let visibleEntriesCountEll, filteredEntriesCountEll, loadedEntriesCountEll
         let currentDevice, lastBefore, lastAfter = 1, searchString, searchItems, statusLogs, rawLogs = 0
         const dateTimeFormatter = new Intl.DateTimeFormat('default', { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric" });
 
@@ -158,16 +158,16 @@ function main()
                             const deviceCustom = document.createElement("button")
                             deviceCustom.className = i == 0 ? "dropdown-item active" : "dropdown-item"
                             deviceCustom.textContent = i == 0 ? "All devices" : decodeURI(devicesData[i-1].name)
-                            deviceCustom.onclick = function()       // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
+                            deviceCustom.onclick = function()               // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
                             {
                                 const index = Array.from(this.parentElement.children).indexOf(this)     // Get the index of this dropdown item.
                                 currentDevice = i == 0 ? "" : devicesData[index-1].id
 
-                                cancelLoading = true                // Indicates that the chunk currently being loaded should be interrupted.
+                                cancelLoading = true                        // Indicates that the chunk currently being loaded should be interrupted.
 
-                                if (index == 0)                     // If it's the "All devices" item.
+                                if (index == 0)                             // If it's the "All devices" item.
                                     reloadLogs()
-                                else                                // If instead it's a specific device.
+                                else                                        // If instead it's a specific device.
                                     loadLogChunk({device: currentDevice, clear: true})
 
 
@@ -177,9 +177,6 @@ function main()
                                 this.classList.add("active")
 
                                 this.parentElement.previousSibling.textContent = this.textContent
-
-                                //hideDevices = false
-                                //allHiddenEntriesCountEll.parentElement.style.display = "none"
                             }
 
                             devicesDropdownMenu.appendChild(deviceCustom)
@@ -190,23 +187,17 @@ function main()
                         const otherDevicesBtn = document.createElement("button")
                         otherDevicesBtn.className = "dropdown-item"
                         otherDevicesBtn.id = "otherDevicesBtn"
-                        otherDevicesBtn.style = "border-top: 1px solid lightgray;"  // Separator
+                        otherDevicesBtn.style = "border-top: 1px solid lightgray;"      // Separator
                         otherDevicesBtn.innerHTML = "Other devices"
                         otherDevicesBtn.onclick = function()
                         {
-                            //this.parentElement.firstChild.click()       // Click the "All devices" button. Use the full log to filter the devices
-
-                            currentDevice = "__UNIDENTIFIED__"
+                            currentDevice = "__UNIDENTIFIED__"                      // NextDNS uses this as a placeholder name for unnamed devices.
 
                             loadLogChunk({device: currentDevice, clear: true})
 
                             customDevicesDropdown.firstChild.innerHTML = "Other devices"
                             this.parentElement.querySelector(".active").classList.remove("active")
                             this.classList.add("active")
-                            //hideDevices = true
-                            //allHiddenEntriesCountEll.parentElement.style.display = "initial"
-
-
                         }
 
                         devicesDropdownMenu.appendChild(otherDevicesBtn)
@@ -567,17 +558,13 @@ function main()
                     {
                         createSpinner(allowDenyPopup.errorMsg)
 
-                        // In NextDNS site, domains, TLDs, blocklists, and pretty much anything added by clicking an "Add" button, are added by sending these items' id with
-                        // each character converted to hexadecimal, instead of plain text (ASCII). This converts the specified domain to hex then sends it to the respective list.
-                        const requestString = allowDenyPopup.listName //+ "/hex:" + convertToHex(allowDenyPopup.input.value)
-
-                        makeApiRequest("POST", requestString, {id: allowDenyPopup.input.value, active: true}).then(function(response)     // Make an asynchronous HTTP request and run this callback when finished.
+                        makeApiRequest("POST", allowDenyPopup.listName, {id: allowDenyPopup.input.value, active: true}).then(function(response)                     // Make an asynchronous HTTP request and run this callback when finished.
                         {
                             allowDenyPopup.errorMsg.textContent = '✔️'
 
                             // Auto dismiss the popup after 750ms
                             setTimeout(function() {
-                                allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is reloaded.
+                                allowDenyPopup.container.style.cssText += 'visibility: hidden; top: 0px'                        // Top 0px, because otherwise it stays stuck with a top value greater than the body height when the log is reloaded.
                                 allowDenyPopup.errorMsg.innerHTML = ''
                             }, 750)
 
@@ -588,21 +575,20 @@ function main()
 
                         }).catch(function(response)
                         {
-                            //if (response.includes("errors"))                        // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
-                            {
-                                let error
+                            // If it wasn't successful, get the error from the response and show the respective message above the popup's input box.
 
-                                if (response.includes("duplicate"))
-                                    error = "This domain has already been added"
-                                else if (response.includes("invalid"))
-                                    error = "Invalid domain"
-                                else if (response.includes("tld"))
-                                    error = "To block an entire TLD, please use the Block TLDs feature in the Security section."
+                            let error
 
-                                allowDenyPopup.errorMsg.textContent = error
-                                allowDenyPopup.errorMsg.classList.add("invalid-feedback")
-                                allowDenyPopup.input.classList.add("is-invalid")
-                            }
+                            if (response.includes("duplicate"))
+                                error = "This domain has already been added"
+                            else if (response.includes("invalid"))
+                                error = "Invalid domain"
+                            else if (response.includes("tld"))
+                                error = "To block an entire TLD, please use the Block TLDs feature in the Security section."
+
+                            allowDenyPopup.errorMsg.textContent = error
+                            allowDenyPopup.errorMsg.classList.add("invalid-feedback")
+                            allowDenyPopup.input.classList.add("is-invalid")
                         })
 
                     }
@@ -624,10 +610,7 @@ function main()
                 rootDomainButton.onclick = function()
                 {
                     let input = allowDenyPopup.input
-                    input.value = this.title.substring(this.title.indexOf("*") + 2)     // Instead of parsing the root domain again, get it from the title set by the Allow/Deny/Hide buttons.
-
-                    //if (allowDenyPopup.listName == "Hide")
-                        //input.value = "." + input.value     // Add a dot before the root domain to prevent false positives.
+                    input.value = this.title.substring(this.title.indexOf("*") + 2)             // Instead of parsing the root domain again, get it from the title set by the Allow/Deny/Hide buttons.
 
                     allowDenyPopup.fullDomainButton.click()
                 }
@@ -689,7 +672,6 @@ function main()
 
                     visibleEntriesCountEll   = document.getElementById("visibleEntriesCount")
                     filteredEntriesCountEll  = document.getElementById("filteredEntriesCount")   // Entries filtered by the domains filters.
-                    //allHiddenEntriesCountEll = document.getElementById("allHiddenEntriesCount")  // Entries from named devices.
                     loadedEntriesCountEll    = document.getElementById("loadedEntriesCount")     // All the entries of the loaded chunks.
                 }
             }
@@ -837,7 +819,7 @@ function main()
 
         function loadLogChunk(params)
         {
-            if (loadingChunk && !cancelLoading)     // Load only one chunk at a time.
+            if (loadingChunk && !cancelLoading)                     // Load only one chunk at a time.
                 return
             else
                 loadingChunk = true
@@ -861,8 +843,8 @@ function main()
                 logsRequestString = "logs?"
 
                 buildLogsRequestString("device", params.device ? params.device : currentDevice)     // The device id when loading the logs of specific devices.
-                buildLogsRequestString("to", params.before)         // NextDNS' logs by default responds to a GET with the 100 most recent log entries. The "before" parameter indicates to NextDNS that it should do so with the log entries that happened before the specified timestamp.
-                buildLogsRequestString("from", params.after)        // The "after" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
+                buildLogsRequestString("to", params.before)         // NextDNS' logs by default responds to a GET with the 100 most recent log entries. The "to" parameter indicates to NextDNS that it should do so with the log entries that happened up until the specified timestamp.
+                buildLogsRequestString("from", params.after)        // The "from" parameter indicates to NextDNS that it should respond with the log entries that happened after the specified timestamp. Used by the stream button (real-time log).
                 buildLogsRequestString("search", searchString)      // The search string. Used by the search bar.
                 buildLogsRequestString("raw", rawLogs)              // Used by the "Raw DNS logs" switch.
                 buildLogsRequestString("status", statusLogs)        // Used by the "Blocked Queries Only" switch.
@@ -891,10 +873,10 @@ function main()
 
                 if (entriesData.length > 0)
                 {
-                    lastBefore = entriesData.lastItem().timestamp       // Store the timestamp of the last entry, to load the older chunk starting from this timestamp. This timestamp is in Unix time.
-                    lastAfter  = Date.parse(entriesData[0].timestamp)+1               // Store the timestamp of the first entry, to load the newer chunk starting from this timestamp.
-
-                    const now = new Date()          // Get the current date-time in Unix time.
+                    lastBefore = entriesData.lastItem().timestamp               // Store the timestamp of the last entry, to load the older chunk starting from this timestamp. This timestamp is in ISO date-time format.
+                    lastAfter  = Date.parse(entriesData[0].timestamp)+1               // Store the timestamp of the first entry, to load the newer chunk starting from this timestamp, converted to
+                                                                                      // Unix time. The +1 is because the "from" parameter is inclusive, and adding 1 milisecond makes it exclusive.
+                    const now = new Date()      // Get the current date-time in Unix time.
                     const yesterday = (new Date(new Date().setDate(new Date().getDate() - 1))).getDate()
 
                     // Process the chunk's log entries
@@ -912,7 +894,7 @@ function main()
                                 }
                             }
 
-                            loadedEntriesCountEll.textContent++     // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed.
+                            loadedEntriesCountEll.textContent++                     // textContent is the actual content of the element, while innerText or innerHTML is the content currently being displayed.
 
 
                             // Check if the entry matches any filter, and if so, remove it from the list
@@ -922,11 +904,11 @@ function main()
                                 var isNamedDevice = !!entriesData[i].device
 
                                 if ((filtering && !domainName.includes("."))        // Chrome's random queries never have a dot.
-                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName == d || domainName.includes("."+d)))    // If enabled, domains included in the list of domains to hide.
-                                    || (searchItems && searchItems.some(i => i[0] == "-" ? domainName.includes(i.replace("-","")) : !domainName.includes(i))) )     // When there's more than one search term specified, if it's an exclusion, check whether the log entry contains the term, and
-                                {                                                                                                                                   // if so, hide it, but if instead it's an inclusion, check whether the log entry does not contain the term, and if so, hide it.
-                                    entriesData.splice(i,1)
-                                    i--
+                                    || (filtering && NXsettings.LogsPage.DomainsToHide.some(d => domainName == d || domainName.includes("."+d)))    // If enabled, domains included in the list of domains to hide, either the exact domain or a subdomain.
+                                    || (searchItems && searchItems.some(item => item[0] == "-" ? domainName.includes(item.replace("-","")) : !domainName.includes(item))) )     // When there's more than one search term specified, if it's an exclusion, check
+                                {                                                                                                                                               // whether the log entry contains the term, and if so, hide it, but if instead
+                                    entriesData.splice(i,1)                                                                                                                     // it's an inclusion, check whether the log entry does not contain the term, and
+                                    i--                                                                                                                                         // if so, hide it.
 
                                     filteredEntriesCountEll.textContent++
 
@@ -938,7 +920,7 @@ function main()
 
                             // Otherwise, create all the entry's elements
                             {
-                                const status = entriesData[i].status // == 3 ? "whitelisted" : entriesData[i].status == 2 ? "blocked" : "default"
+                                const status = entriesData[i].status
 
                                 const entryContainer = document.createElement("div")
                                 entryContainer.className = "log list-group-item"
@@ -953,8 +935,8 @@ function main()
                                     // Create the domain's favicon element
                                     {
                                         const imgEll = document.createElement("img")
-                                        imgEll.src = "https://favicons.nextdns.io/hex:" + convertToHex(domainName) + "@1x.png"  // NextDNS stores in their server every domain's favicon, and the image files are named after
-                                        imgEll.className = "mr-2"                                                               // the domain's hex and the favicon's size, being 1x the smallest size and 3x the biggest.
+                                        imgEll.src = "https://favicons.nextdns.io/hex:" + convertToHex(domainName) + "@1x.png"                      // NextDNS stores in their server every domain's favicon, and the image files are named after
+                                        imgEll.className = "mr-2"                                                                                   // the domain's hex and the favicon's size, being 1x the smallest size and 3x the biggest.
                                         imgEll.style = "margin-top: -2px; display: inline;"
                                         imgEll.onerror = function()
                                         {
@@ -973,7 +955,7 @@ function main()
 
                                         const innerHTML = "<span style='opacity: 0.6;'>" + domainName.split(rootDomain)[0] + "</span>" + rootDomain
 
-                                        const innerNode = (new DOMParser).parseFromString(innerHTML, "text/html").body      // It's required to parseFromString the HTML in order to pass AMO's code validation.
+                                        const innerNode = (new DOMParser).parseFromString(innerHTML, "text/html").body                              // It's required to parseFromString the HTML in order to pass AMO's code validation.
 
                                         domainEll.appendChild(innerNode.firstChild)
                                         domainEll.appendChild(innerNode.lastChild)
@@ -1030,7 +1012,7 @@ function main()
                                             }
 
                                             const blockReason = document.createElement("span")
-                                            blockReason.textContent = (status == "allowed" ? "Allowed" : "Blocked") + " by " + entriesData[i].reasons.map(r => r.name).join(", ")      // lists is an array containing the name of each list that includes this domain.
+                                            blockReason.textContent = (status == "allowed" ? "Allowed" : "Blocked") + " by " + entriesData[i].reasons.map(r => r.name).join(", ")
 
                                             blockReasonTooltipElements.push(blockReason)
 
@@ -1093,22 +1075,22 @@ function main()
 
                                         const deviceNameEll = document.createElement("span")
 
-                                        if (isNamedDevice)
-                                            deviceNameEll.textContent = decodeURI(entriesData[i].device.name)
+                                        if (isNamedDevice)                                                                          // For some reason, device names that come from DoH are displayed URI-encoded (like "%20" instead of " ").
+                                            deviceNameEll.textContent = decodeURI(entriesData[i].device.name)                       // This decodes the device name to make it be displayed correctly.
 
                                         deviceContainer.appendChild(deviceNameEll)
 
-                                        if (!isNamedDevice)                     // If the query was made from an unnamed device ...
+                                        if (!isNamedDevice)                                             // If the query was made from an unnamed device ...
                                         {
-                                            if (!entriesData[i].clientIp)       // ... and the log IP is disabled, then show the gray empty space.
+                                            if (!entriesData[i].clientIp)                               // ... and the log IP is disabled, then show the gray empty space.
                                             {
                                                 deviceContainer.innerHTML = "&nbsp;"
                                                 deviceContainer.style.cssText += "background-color: #eee; width: 90px; margin-bottom: 5px; margin-top: 5px;"
                                             }
-                                            else                                // But if the log IP is enabled, then show the IP.
+                                            else                                                        // But if the log IP is enabled, then show the IP.
                                                 deviceContainer.textContent = entriesData[i].clientIp
                                         }
-                                        else if (entriesData[i].clientIp)       // Otherwise, if it's from a named device and the IP is enabled, then show the device name and add a tooltip with the IP.
+                                        else if (entriesData[i].clientIp)                               // Otherwise, if it's from a named device and the IP is enabled, then show the device name and add a tooltip with the IP.
                                         {
                                             deviceNameEll.createStylizedTooltip(entriesData[i].clientIp)
                                             deviceNameEll.lastChild.style.fontSize = "14px"
@@ -1161,13 +1143,11 @@ function main()
 
 
                             visibleEntriesCountEll.textContent++
-
-
                         }
                     }
                 }
 
-                if (entriesData.length == 0)        // If NextDNS responds with an empty list or all entries were filtered, then show the "No logs yet" message.
+                if (entriesData.length == 0)                        // If NextDNS responds with an empty list or all entries were filtered, then show the "No logs yet" message.
                 {
                     if (!document.getElementById("noLogsSpan") && document.getElementsByClassName("log").length == 0)
                     {
@@ -1195,15 +1175,15 @@ function main()
 
                 loadingChunk = false
 
-                if (!response.meta.pagination.cursor && !params.after)      // For every chunk, NextDNS sets a property called hasMore, which indicates whether there are more log entries to load.
+                if (!response.meta.pagination.cursor && !params.after)                      // For every chunk, NextDNS sets a pagination cursor, but only when there are more entries to load.
                     cancelLoading = true
 
-                if (!cancelLoading && entriesData.length < 25 && document.body.getBoundingClientRect().bottom < window.innerHeight * 5 && !params.after)     // Automatically load the next chunk when less than 25 entries of the chunk are listed.
+                if (!cancelLoading && entriesData.length < 25 && document.body.getBoundingClientRect().bottom < window.innerHeight * 5 && !params.after)            // Automatically load the next chunk when less than 25 entries of the chunk are listed.
                 {
                     loadLogChunk({before: lastBefore})
 
-                    if (entriesData.length < 7 && document.body.getBoundingClientRect().bottom < window.innerHeight + 400)      // 400 is the vertical space taken by 6 entries.
-                        scrollTo(0, document.body.scrollHeight)     // Automatically scroll to bottom when less than 7 entries of the chunk are listed.
+                    if (entriesData.length < 7 && document.body.getBoundingClientRect().bottom < window.innerHeight + 400)              // 400 is the vertical space taken by 6 entries.
+                        scrollTo(0, document.body.scrollHeight)                                                                         // Automatically scroll to bottom when less than 7 entries of the chunk are listed.
                 }
 
             })
@@ -1224,19 +1204,17 @@ function main()
         {
             const entries = logsContainer.querySelectorAll(".log")
 
-            //allHiddenEntriesCountEll.textContent -= filteredEntriesCountEll.textContent
             visibleEntriesCountEll.textContent = 0
 
             for (let i=0; i < entries.length; i++)
             {
                 const domainName = entries[i].getByClass("domainName").textContent
 
-                if (!domainName.includes(".")   // Chrome's random queries
-                    || NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d)) )   // Domains included in the list of domains to hide.
+                if (!domainName.includes(".")           // Chrome's random queries
+                    || NXsettings.LogsPage.DomainsToHide.some(d => domainName.includes(d)) )                // Domains included in the list of domains to hide.
                 {
                     entries[i].remove()
                     filteredEntriesCountEll.textContent++
-                    //allHiddenEntriesCountEll.textContent++
                 }
                 else visibleEntriesCountEll.textContent++
             }
@@ -1391,64 +1369,13 @@ function main()
 
                                 if (numTLDsToBeAdded > 0)
                                 {
-                                    if (confirm("This will add all TLDs to the block list. Are you sure?"))
+                                    if (confirm("This will add all TLDs to the block list, are you sure? The page will be reloaded when finished."))
                                     {
                                         // Process the TLDs
 
-                                        createPleaseWaitModal("Adding all TLDs")
+                                        const securityPageSettings = JSON.parse(await makeApiRequest("GET", "security")).data
 
-                                        let securityPageSettings
-
-                                        securityPageSettings = JSON.parse(await makeApiRequest("GET", "security")).data
-
-                                        securityPageSettings.tlds = []
-
-                                        const nonAsciiTLDsPunycodes =
-                                        [
-                                            "xn--11b4c3d","xn--1ck2e1b","xn--1qqw23a","xn--2scrj9c","xn--30rr7y","xn--3bst00m","xn--3ds443g","xn--3e0b707e","xn--3hcrj9c","xn--3oq18vl8pn36a","xn--3pxu8k","xn--42c2d9a","xn--45br5cyl","xn--45brj9c","xn--45q11c",
-                                            "xn--4dbrk0ce","xn--4gbrim","xn--54b7fta0cc","xn--55qw42g","xn--55qx5d","xn--5su34j936bgsg","xn--5tzm5g","xn--6frz82g","xn--6qq986b3xl","xn--80adxhks","xn--80ao21a","xn--80aqecdr1a","xn--80asehdb","xn--80aswg",
-                                            "xn--8y0a063a","xn--90a3ac","xn--90ae","xn--90ais","xn--9dbq2a","xn--9et52u","xn--9krt00a","xn--b4w605ferd","xn--bck1b9a5dre4c","xn--c1avg","xn--c2br7g","xn--cck2b3b","xn--cckwcxetd","xn--cg4bki","xn--ygbi2ammx",
-                                            "xn--clchc0ea0b2g2a9gcd","xn--czr694b","xn--czrs0t","xn--czru2d","xn--d1acj3b","xn--d1alf","xn--e1a4c","xn--eckvdtc9d","xn--efvy88h","xn--fct429k","xn--fhbei","xn--fiq228c5hs","xn--fiq64b","xn--fiqs8s","xn--fiqz9s",
-                                            "xn--fjq720a","xn--flw351e","xn--fpcrj9c3d","xn--fzc2c9e2c","xn--fzys8d69uvgm","xn--g2xx48c","xn--gckr3f0f","xn--gecrj9c","xn--gk3at1e","xn--h2breg3eve","xn--h2brj9c","xn--h2brj9c8c","xn--hxt814e","xn--i1b6b1a6a2e",
-                                            "xn--imr513n","xn--io0a7i","xn--j1aef","xn--j1amh","xn--j6w193g","xn--jlq480n2rg","xn--jlq61u9w7b","xn--jvr189m","xn--kcrx77d1x4a","xn--kprw13d","xn--kpry57d","xn--kput3i","xn--l1acc","xn--lgbbat1ad8j","xn--mgb9awbf",
-                                            "xn--mgba3a3ejt","xn--mgba3a4f16a","xn--mgba7c0bbn0a","xn--mgbaakc7dvf","xn--mgbaam7a8h","xn--mgbab2bd","xn--mgbah1a3hjkrd","xn--mgbai9azgqp6j","xn--mgbayh7gpa","xn--mgbbh1a","xn--mgbbh1a71e","xn--mgbc0a9azcg",
-                                            "xn--mgbca7dzdo","xn--mgbcpq6gpa1a","xn--mgberp4a5d4ar","xn--mgbgu82a","xn--mgbi4ecexp","xn--mgbpl2fh","xn--mgbt3dhd","xn--mgbtx2b","xn--mgbx4cd0ab","xn--mix891f","xn--mk1bu44c","xn--mxtq1m","xn--ngbc5azd","xn--qxam",
-                                            "xn--ngbe9e0a","xn--ngbrx","xn--node","xn--nqv7f","xn--nqv7fs00ema","xn--nyqy26a","xn--o3cw4h","xn--ogbpf8fl","xn--otu796d","xn--p1acf","xn--p1ai","xn--pgbs0dh","xn--pssy2u","xn--q7ce6a","xn--q9jyb4c","xn--yfro4i67o",
-                                            "xn--qcka1pmc","xn--qxa6a","xn--rhqv96g","xn--rovu88b","xn--rvc1e0am3e","xn--s9brj9c","xn--ses554g","xn--t60b56a","xn--tckwe","xn--tiq49xqyj","xn--unup4y","xn--vermgensberater-ctb","xn--y9a3aq","xn--zfr164b",
-                                            "xn--vermgensberatung-pwb","xn--vhquv","xn--vuq861b","xn--w4r85el8fhu5dnra","xn--w4rs40l","xn--wgbh1c","xn--wgbl6a","xn--xhq521b","xn--xkc2al3hye2a","xn--xkc2dl3a5ee0h"
-                                        ]
-
-                                        for (let i=0; i < nonAsciiTLDsPunycodes.length; i++)
-                                            securityPageSettings.tlds.push({id: nonAsciiTLDsPunycodes[i]})
-
-
-                                        const buttons = modal.getElementsByClassName("btn")
-
-                                        for (let i=10; i < buttons.length; i++)
-                                        {
-                                            const TLD = buttons[i].parentElement.previousSibling.textContent.split(".")[1]
-
-                                            if (!/[^\w]/.test(TLD)) //buttons[i].classList.contains("btn-primary") && )
-                                            {
-                                                //if ()             // If there's no character in the TLD which is not a-z, then make the request normally.
-                                                //{
-                                                    securityPageSettings.tlds.push({id: TLD})
-                                                    //numTLDsAdded++
-                                                    //makeApiRequest("POST", "security/tlds", function() { numTLDsAdded++; checkIfFinished() }, {id: TLD})
-                                                //}
-                                                /*else                                // Otherwise, click on the button instead. This is because the string to be used in requests for non-english TLDs is in punycode (xn--abcde),
-                                                {                                   // instead of simple Unicode (\uhex), and I couldn't find any easy way of doing this conversion without using external libraries.
-
-                                                    await sleep(1000)               // Wait one second between requests. This is because of the API server's rate limit. One second is
-                                                                                    // the lowest value before the server starts responding with "Too Many Requests" for 30 seconds.
-                                                    buttons[i].click()
-                                                    buttonsClicked.push(i)          // Store in an array the index of all buttons that were clicked, then check whether they finished adding.
-                                                    //numTLDsAdded++
-
-                                                    //checkIfFinished()
-                                                }*/
-                                            }
-                                        }
+                                        securityPageSettings.tlds = JSON.parse(await makeApiRequest("GET", "/security/tlds")).data.map((t) => { return {id: t.id} })
 
                                         makeApiRequest("PATCH", "security", securityPageSettings).then(()=> location.reload())
                                     }
@@ -1687,8 +1614,8 @@ function main()
                             createSpinner(spinnerContainer)
                             currentDomainSpan.style.marginLeft = "10px"
 
-                            domains.reverse()                       // Reverse the list so that the first item is the last one to be added,
-                                                                    // appearing at the top in NextDNS, this way preserving the original order.
+                            domains.reverse()                                           // Reverse the list so that the first item is the last one to be added,
+                                                                                        // appearing at the top in NextDNS, this way preserving the original order.
                             for (let i=0; i < domains.length; i++)
                             {
                                 const domain = domains[i].trim()
@@ -1699,11 +1626,8 @@ function main()
 
                                 makeApiRequest("POST", list, {id: domain, active: true}).then(function(response)
                                 {
-                                    //if (!response.includes("error"))
-                                    {
-                                        numImportedDomains++
-                                        errorMsgSpan.textContent = ""
-                                    }
+                                    numImportedDomains++
+                                    errorMsgSpan.textContent = ""
 
                                 }).catch(function(response)
                                 {
@@ -1782,7 +1706,7 @@ function main()
                 const importNXButton = document.createElement("button")
                 importNXButton.className = "btn btn-light"
                 importNXButton.innerHTML = "Import NXE settings"
-                importNXButton.onclick = function() { this.nextSibling.click() }      // Click the file input button.
+                importNXButton.onclick = function() { this.nextSibling.click() }                // Click the file input button.
 
                 const fileNXInput = document.createElement("input")
                 fileNXInput.type = "file"
@@ -1880,7 +1804,7 @@ function main()
 
                                 makeApiRequest("POST", listName, item).finally((response)=>
                                 {
-                                    if (!response.includes("error") || response.includes("duplicate") || response.includes("conflict"))
+                                    if (!response.includes('"error') || response.includes("duplicate") || response.includes("conflict"))
                                         numItemsImported[listName]++
                                 })
                             }
@@ -2375,35 +2299,35 @@ function sleep(ms)
 
 function makeApiRequest(HTTPmethod, requestString, requestBody = null)
 {
+    if (requestBody)
+        requestBody = JSON.stringify(requestBody)
+
     return new Promise((resolve, reject) => makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, reject))
 }
 
 function makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, reject, attemptsMade = 0)
 {
-    const requestURL = "https://api.nextdns.io/profiles/" + location.href.split("/")[3] + "/" + requestString               // Update the URL for each request. This ensures that the request will be made to the correct config.
-
-    if (HTTPmethod == "PATCH" || HTTPmethod == "POST")
-        requestBody = JSON.stringify(requestBody)
+    const requestURL = "https://api.nextdns.io"+ (requestString[0] != "/" ? "/profiles/" + location.href.split("/")[3] + "/" : "") + requestString               // Update the URL for each request. This ensures that the request will be made to the correct config.
 
     const xhr = isChrome ? new XMLHttpRequest() : XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest())             // For Firefox, it's required to call XMLHttpRequest inside this wrapper, otherwise the call is ignored. In Chrome it works fine.
     xhr.open(HTTPmethod, requestURL)
-    xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")                      // This is required when sending JSON data in the request body to the server, otherwise it returns an internal server error (500).
+    if (requestBody)    xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8")                      // This is required when sending JSON data in the request body to the server, otherwise it returns an internal server error (500).
     xhr.onload = function()
     {
         if (xhr.responseText.includes("Too Many Requests")) {
             waitAndRetryRequest(5000)
         }
         else if (xhr.responseText.includes('"error'))
-            reject(xhr.response)
+            return reject(xhr.response)
         else
-            resolve(xhr.response)
+            return resolve(xhr.response)
     }
     xhr.onerror = function()
     {
         if (xhr.responseText.includes('"error'))
-            reject(xhr.response)
+            return reject(xhr.response)
         else
-            waitAndRetryRequest(5000)                       // When there's a network problem while making a request, try again after 5 seconds.
+            return waitAndRetryRequest(5000)                       // When there's a network problem while making a request, try again after 5 seconds.
     }
     xhr.withCredentials = true                          // Include the session cookie in the request, otherwise it responds with "Forbidden".
     xhr.send(requestBody)
@@ -2414,7 +2338,7 @@ function makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, rej
         if (attemptsMade >= 3)
         {
             alert("Too many failed attempts to reach the server. Operation canceled.")
-            reject("fatigue")
+            return reject("fatigue")
         }
 
         setTimeout(function()
