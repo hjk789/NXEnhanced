@@ -1788,11 +1788,20 @@ function main()
                             rewrites: 0
                         }
 
+
+
                         const importIndividualItems = async function(listName)
                         {
                             let listObj = config[listName]
 
                             listObj.reverse()
+
+
+                            const checkResponse = function(response)
+                            {
+                                if (!response.includes('"error') || response.includes("duplicate") || response.includes("conflict"))
+                                    numItemsImported[listName]++
+                            }
 
                             for (let i=0; i < listObj.length; i++)
                             {
@@ -1800,11 +1809,7 @@ function main()
 
                                 const item = listObj[i]
 
-                                makeApiRequest("POST", listName, item).finally((response)=>
-                                {
-                                    if (!response.includes('"error') || response.includes("duplicate") || response.includes("conflict"))
-                                        numItemsImported[listName]++
-                                })
+                                makeApiRequest("POST", listName, item).then(checkResponse).catch(checkResponse)
                             }
                         }
 
