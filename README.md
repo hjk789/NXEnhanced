@@ -1,11 +1,9 @@
-<p align="center"><img src="https://i.imgur.com/NIORJ58.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/hjk789/NXEnhanced/master/WebExtension/icon.png"></p>
 <h1 align="center">NX Enhanced</h1>
-<p>Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, logs, etc. more practical. </p>
-
+<p align="center">Adds "quality-of-life" features to NextDNS website to make the experience of managing lists, domains, logs, etc. more practical. </p>
 <p align="center">
-<span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span><br><br><span align="center"><a href="#how-to-contribute" align="center"><img src="https://i.imgur.com/7suNQ4m.png"></a></span>    
+    <span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://greasyfork.org/scripts/408934-nx-enhanced" align="center"><img src="https://i.imgur.com/ovI0w6c.png"></a></span><br><br><span align="center"><a href="https://github.com/hjk789/NXEnhanced/wiki/Donation-methods" align="center"><img src="https://i.imgur.com/RUqBPXG.png"></a></span>    
 </p>
-
 
 
 ## Current features
@@ -34,7 +32,7 @@ You can either add the respective domain or the whole root domain, or even edit 
 - Refine a search with multiple search terms or exclusion terms
 
     ![multiple terms](https://i.imgur.com/fBlxR18.png)    
-    You can specify as many terms as you like. [Read more](https://github.com/hjk789/NXEnhanced/wiki#refine-a-search-with-multiple-search-terms-or-exclusion-terms)
+    You can specify as many terms as you need. [Read more](https://github.com/hjk789/NXEnhanced/wiki#refine-a-search-with-multiple-search-terms-or-exclusion-terms)
 
 - An option to show the number of entries currently loaded, visible or hidden by filters
 
@@ -87,16 +85,14 @@ You can either add the respective domain or the whole root domain, or even edit 
 
 - Collapse the list of added TLDs
 
-- A button that allows you to add every TLD in the "Add a TLD" screen in one click. [Read more](https://github.com/hjk789/NXEnhanced/wiki#a-button-that-allows-you-to-add-every-tld-in-the-add-a-tld-screen-in-one-click)
+- A button that allows you to add every TLD in the "Add a TLD" screen in one click.
 
     ![Add all TLDs button](https://i.imgur.com/PDlYlF1.png)      
 
 
 ## How to install
 
-For Firefox, just click the "Get the Addon" link above, then click the "Add to Firefox" button and confirm.  
-
-For Chrome (and other Chromium based browsers), just click the "Available in the Chrome Web Store" link above, then click the "Add to Chrome" button and confirm. For Edge it's the same thing, just click the "Get it from Microsoft" link.
+Click the button above that matches your browser, install then confirm installation. If you are using a Chromium-based browser, like Brave, Opera, Vivaldi, and others, use the Chrome Web Store link.
 
 You also have the option of using the userscript version, but it works only in Chrome, in Firefox it works partially. Also, keep in mind that the userscript is discontinued, so it won't receive any updates. For more information and instructions, read [here](https://github.com/hjk789/NXEnhanced/tree/master/Userscript#how-to-use-it).
 
@@ -108,18 +104,15 @@ In case you experience any problem with NX Enhanced, or you want to make suggest
 
 ## How to contribute
 
-If you would like to contribute with code, you just need to make a fork of this project's repository, make your proposed changes, then create a pull request.
+If you would like to contribute with code, pull requests are welcomed. :)
 
-If you can't code, but still want to contribute, you can do so by making a donation. This project takes a lot of time and effort developing, analyzing, testing, fixing, researching and optimizing, most of these are because it's being developed for public use, instead of just my personal use. If you appreciate this project, would like to give a thank you or support the continuation of the development, consider making a donation. The donation goes to the project creator, [BLBC](https://github.com/hjk789).
-
-Donate through Ko-Fi with PayPal or card   
-[![ko-fi](https://i.imgur.com/vkUKrrX.png)](https://ko-fi.com/hjk789)    
+If you can't code, but still want to contribute, you can do so by [making a donation](https://github.com/hjk789/NXEnhanced/wiki/Donation-methods).
 
 If you don't have funds to donate, but still want to contribute, you can do so by spreading the word about NX Enhanced on the web or to your acquaintances, giving feedback, rating the extension and posting a review.
 
 ## License
 
-- You can view the code, download copies to your devices, install, run, use the features added to the page and uninstall this software.
+- You can view the code, download copies to your devices, install, run, use the features and uninstall this software.
 - You can modify your downloaded copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
 - You can suggest changes, new features or fixes, either by opening issues or by doing pull requests. 
 - You can open or participate in issues and discussions, give feedback and rate this project.
