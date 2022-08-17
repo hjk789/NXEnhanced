@@ -590,7 +590,6 @@ function main()
                             allowDenyPopup.errorMsg.classList.add("invalid-feedback")
                             allowDenyPopup.input.classList.add("is-invalid")
                         })
-
                     }
                     else
                     {
@@ -757,7 +756,7 @@ function main()
 
                     if (allowDenyPopup.domainsList[allowDenyPopup.listName].includes('"' + upperDomain + '"'))      // If there's an entry which is included in this upper domain, set
                     {                                                                                               // a message to warn the user. Otherwise, check the next upper domain.
-                        allowDenyPopup.errorMsg.innerHTML = "This subdomain is already included in another entry: "+upperDomain
+                        allowDenyPopup.errorMsg.textContent = "This subdomain is already included in another entry: "+upperDomain
                         allowDenyPopup.input.classList.add("is-invalid")
                         allowDenyPopup.errorMsg.classList.add("invalid-feedback")
 
@@ -1185,7 +1184,6 @@ function main()
                     if (entriesData.length < 7 && document.body.getBoundingClientRect().bottom < window.innerHeight + 400)              // 400 is the vertical space taken by 6 entries.
                         scrollTo(0, document.body.scrollHeight)                                                                         // Automatically scroll to bottom when less than 7 entries of the chunk are listed.
                 }
-
             })
         }
 
@@ -2315,7 +2313,7 @@ function makeApiRequestFunc(HTTPmethod, requestString, requestBody, resolve, rej
     xhr.onload = function()
     {
         if (xhr.responseText.includes("Too Many Requests")) {
-            waitAndRetryRequest(5000)
+            return waitAndRetryRequest(5000)
         }
         else if (xhr.responseText.includes('"error'))
             return reject(xhr.response)
