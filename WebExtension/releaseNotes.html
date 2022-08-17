@@ -1,0 +1,59 @@
+<title>NX Enhanced 5.0 Release Notes</title>
+
+<link rel="icon" href="icon.png">
+
+<style>
+    b,h1,h3 {
+        color: #0e83ff;
+    }
+</style>
+
+<div style="font-family: Segoe UI, sans-serif; font-size: 16px; inset: 0; margin: auto; width: 720px; color: #333; line-height: 25px;">
+    <h1>NX Enhanced 5.0 Release Notes</h1>
+
+    <p>NextDNS replaced their API with a new one that is structured differently, which in turn broke NX Enhanced. This update adapts NXE to this new API, with some features that had to be rewritten, and also comes with some nice changes and improvements.</p>
+
+    <b>General:</b>
+    <ul><li>Adapted the features in the Security, Allowlist, Denylist, Logs and Settings pages to the new API;</li></ul>
+
+    <b>Security page:</b>
+    <ul><li>Rewritten the "Add all TLDs" feature. Now all TLDs are added almost instantly. No more having to wait 30 minutes!</li></ul>
+
+    <b>Allowlist/Denylist page:</b>
+    <ul><li>When importing a list of domains and an error occurs with one of the domains, now it's specified what domain caused the error;</li></ul>
+
+    <b>Logs page:</b>
+    <ul>
+        <li>The "Other devices" feature is much faster and lighter than before;</li>
+        <li>The Allow/Deny popup is dismissed a bit faster when allowing/denying. When hiding a domain, it's now twice as fast;</li>
+        <li>Now the domain filter doesn't require a dot at the beginning of the domain. It now matches both the exact domain *and* subdomains, instead of just the subdomains;</li>
+        <li>Fixed bug where the logs stop loading when the domain filter is disabled then enabled and almost all log entries got filtered.</li>
+    </ul>
+
+    <h1>Important</h1>
+    <p>The configuration import feature in this version is not compatible with the previous versions. If you have a backup of your config saved somewhere, make sure to export again and replace it with the new one.</p>
+
+    <div style="padding: 10px 20px; border: 2px solid #f2f2f2; border-left: 2px solid #f8f8f8; border-right: 2px solid #f8f8f8; border-radius: 20px;">
+        <h3>Like NX Enhanced?</h3>
+        <p>Consider supporting the developer by making a donation as a token of gratitude. :)</p>
+
+        Donate through Ko-fi with PayPal or card:<br>
+        <a href="https://ko-fi.com/hjk789" target="_blank">
+            <img src="imgs/kofi.png" style="margin-bottom: 5px; margin-top: 5px;">
+        </a><br>
+        <br>
+        Or donate cryptocurrencies:<br>
+        <br>
+        <b>XMR:</b><br>
+        <img src="imgs/xmr.png"><br>
+        <div style="width: 440px; word-wrap: anywhere;">444P19Xr17J2q2LhVD1WWpHLVt9YmMSvAan4XhvGR4n8dFCd6XLFmshZDGUtsWVfQYWGYK8SHJx3Ng5TiavAHgp91ro1Raq</div>
+        <br>
+        <b>BTC:</b><br>
+        <img src="imgs/btc.png"><br>
+        bc1qpfcxw5unrh5vmx42rttru0we7794npy8kamphq<br>
+        <br>
+        <b>ETH, USDC or USDT on ETH network:</b><br>
+        <img src="imgs/eth.png"><br>
+        0x783cF2115201dff62538Fa6211aE345464523c33<br>
+    </div>
+</div>
