@@ -2011,7 +2011,7 @@ function styleDomains(type, enable)
         for (let i=1; i < domainContainers.length; i++)
         {
             const favicon = domainContainers[i].firstChild.querySelector("img")
-            favicon.className = enable ? "ml-2" : "mr-2"
+            favicon.className = enable ? "ml-2 d-inline-block" : "mr-2 d-inline-block"
             domainContainers[i].firstChild.appendChild(enable ? domainContainers[i].firstChild.querySelector("img") : domainContainers[i].firstChild.querySelector("span"))        // Swap places for the favicon and domain
             domainContainers[i].style.justifyItems = enable ? "flex-end" : "initial"
             domainContainers[i].lastChild.style.textAlign = enable ? "right" : "left"
