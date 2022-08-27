@@ -995,7 +995,7 @@ function main()
                                             const blockReasonIcon = document.createElement("div")
                                             blockReasonIcon.innerHTML = "i"
                                             blockReasonIcon.style = "display: inline-block; border-radius: 12px; width: 13px; height: 13px; text-align: center; color: white; \
-                                                                     font-weight: bold; font-family: serif; font-size: 11px; user-select: none; line-height: 13px; margin-left: 10px;"
+                                                                     font-weight: bold; font-family: serif; font-size: 11px; user-select: none; line-height: 14px; margin-left: 10px;"
                                             blockReasonIcon.style.background = entryContainer.style.borderLeftColor
 
                                             const blockReasonTooltipElements = []       // Create the two elements below and put them in this array, instead of parsing the HTML with parseFromString,
