@@ -9,29 +9,17 @@
 </style>
 
 <div style="font-family: Segoe UI, sans-serif; font-size: 16px; inset: 0; margin: auto; width: 720px; color: #333; line-height: 25px;">
-    <h1>NX Enhanced 5.0 Release Notes</h1>
-
-    <p>NextDNS replaced their API with a new one that is structured differently, which in turn broke NX Enhanced. This update adapts NXE to this new API, with some features that had to be rewritten, and also comes with some nice changes and improvements.</p>
-
-    <b>General:</b>
-    <ul><li>Adapted the features in the Security, Allowlist, Denylist, Logs and Settings pages to the new API;</li></ul>
-
-    <b>Security page:</b>
-    <ul><li>Rewritten the "Add all TLDs" feature. Now all TLDs are added almost instantly. No more having to wait 30 minutes!</li></ul>
+    <h1>NX Enhanced 5.0.3 Release Notes</h1>
 
     <b>Allowlist/Denylist page:</b>
-    <ul><li>When importing a list of domains and an error occurs with one of the domains, now it's specified what domain caused the error;</li></ul>
+    <ul>
+        <li>Fixed bug in the right-align which was making the favicons move to their own line;</li>
+    </ul>
 
     <b>Logs page:</b>
     <ul>
-        <li>The "Other devices" feature is much faster and lighter than before;</li>
-        <li>The Allow/Deny popup is dismissed a bit faster when allowing/denying. When hiding a domain, it's now twice as fast;</li>
-        <li>Now the domain filter doesn't require a dot at the beginning of the domain. It now matches both the exact domain *and* subdomains, instead of just the subdomains;</li>
-        <li>Fixed bug where the logs stop loading when the domain filter is disabled then enabled and almost all log entries got filtered.</li>
+        <li>Fixed the CNAME not appearing in the block reasons.</li>
     </ul>
-
-    <h1>Important</h1>
-    <p>The configuration import feature in this version is not compatible with the previous versions. If you have a backup of your config saved somewhere, make sure to export again and replace it with the new one.</p>
 
     <div style="padding: 10px 20px; border: 2px solid #f2f2f2; border-left: 2px solid #f8f8f8; border-right: 2px solid #f8f8f8; border-radius: 20px;">
         <h3>Like NX Enhanced?</h3>
