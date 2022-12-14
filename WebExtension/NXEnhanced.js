@@ -1001,11 +1001,11 @@ function main()
                                             const blockReasonTooltipElements = []       // Create the two elements below and put them in this array, instead of parsing the HTML with parseFromString,
                                                                                         // as the parser is kinda unreliable. This is only required for Mozilla's code validation.
 
-                                            if (entriesData[i].matchedName)          // matchedName is the CNAME that got blocked.
+                                            if (entriesData[i].matched)             // matched is the CNAME that got blocked.
                                             {
                                                 const matchedName = document.createElement("b")
                                                 matchedName.style = "font-size: 13px; display: block; margin: 5px 3px 8px 3px;"
-                                                matchedName.textContent = "→ " + entriesData[i].matchedName
+                                                matchedName.textContent = "→ " + entriesData[i].matched
 
                                                 blockReasonTooltipElements.push(matchedName)
                                             }
@@ -1787,8 +1787,6 @@ function main()
                             allowlist: 0,
                             rewrites: 0
                         }
-
-
 
                         const importIndividualItems = async function(listName)
                         {
