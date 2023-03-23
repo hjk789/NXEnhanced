@@ -161,7 +161,7 @@ function main()
                             deviceCustom.onclick = function()               // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
                             {
                                 const index = Array.from(this.parentElement.children).indexOf(this)     // Get the index of this dropdown item.
-                                currentDevice = i == 0 ? "" : devicesData[index].id
+                                currentDevice = i == 0 ? "" : devicesData[index-1].id
 
                                 cancelLoading = true                        // Indicates that the chunk currently being loaded should be interrupted.
 
