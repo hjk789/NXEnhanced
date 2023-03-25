@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>NX Enhanced</title>
+        <style>
+            * { font-size: 12; }
+
+            table { border-collapse: collapse; width: max-content; }
+            tr {
+                border-bottom: 1px solid lightgray;
+                line-height: 30px;
+                font-family: Segoe UI;
+            }
+
+            h4 {
+                margin-bottom: 0px;
+                width: max-content;
+                font-size: 13px;
+                color: #007bff;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr style="border-bottom: 0;"><td><h4 style="margin-bottom: -5px;">Security page</h4></td></tr>
+            <tr>
+                <td>Collapse list of added TLDs</td>
+                <td><input id="collapseListTLDs" type="checkbox"></td>
+            </tr>
+            <tr style="border-bottom: 0;"><td style="padding-top: 10px;"><h4 style="margin-bottom: 0px;">Privacy page</h4></td></tr>
+            <tr>
+                <td>Collapse list of added blocklists</td>
+                <td><input id="collapseListBlocklists" type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>Sort blocklists alphabetically</td>
+                <td><input id="sortAZblocklists" type="checkbox"></td>
+            </tr>
+            <tr style="border-bottom: 0;"><td style="padding-top: 10px;"><h4 style="margin-bottom: 0px;">Allowlist and Denylist pages</h4></td></tr>
+            <tr>
+                <td>Sort domains alphabetically</td>
+                <td><input id="sortAZdomains" type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>Sort TLDs alphabetically</td>
+                <td><input id="sortTLDs" type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>Display root domains in bold</td>
+                <td><input id="bold" type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>Lighten subdomains</td>
+                <td><input id="lighten" type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>Align domains to the right</td>
+                <td><input id="rightAligned" type="checkbox"></td>
+            </tr>
+            <tr>
+                <td>Multi-domain input</td>
+                <td><input id="multilineTextBox" type="checkbox"></td>
+            </tr>
+            <tr style="border-bottom: 0;"><td style="padding-top: 10px;"><h4 style="margin-bottom: 0px;">Logs page</h4></td></tr>
+            <tr>
+                <td>Show the number of entries</td>
+                <td><input id="showCounters" type="checkbox"></td>
+            </tr>
+            <tr style="border-bottom: 0; vertical-align: top;">
+                <td>Domains to hide</td>
+                <td><textarea id="domainsToHide" spellcheck="false" style="min-width: 190px; min-height: 80px; border-radius: 15px 0px 0px 15px; resize: vertical; padding-top: 5px; border: 1px groove lightgray; outline: 0px; padding-left: 10px; padding-right: 5px; overflow-wrap: normal;"></textarea></td>
+            </tr>
+        </table>
+
+        <script src="utils.js"></script>
+        <script src="options-page.js"></script>
+    </body>
+</html>

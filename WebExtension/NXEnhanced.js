@@ -6,14 +6,9 @@
 // SupportURL      https://github.com/hjk789/NXEnhanced/issues
 // Copyright (c) 2020+ BLBC (github.com/hjk789)
 
-let currentPage = ""
+let currentPage = location.href
 const intervals = []
 
-const isChrome = typeof browser == "undefined"              // Whether it's Chrome. Chrome uses the chrome object, while Firefox and Edge use the browser object.
-
-
-// Load all NX Enhanced's settings
-loadNXsettings()
 
 // Add some internal functions to the code
 extendFunctions()
@@ -53,6 +48,10 @@ waitForPageSwitchings = setIntervalOld(function()
     main()
 
 }, 250)
+
+
+// Load all NX Enhanced's settings
+loadNXsettings().then(()=> main())
 
 
 
@@ -144,24 +143,31 @@ function main()
                     // Get the devices IDs to use for loading the log entries of specific devices. In NextDNS, each device has a randomly
                     // generated ID (just like the config ID), and this ID is used as parameter to request the log entries of specific devices.
                     // NX Enhanced loads the log entries by itself instead of letting the site load them, because this way NX Enhanced has access to the log entries' raw data instead of having to depend on what the page
-                    // actually shows, which can change anytime and require constant adaptations for every layout or code change. Also, this makes it possible to implement other features to the logs that require such access.
+                    // actually shows, which can change anytime and require constant adaptations for every layout or code change. Also, this makes it possible to implement additional features to the logs that require such access.
 
-                    makeApiRequest("GET", "analytics/devices").then(function(response)
+                    makeApiRequest("GET", "analytics/devices?from=-3M").then(function(response)
                     {
                         const devicesData = JSON.parse(response).data
+                        let len = devicesData.length
 
-                        for (let i=0; i < devicesData.length + 1; i++)
+                        for (let i=0; i < len + 1; i++)
                         {
-                            if (i > 0 && devicesData[i-1].id == "__UNIDENTIFIED__")
+                            if (i < len && devicesData[i].id == "__UNIDENTIFIED__")
+                            {
+                                devicesData.splice(i, 1)
+                                i--
+                                len--
                                 continue
+                            }
 
                             const deviceCustom = document.createElement("button")
-                            deviceCustom.className = i == 0 ? "dropdown-item active" : "dropdown-item"
-                            deviceCustom.textContent = i == 0 ? "All devices" : decodeURI(devicesData[i-1].name)
+                            deviceCustom.className = i == len ? "dropdown-item active" : "dropdown-item"
+                            deviceCustom.textContent = i == len ? "All devices" : decodeURI(devicesData[i].name)
+                            deviceCustom.style.borderBottom = i == len ? "1px solid lightgray" : ""
                             deviceCustom.onclick = function()               // Although the event doesn't appear in Firefox's DOM Inspector, the function is called normally.
                             {
                                 const index = Array.from(this.parentElement.children).indexOf(this)     // Get the index of this dropdown item.
-                                currentDevice = i == 0 ? "" : devicesData[index-1].id
+                                currentDevice = i == len ? "" : devicesData[index-1].id
 
                                 cancelLoading = true                        // Indicates that the chunk currently being loaded should be interrupted.
 
@@ -179,7 +185,10 @@ function main()
                                 this.parentElement.previousSibling.textContent = this.textContent
                             }
 
-                            devicesDropdownMenu.appendChild(deviceCustom)
+                            if (i < len)
+                                devicesDropdownMenu.appendChild(deviceCustom)
+                            else
+                                devicesDropdownMenu.insertBefore(deviceCustom, devicesDropdownMenu.firstChild)
                         }
 
                         // Create the "Other devices" button
@@ -1292,7 +1301,7 @@ function main()
                 clearInterval(waitForLists)
 
                 // Hide list of blocklists and create the Show button and the collapse switch
-                hideAllListItemsAndCreateButton("Show added lists", NXsettings.PrivacyPage)
+                createCollapseButtonAndSwitch("Hide added blocklists", NXsettings.PrivacyPage)
 
 
                 // Sort blocklists alphabetically in the modal
@@ -1344,7 +1353,7 @@ function main()
                 clearInterval(waitForLists)
 
                 // Hide list of TLDs and create the Show button and the collapse switch
-                hideAllListItemsAndCreateButton("Show added TLDs", NXsettings.SecurityPage)
+                createCollapseButtonAndSwitch("Hide added TLDs", NXsettings.SecurityPage)
 
                 // Create the "Add all TLDs" button in the modal
 
@@ -1878,67 +1887,6 @@ function main()
 
 
 
-
-
-function loadNXsettings()
-{
-    readSetting("NXsettings", function(obj)
-    {
-        if (!obj.NXsettings)        // If it's running for the first time, store the following default settings.
-        {
-            NXsettings =
-            {
-                SecurityPage: { CollapseList: true },
-                PrivacyPage:
-                {
-                    CollapseList: true,
-                    SortAZ: false
-                },
-                AllowDenylistPage:
-                {
-                    SortAZ: false,
-                    SortTLD: false,
-                    Bold: false,
-                    Lighten: false,
-                    RightAligned: false,
-                    MultilineTextBox: false,
-                    DomainsDescriptions: {}     // In Chrome it's required to be an object to use named items. In Firefox it works even with an array, but with some bugs.
-                },
-                LogsPage:
-                {
-                    ShowCounters: false,
-                    DomainsToHide: ["nextdns.io", ".in-addr.arpa", ".ip6.arpa"]
-                }
-            }
-
-            saveSettings(NXsettings)
-        }
-        else NXsettings = obj.NXsettings
-
-        main()
-
-    })
-}
-
-function saveSettings(object)
-{
-    if (!object)  object = NXsettings
-
-    if (isChrome)
-        chrome.storage.local.set({NXsettings: object})
-    else
-        browser.storage.local.set({NXsettings: object})
-}
-
-function readSetting(settingName, callback)
-{
-    if (isChrome)
-        chrome.storage.local.get(settingName, callback)
-    else
-        browser.storage.local.get(settingName).then(callback)
-}
-
-
 const SLDs = ["co","com","org","edu","gov","mil","net"]
 
 function styleDomains(type, enable)
@@ -2217,26 +2165,40 @@ function clearAllIntervals()
 }
 
 
-function hideAllListItemsAndCreateButton(text, settingObject)
+function toggleAllListItems(button)
 {
-    const items = document.querySelector(".list-group").children
+    let from, to, display
 
-    if (settingObject.CollapseList)
+    if (button.textContent.startsWith("Show"))
     {
-        // Hide items
-
-        for (let i = 1; i < items.length; i++)
-            items[i].style.cssText += "display: none;"
+        from = "Show"
+        to = "Hide"
+        display = "block"
+    }
+    else
+    {
+        from = "Hide"
+        to = "Show"
+        display = "none"
     }
 
+    button.textContent = button.textContent.replace(from, to)
 
-    // Create the "Collapse the list" switch
+    const items = document.querySelector(".list-group").children
+
+    for (let i = 1; i < items.length; i++)
+        items[i].style.display = display
+}
+
+function createCollapseButtonAndSwitch(text, settingObject)
+{
+    // Create the "Always collapse this list" switch
 
     let collapseSwitch = document.getElementById("collapseSwitch")
 
     if (!collapseSwitch)
     {
-        collapseSwitch = createSwitchCheckbox("Collapse the list")
+        collapseSwitch = createSwitchCheckbox("Always collapse this list")
         collapseSwitch.id = "collapseSwitch"
         collapseSwitch.style = "padding-left: 0px; margin-top: 15px;"
         collapseSwitch.lastChild.style = "margin-top: 5px; margin-left: 37px;"
@@ -2245,37 +2207,29 @@ function hideAllListItemsAndCreateButton(text, settingObject)
         {
             settingObject.CollapseList = this.checked
             saveSettings()
-
-            const showButton = document.getElementById("showButton")
-
-            if (this.checked)
-                hideAllListItemsAndCreateButton(text, settingObject)
-            else
-                showButton.click()
         }
     }
 
-    // Create "Show" button
 
-    let showButton = document.getElementById("showButton")
+    // Create the "Show/Hide" button
 
-    if (!showButton)
+    let toggleButton = document.getElementById("toggleButton")
+
+    if (!toggleButton)
     {
-        showButton = document.createElement("button")
-        showButton.id = "showButton"
-        showButton.className = "btn btn-light"
-        showButton.style = "margin-right: 100px; display: none;"
-        showButton.textContent = text
-        showButton.onclick = function()
-        {
-            for (let i = 1; i < items.length; i++)
-                items[i].style.cssText += "display: block;"
-        }
+        toggleButton = document.createElement("button")
+        toggleButton.id = "toggleButton"
+        toggleButton.className = "btn btn-light"
+        toggleButton.style = "margin-right: 100px;"
+        toggleButton.textContent = text
+        toggleButton.onclick = ()=> { toggleAllListItems(toggleButton) }
 
-        collapseSwitch.insertBefore(showButton, collapseSwitch.firstChild)
+        collapseSwitch.insertBefore(toggleButton, collapseSwitch.firstChild)
     }
 
-    if (settingObject.CollapseList)  showButton.style.display = "initial"
+
+    if (settingObject.CollapseList)
+        toggleAllListItems(toggleButton)
 
     document.querySelector(".list-group-item").appendChild(collapseSwitch)
 }

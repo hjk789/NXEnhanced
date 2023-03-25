@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "NX Enhanced",
-  "version": "5.0.1",
+  "version": "5.1",
   "description": "Adds quality-of-life features to NextDNS website for a more practical usability",
 
   "icons": { "128": "icon.png" },
@@ -11,11 +11,16 @@
   "content_scripts":
   [{
       "matches": ["https://my.nextdns.io/*", "https://api.nextdns.io/*"],
-      "js": ["NXEnhanced.js"]
+      "js": ["utils.js", "NXEnhanced.js"]
   }],
 
-  "background": {
-      "scripts": ["backgroundNX.js"]
+  "options_ui": { "page": "options-page.html" },
+
+  "browser_action":
+  {
+    "default_title": "NX Enhanced",
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
   }
 
 }

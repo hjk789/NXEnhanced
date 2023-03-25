@@ -1,0 +1,67 @@
+<html style="user-select: none; width: 430px; height: 500px; font-family: Segoe UI;">
+    <style>
+        body > div { padding: 5px 5px; }
+
+        span { font-size: 15px; }
+
+        #open-website {
+            background: #eee;
+            border-radius: 15px 15px 0px 0px;
+        }
+
+        #open-website > div {
+            padding: 5px;
+            width: max-content;
+            inset: 0;
+            margin: auto;
+        }
+
+        #open-website div div:hover {
+            background: #0063cd;
+        }
+
+        #open-website div div {
+            border-radius: 10px;
+            padding: 8px 20px;
+            font-size: 15px;
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1px;
+            transition: background 0.10s;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        iframe {
+            height: 375px;
+            width: 396px;
+            padding-left: 5px;
+            margin-top: 10px;
+            border: 2px solid #f2f2f2;
+            border-left: 2px solid #f8f8f8;
+            border-right: 2px solid #f8f8f8;
+            border-radius: 20px;
+        }
+    </style>
+
+    <body style="border: 1px solid #eee; border-radius: 15px;">
+
+        <div id="open-website">
+            <div>
+                <a href="https://my.nextdns.io" target="_blank">
+                    <div>Open NextDNS</div>
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <span style="font-weight: 600;">Options</span><br>
+            <iframe src="options-page.html"></iframe>
+        </div>
+    </body>
+</html>
