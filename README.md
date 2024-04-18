@@ -5,7 +5,7 @@
 <p align="center">
     <span align="center"><a href="https://addons.mozilla.org/addon/nx-enhanced?utm_source=github"><img src="https://i.imgur.com/K0ExDd5.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://chrome.google.com/webstore/detail/nx-enhanced/ljimbekophocjbnphldoaidgkkaojcfo"><img src="https://i.imgur.com/t2z2r5G.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span align="center"><a href="https://microsoftedge.microsoft.com/addons/detail/nx-enhanced/gkgbmecdljkkgcngomnahechobbbcihh"><img src="https://i.imgur.com/XGvzNgI.png"></a></span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><br><br><span align="center"><a href="https://github.com/hjk789/NXEnhanced/wiki/Donation-methods" align="center"><img src="https://i.imgur.com/RUqBPXG.png"></a></span>    
 </p>
-<h3 align="center">⚠ This project is discontinued and won't receive more updates.</h3>
+<h3 align="center">⚠ This project is discontinued and won't receive more updates, although it still works as of this writing.</h3>
 
 ## Current features
 
@@ -117,9 +117,9 @@ If you don't have funds to donate, but still want to contribute, you can do so b
 - You can modify your downloaded copy as you like, although it's recommended that you suggest this modification to be included in the original, so all users can benefit.
 - You can suggest changes, new features or fixes, either by opening issues or by doing pull requests. 
 - You can open or participate in issues and discussions, give feedback and rate this project.
-- Feel free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). 
-- You can make a fork of this project, provided that: 1. You fork it inside GitHub, by clicking on the "Fork" button or the "Edit this file" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fit in these conditions, don't fork it, "*Star*" it instead. Any contributed code is owned by the repository owner, [BLBC](https://github.com/hjk789). The credits for the contributed code goes to the contributor.
-- You cannot do any other action not allowed in this license.  
+- You can make a fork of this project, provided that you fulfill all of the following conditions: 1. You fork it inside GitHub, by clicking on the "Fork" button or the "Edit this file" button of this project's repository web page; and 2. You fork it in order to push changes to this project's repository with a pull request. If you don't fulfill all these conditions, don't fork it, "*Star*" it instead. Any contributed code is owned by the repository owner, [BLBC](https://github.com/hjk789). The credits for the contributed code goes to the contributor.
+- You can only do actions expressly allowed in this license. Any other action not mentioned in this license is forbidden, including, but not limited to, redistribution.
+- Feel free to refer to NX Enhanced, just make sure to include a link to this project's repository homepage (https://github.com/hjk789/NXEnhanced). This is recommended over linking to an extension store, as the person who clicks the link will be able to choose the extension store they will install from.
 
 I, [BLBC](https://github.com/hjk789), have no association with NextDNS Inc., I'm just a user of their DNS service who needed the features NX Enhanced provides. NX Enhanced is a completely voluntary and unnoficial work. Neither I, nor NextDNS Inc., are responsible for any damage or leak, directly or indirectly related to the use or misuse of this software. The responsibility is completely on it's users. Use it at your own risk. There are no warranties, either implied or stated.
 
@@ -127,4 +127,4 @@ Copyright (c) 2020+ BLBC ([hjk789](https://github.com/hjk789))
 
 ## Privacy policy
 
-You can read the full privacy policy [here](https://github.com/hjk789/NXEnhanced/wiki/Privacy-Policy). In brief, most of what you need to know is in the first line: "NX Enhanced does not collect and does not send your data to third-parties, it also does not include any kind of tracking or analytics in the code. It also does not and will not have access to your email or password."
+You can read the full privacy policy [here](https://github.com/hjk789/NXEnhanced/wiki/Privacy-Policy). In brief, most of what you need to know is in the first line: "NX Enhanced does not collect and does not send your data to third-parties, it does not include any kind of tracking or analytics in the code, and it also does not and will not have access to your email or password."
