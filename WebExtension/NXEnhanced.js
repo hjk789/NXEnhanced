@@ -21,6 +21,7 @@ style.innerHTML = `.list-group-item:hover .btn { visibility: visible !important;
                     div:hover #counters { visibility: hidden !important; }                                                      /* Hide the log entries counters on hover */
                    .btn-light { background-color: #eee; }                                                                       /* Make the btn-light more visible without affecting the hover */
                    .list-group-item:hover input.description, input.description:focus { display: initial !important;}            /* Show the allow/denylist domains description input box on hover, and when the input is focused */
+                   .Logs .row > * { width: auto; }
                   `
 document.head.appendChild(style)
 
@@ -945,7 +946,7 @@ function main()
                                         const imgEll = document.createElement("img")
                                         imgEll.src = "https://favicons.nextdns.io/hex:" + convertToHex(domainName) + "@1x.png"                      // NextDNS stores in their server every domain's favicon, and the image files are named after
                                         imgEll.className = "mr-2"                                                                                   // the domain's hex and the favicon's size, being 1x the smallest size and 3x the biggest.
-                                        imgEll.style = "margin-top: -2px; display: inline;"
+                                        imgEll.style = "margin-top: -2px; display: inline; margin-right: 6px;"
                                         imgEll.onerror = function()
                                         {
                                             // Gray globe icon. This happens when either NextDNS doesn't have the domain's favicon, then responding with a 404 "Not found" error, or the domain itself doesn't have a favicon at all.
@@ -1042,6 +1043,7 @@ function main()
 
                                     const hideButton = document.createElement("button")
                                     hideButton.className = "btn btn-secondary mr-4"
+                                    hideButton.style.marginRight = "10px"
                                     hideButton.innerHTML = "Hide"
                                     hideButton.onclick = function() { openAllowDenyPopup(hideButton) }
 
@@ -1051,6 +1053,7 @@ function main()
                                     {
                                         const denyButton = document.createElement("button")
                                         denyButton.className = "btn btn-danger mr-4"
+                                        denyButton.style.marginRight = "10px"
                                         denyButton.innerHTML = "Deny"
                                         denyButton.onclick = function() { openAllowDenyPopup(denyButton) }
 
@@ -1549,7 +1552,11 @@ function main()
 
                         domainsItems[i].firstChild.firstChild.appendChild(descriptionInput)
 
-                        descriptionInput.parentElement.style.cssText += "display: grid !important;"
+                        domainsItems[i].querySelector("img").style.marginRight = "6px"
+
+                        //descriptionInput.parentElement.style.cssText += "display: grid !important;"
+                        descriptionInput.parentElement.style.cssText += "align-self: center;"
+                        descriptionInput.parentElement.classList.remove("d-flex")
                     }
                 }
 
@@ -1969,12 +1976,13 @@ function styleDomains(type, enable)
 function createSwitchCheckbox(text)
 {
     const container = document.createElement("div")
-    container.className = "custom-switch"
+    container.className = "form-check form-switch"
 
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
     checkbox.id = "id" + Date.now() * Math.random()   // There's no need to specify a human-readable id, but it needs to be unique.
-    checkbox.className = "custom-control-input"
+    checkbox.className = "form-check-input"
+    checkbox.style = "margin-top: 10px; float: none;"
 
     const label = document.createElement("label")
     label.textContent = text
@@ -2201,7 +2209,8 @@ function createCollapseButtonAndSwitch(text, settingObject)
         collapseSwitch = createSwitchCheckbox("Always collapse this list")
         collapseSwitch.id = "collapseSwitch"
         collapseSwitch.style = "padding-left: 0px; margin-top: 15px;"
-        collapseSwitch.lastChild.style = "margin-top: 5px; margin-left: 37px;"
+        
+        collapseSwitch.lastChild.style = "margin-top: 5px; margin-left: 15px;"
         collapseSwitch.firstChild.checked = settingObject.CollapseList
         collapseSwitch.firstChild.onchange = function()
         {

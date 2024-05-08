@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "NX Enhanced",
-  "version": "5.1.1",
+  "name": "NX Enhanced (Official)",
+  "version": "5.1.3",
   "description": "Adds quality-of-life features to NextDNS website for a more practical usability",
 
   "icons": { "128": "icon.png" },
